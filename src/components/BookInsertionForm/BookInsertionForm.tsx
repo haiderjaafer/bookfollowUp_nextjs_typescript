@@ -17,11 +17,13 @@ import DropzoneComponent from "../ReactDropZoneComponont";
 export default function BookInsertionForm() {
 
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+
+    const [selectedBookDate, setSelectedBookDate] = useState<string | null>(null);
   // State for form fields
   const [formData, setFormData] = useState<BookInsertionType>({
     bookType: "",
     bookNo: "",
-    bookDate: "",
+    bookDate: selectedBookDate ?? "",
     directoryName: "",
     incomingNo: "",
     incomingDate: "",
@@ -78,10 +80,10 @@ export default function BookInsertionForm() {
       setFormData({
         bookType: "",
         bookNo: "",
-        bookDate: "",
+        bookDate: format(new Date(), "yyyy-MM-dd"), // Initialize with current date,
         directoryName: "",
         incomingNo: "",
-        incomingDate: "",
+        incomingDate: format(new Date(), "yyyy-MM-dd"),
         subject: "",
         destination: "",
         bookAction: "",
@@ -126,6 +128,7 @@ export default function BookInsertionForm() {
    const handleChangeBookDate = (date: Date) => {
     const formattedDate = format(date, "yyyy-MM-dd");
     console.log("formattedDate", formattedDate);
+    //setSelectedBookDate(formattedDate);
     setFormData(prev => ({
       ...prev,
       bookDate: formattedDate
@@ -210,8 +213,9 @@ const handleChangeIncomingDate = (date: Date) => {
               />
             </motion.div>
 
-            {/* Book Date */}
+            {/* Book Date {selectedBookDate} */}
             <motion.div variants={inputVariants}>
+              
               <label
                 htmlFor="bookDate"
                 className="block text-sm font-medium font-arabic text-gray-700 mb-1 text-right"

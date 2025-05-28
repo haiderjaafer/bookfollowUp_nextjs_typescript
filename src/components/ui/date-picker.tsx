@@ -28,14 +28,31 @@ export function DatePicker({
   const [date, setDate] = React.useState<Date>(new Date());
   const [isOpen, setIsOpen] = React.useState(false);
 
+  // Arabic month names for RTL support
   const months = [
-    'January', 'February', 'March', 'April', 'May', 'June', 
-    'July', 'اب', 'ايلول', 'October', 'November', 'December'
+    "يناير", // January
+    "فبراير", // February
+    "مارس", // March
+    "أبريل", // April
+    "مايو", // May
+    "يونيو", // June
+    "يوليو", // July
+    "أغسطس", // August
+    "سبتمبر", // September
+    "أكتوبر", // October
+    "نوفمبر", // November
+    "ديسمبر", // December
   ];
+
   const years = Array.from(
     { length: endYear - startYear + 1 },
     (_, i) => startYear + i
   );
+
+  // Pass the initial date to the parent on mount
+  React.useEffect(() => {
+    onDateChange?.(date);
+  }, []); // Empty dependency array ensures this runs only on mount
 
   const handleMonthChange = (month: string) => {
     const newDate = setMonth(date, months.indexOf(month));
@@ -49,50 +66,51 @@ export function DatePicker({
 
   const handleSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {
+      // Always update the date and trigger onDateChange, even if the date is the same
       setDate(selectedDate);
-      setIsOpen(false);  // Close the calendar after selecting a date
-      
-
+      setIsOpen(false); // Close the calendar after selecting a date
       onDateChange?.(selectedDate); // Pass Date directly
-
     }
   };
 
   return (
-    <Popover  open={isOpen} onOpenChange={setIsOpen}>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
-        
           variant={"outline"}
           className={cn(
-            "w-full justify-start text-left font-normal",
+            "w-full justify-end text-right font-arabic",
             !date && "text-muted-foreground"
           )}
           onClick={() => setIsOpen(!isOpen)}
         >
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          {date ? format(date, "yyyy-MM-dd") : <span>Pick a date</span>}
+          {date ? format(date, "yyyy-MM-dd") : <span>اختر تاريخاً</span>}
+          <CalendarIcon className="ml-2 h-4 w-4" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0">
-        <div  className="flex justify-between p-2">
-          <Select  onValueChange={handleMonthChange} value={months[getMonth(date)]}>
+      <PopoverContent className="w-auto p-0 font-arabic" dir="rtl">
+        <div className="flex justify-between p-2">
+          <Select onValueChange={handleMonthChange} value={months[getMonth(date)]}>
             <SelectTrigger className="w-[110px]">
-              <SelectValue placeholder="Month" />
+              <SelectValue placeholder="الشهر" />
             </SelectTrigger>
-            <SelectContent className="font-bold ">
+            <SelectContent className="font-arabic">
               {months.map((month) => (
-                <SelectItem   key={month} value={month}><div className="font-bold">{month}</div></SelectItem>
+                <SelectItem key={month} value={month}>
+                  <div className="font-arabic">{month}</div>
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
           <Select onValueChange={handleYearChange} value={getYear(date).toString()}>
             <SelectTrigger className="w-[110px]">
-              <SelectValue placeholder="Year" />
+              <SelectValue placeholder="السنة" />
             </SelectTrigger>
             <SelectContent>
               {years.map((year) => (
-                <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                <SelectItem key={year} value={year.toString()}>
+                  {year}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -100,11 +118,12 @@ export function DatePicker({
         <Calendar
           mode="single"
           selected={date}
-          onSelect={handleSelect}
+          onSelect={(day) => handleSelect(day)} // Explicitly handle selection
           initialFocus
           month={date}
           onMonthChange={setDate}
-          
+          dir="rtl"
+          className="text-lg text-black  font-serif font-extrabold"
         />
       </PopoverContent>
     </Popover>

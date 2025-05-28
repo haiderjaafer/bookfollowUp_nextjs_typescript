@@ -40,7 +40,7 @@ const DropzoneComponent: React.FC<DropzoneComponentProps> = ({
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: { "application/pdf": [] },
-    maxSize: 2 * 1024 * 1024, // 2 MB max size
+    maxSize: 10 * 1024 * 1024, // 10 MB max size
     onDrop,
   });
 
