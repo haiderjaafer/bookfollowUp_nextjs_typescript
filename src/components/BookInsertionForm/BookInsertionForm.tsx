@@ -13,6 +13,7 @@ import { BookInsertionType } from "../../../bookInsertionType";
 import DestinationInput from "../destination/destinationInput";
 import { toast } from "react-toastify";
 import DropzoneComponent from "../ReactDropZoneComponont";
+import ReusableButton from "../Hover-Button";
 
 export default function BookInsertionForm() {
 
@@ -413,7 +414,7 @@ const handleChangeIncomingDate = (date: Date) => {
         onFileRemoved={handleFileRemoved}
       />
 
-          {/* Submit Button */}
+          {/* Submit Button 
           <motion.div
             className="flex justify-center"
             whileHover={{ scale: 1.05 }}
@@ -426,6 +427,11 @@ const handleChangeIncomingDate = (date: Date) => {
               إضافة الكتاب
             </Button>
           </motion.div>
+          */}
+<div className="flex justify-center">
+          <ReusableButton type="submit" onClick={() => alert("Clicked!")} />
+
+          </div>
         </form>
       </div>
     </motion.div>

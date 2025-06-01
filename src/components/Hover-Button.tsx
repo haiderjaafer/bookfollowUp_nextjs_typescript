@@ -1,26 +1,27 @@
- // Import React, necessary for creating components
-import React from 'react';
-// Import Head component from Next.js to potentially add Font Awesome CDN link
-import Head from 'next/head';
-import { ArrowUpTrayIcon, XMarkIcon  } from "@heroicons/react/24/solid";
- 
- import { UserRoundPlus } from "lucide-react";
+"use client";
 
+import React from "react";
+import { UserRoundPlus } from "lucide-react";
+import type { ButtonHTMLAttributes, ReactNode } from "react";
 
+interface ReusableButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  label?: string;
+  icon?: ReactNode;
+}
 
-
-
-
-// Define the props interface for the component, currently empty as no props are needed
-interface SocialShareButtonProps {}
-
-// Define the functional component using TypeScript
-const SocialShareButton: React.FC<SocialShareButtonProps> = () => {
-  // Return the JSX structure of the component
+const ReusableButton: React.FC<ReusableButtonProps> = ({
+  label = "اضافة",
+  icon = <UserRoundPlus className="size-5" />,
+  type = "button",
+  className = "",
+  ...props
+}) => {
   return (
-    <>
+     <>
    
       <button
+      type={type}
+
         // Apply Tailwind classes for styling and layout
         className="
           relative           {/* Position context for absolute children */}
@@ -40,6 +41,7 @@ const SocialShareButton: React.FC<SocialShareButtonProps> = () => {
           group              {/* Define this element as a group for controlling child states on hover */}
           hover:rounded-lg   {/* Change border radius to large (0.5rem) on hover */}
         "
+         {...props}
       >
        
         <span
@@ -91,7 +93,7 @@ const SocialShareButton: React.FC<SocialShareButtonProps> = () => {
          <span className='flex items-center  relative   left-3'>
             
          {/* <UserRoundPlus className=' size-5'/> */}
-         <span className='font-extrabold'>اضافة</span>
+         <span className='font-extrabold'>{label}</span>
          </span>
         </span>
       </button>
@@ -99,6 +101,4 @@ const SocialShareButton: React.FC<SocialShareButtonProps> = () => {
   );
 };
 
-// Export the component for use in other parts of the Next.js application
-export default SocialShareButton;
-
+export default ReusableButton;

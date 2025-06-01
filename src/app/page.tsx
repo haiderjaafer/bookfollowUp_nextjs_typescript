@@ -1,4 +1,4 @@
-import SocialShareButton from "@/components/Hover-Button";
+import ReusableButton from "@/components/Hover-Button";
 
 
 export default function Home() {
@@ -6,7 +6,7 @@ export default function Home() {
 
 
   <div  >
-    <SocialShareButton/>
+    <ReusableButton/>
   
 </div>
 

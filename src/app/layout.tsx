@@ -26,7 +26,7 @@ export default function RootLayout({
     <html lang="ar" dir="rtl">
       <body className="font-serif">
         <Navbar />
-      <main className="container py-1">{children}</main>
+      <main className=" ">{children}</main>
          <ToastContainer
         position="top-right"
         autoClose={5000}

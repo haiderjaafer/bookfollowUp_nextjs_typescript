@@ -54,6 +54,12 @@ const NAV_ITEMS: NavItem[] = [
         href: "/dynmicTableWithPagination/",
         description: "خيارات البحث المتقدم مع فلاتر متعددة",
       },
+
+         {
+        title: "Search Panel",
+        href: "/searchPanel",
+        description: "خيارات البحث المتقدم مع فلاتر متعددة",
+      },
     ],
   },
   {
