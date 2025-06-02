@@ -4,6 +4,7 @@ import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import FooterComponent from "@/components/FooterComponent";
 
 // const tajawal = Tajawal({
 //   subsets: ["arabic"],
@@ -23,24 +24,31 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl">
-      <body className="font-serif">
-        <Navbar />
-      <main className=" ">{children}</main>
-         <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={true}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />  
-      </body>
-    </html>
+<html lang="ar" dir="rtl">
+  <body className="font-serif flex flex-col min-h-screen">
+    <Navbar />
+    
+    <main className="flex-grow">
+      {children}
+    </main>
+
+    <FooterComponent />
+
+    <ToastContainer
+      position="top-right"
+      autoClose={5000}
+      hideProgressBar={false}
+      newestOnTop={false}
+      closeOnClick
+      rtl={true}
+      pauseOnFocusLoss
+      draggable
+      pauseOnHover
+      theme="light"
+    />
+  </body>
+</html>
+
   );
 }
 
