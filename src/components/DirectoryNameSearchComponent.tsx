@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState, useMemo } from 'react'
-import { Check, ChevronsUpDown } from 'lucide-react'
+import { Check, ChevronsUpDown, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -30,40 +30,56 @@ export default function DirectoryNameCombobox({
   fetchUrl,
 }: DirectoryNameComboboxProps) {
   const [open, setOpen] = useState(false)
-  const [directoryName, setDirectoryName] = useState<string[]>([])
+  const [directoryNames, setDirectoryNames] = useState<string[]>([])
   const [query, setQuery] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [debouncedQuery, setDebouncedQuery] = useState(query)
 
+  // Debounce logic
   useEffect(() => {
-    const fetchOrderNos = async () => {
+    const handler = setTimeout(() => {
+      setDebouncedQuery(query)
+    }, 400)
+
+    return () => clearTimeout(handler)
+  }, [query])
+
+  // Fetch data from API when debounced query changes
+  useEffect(() => {
+    const controller = new AbortController()
+
+    const fetchDirectoryNames = async () => {
+      if (!debouncedQuery) {
+        setDirectoryNames([])
+        return
+      }
+
       setIsLoading(true)
       try {
-        //const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/orders/getAll`)
-        const res = await fetch(fetchUrl)
+        const res = await fetch(
+          `${fetchUrl}?search=${encodeURIComponent(debouncedQuery)}`,
+          { signal: controller.signal }
+        )
         const data: string[] = await res.json()
-        console.log("data",data)
-        setDirectoryName(Array.isArray(data) ? data : [])
+        setDirectoryNames(Array.isArray(data) ? data : [])
       } catch (err) {
-        console.error('Failed to fetch orderNos:', err)
-        setDirectoryName([])
+        if (err instanceof Error && err.name !== 'AbortError') {
+          console.error('Failed to fetch directory names:', err)
+          setDirectoryNames([])
+        }
       } finally {
         setIsLoading(false)
       }
     }
 
-    fetchOrderNos()
-  }, [fetchUrl])
+    fetchDirectoryNames()
 
-  const filtered = useMemo(() => {
-    return directoryName.filter((o) =>
-      o.toLowerCase().includes(query.toLowerCase())
-    )
-  }, [directoryName, query])
+    return () => controller.abort()
+  }, [debouncedQuery, fetchUrl])
 
   const handleSelect = (selected: string) => {
     onChange(selected === value ? '' : selected)
     setOpen(false)
-    console.log("selected",selected)
   }
 
   return (
@@ -73,7 +89,7 @@ export default function DirectoryNameCombobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className=" justify-between font-bold"
+          className="justify-between font-bold"
         >
           {value || 'البحث عن اسم الدائرة'}
           <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
@@ -89,20 +105,25 @@ export default function DirectoryNameCombobox({
             className="h-9"
           />
           <CommandList>
+            {isLoading && (
+              <div className="flex items-center justify-center py-2">
+                <Loader2 className="h-5 w-5 animate-spin text-gray-500" />
+              </div>
+            )}
             <CommandEmpty>لا يوجد نتائج.</CommandEmpty>
             <CommandGroup>
-              {filtered.map((directoryName) => (
+              {directoryNames.map((name) => (
                 <CommandItem
-                  key={directoryName}
-                  value={directoryName}
-                  onSelect={() => handleSelect(directoryName)}
+                  key={name}
+                  value={name}
+                  onSelect={() => handleSelect(name)}
                   className="justify-between"
                 >
-                  {directoryName}
+                  {name}
                   <Check
                     className={cn(
                       'ml-2 h-4 w-4',
-                      value === directoryName ? 'opacity-100' : 'opacity-0'
+                      value === name ? 'opacity-100' : 'opacity-0'
                     )}
                   />
                 </CommandItem>
@@ -114,4 +135,3 @@ export default function DirectoryNameCombobox({
     </Popover>
   )
 }
-

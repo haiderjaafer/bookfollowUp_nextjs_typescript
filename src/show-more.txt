@@ -1,0 +1,47 @@
+
+ {/* Toggle and Search Buttons */}
+<div className="mt-4 flex justify-between items-center flex-wrap">
+  {/* Right-aligned Toggle Button */}
+  <div className="ml-auto">
+    <button
+      onClick={() => setShowMore(!showMore)}
+      className="text-sm text-gray-600 font-extrabold hover:text-blue-600 transition"
+    >
+      {showMore ? 'إخفاء' : 'المزيد'} ▼
+    </button>
+  </div>
+
+  {/* Centered Search Button when showMore is closed */}
+  {!showMore && (
+    <div className="w-full flex justify-center mt-4 sm:mt-0">
+      <Button className="bg-sky-600 hover:bg-sky-700 w-full sm:w-auto" onClick={handleSearch}
+>
+        بحث
+      </Button>
+    </div>
+  )}
+</div>
+
+{/* ShowMore fields with Search Button below */}
+<AnimatePresence>
+  {showMore && (
+    <motion.div
+      initial={{ height: 0, opacity: 0 }}
+      animate={{ height: 'auto', opacity: 1 }}
+      exit={{ height: 0, opacity: 0 }}
+      transition={{ duration: 0.3, ease: 'easeInOut' }}
+    >
+      <ShowMoreFields />
+
+      {/* Centered Search Button when showMore is open */}
+      <div className="w-full flex justify-center mt-4">
+        <Button className="bg-sky-600 hover:bg-sky-700 w-full sm:w-auto" onClick={handleSearch}
+>
+          بحث
+        </Button>
+      </div>
+    </motion.div>
+  )}
+</AnimatePresence>
+
+     

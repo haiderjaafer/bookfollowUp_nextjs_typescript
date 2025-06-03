@@ -85,7 +85,7 @@ export default function BookNoCombobox({
           aria-expanded={open}
           className=" justify-between font-bold"
         >
-          {value || 'البحث عن رقم الكتاب'}
+          {value || 'البحث عن رقم الكتاب'} 
           <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
         </Button>
       </PopoverTrigger>
