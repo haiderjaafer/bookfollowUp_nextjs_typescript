@@ -48,6 +48,10 @@ export default function DirectoryNameCombobox({
   useEffect(() => {
     const controller = new AbortController()
 
+    console.log("value..."+ value);
+
+    console.log("query..."+ query);  // what you writing in search box
+
     const fetchDirectoryNames = async () => {
       if (!debouncedQuery) {
         setDirectoryNames([])
@@ -61,6 +65,7 @@ export default function DirectoryNameCombobox({
           { signal: controller.signal }
         )
         const data: string[] = await res.json()
+       // console.log("DirectoryNames data " + data)
         setDirectoryNames(Array.isArray(data) ? data : [])
       } catch (err) {
         if (err instanceof Error && err.name !== 'AbortError') {
@@ -80,7 +85,15 @@ export default function DirectoryNameCombobox({
   const handleSelect = (selected: string) => {
     onChange(selected === value ? '' : selected)
     setOpen(false)
+
+    console.log(" value in handleSelect  " + value)   // as if previous value selected
+
+    console.log(" selected in handleSelect  " + selected) // now value selected
+    
   }
+
+
+  
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

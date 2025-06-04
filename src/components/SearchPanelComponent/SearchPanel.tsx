@@ -28,6 +28,9 @@ const SearchPanel = () => {
   };
 
   const handleSelect = (field: string, value: string) => {
+
+      console.log("value in parent" + value)
+
     resetAll();
     switch (field) {
       case 'bookNo':
@@ -66,6 +69,8 @@ const SearchPanel = () => {
 
     console.log('لم يتم اختيار أي معيار بحث');
   };
+
+
 
   return (
     <div className="bg-white rounded-xl shadow-2xl p-6 font-arabic w-full max-w-7xl mx-auto text-right mt-3">
