@@ -36,17 +36,23 @@ export default function DirectoryNameCombobox({
   const [debouncedQuery, setDebouncedQuery] = useState(query)
 
   // Debounce logic
-  useEffect(() => {
-    const handler = setTimeout(() => {
+  //setTimeout(function, milliseconds)  definition
+
+  useEffect(() => {                       // useEffect will run whenever query variable changed 
+    const handler = setTimeout(() => {    // The setTimeout() method calls a function after a number of milliseconds here 400 so 1 second = 1000 milliseconds.so The setTimeout() is executed only once
       setDebouncedQuery(query)
     }, 400)
 
-    return () => clearTimeout(handler)
-  }, [query])
+    //handler is the ID of the timeout allowing you to cancel it later 
+
+    return () => clearTimeout(handler)    //clearTimeout() method to prevent the function from starting or cleanUp function 
+  }, [query])   // each time the user types , query updates, triggering useEffect again . before the new effct runs, the cleanUp called clearing the previous tiemout
 
   // Fetch data from API when debounced query changes
-  useEffect(() => {
-    const controller = new AbortController()
+  useEffect(() => { 
+    const controller = new AbortController()  //AbortController is a built-in JavaScript API that allows you to abort ongoing operations, such as fetch requests. It provides a way to signal that a particular operation should be canceled.
+
+
 
     console.log("value..."+ value);
 
@@ -65,6 +71,9 @@ export default function DirectoryNameCombobox({
           { signal: controller.signal }
         )
         const data: string[] = await res.json()
+
+        console.log("debouncedQuery " + debouncedQuery)
+
        // console.log("DirectoryNames data " + data)
         setDirectoryNames(Array.isArray(data) ? data : [])
       } catch (err) {
@@ -79,7 +88,7 @@ export default function DirectoryNameCombobox({
 
     fetchDirectoryNames()
 
-    return () => controller.abort()
+    return () => controller.abort()  //You can call the abort() method on the controller to cancel the fetch request
   }, [debouncedQuery, fetchUrl])
 
   const handleSelect = (selected: string) => {
