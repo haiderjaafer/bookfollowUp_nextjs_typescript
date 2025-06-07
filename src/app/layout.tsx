@@ -5,6 +5,8 @@ import { Navbar } from "@/components/Navbar";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import FooterComponent from "@/components/FooterComponent";
+import ClientLayout from "./ClientLayout";
+import { Providers } from "./providers";
 
 // const tajawal = Tajawal({
 //   subsets: ["arabic"],
@@ -26,13 +28,13 @@ export default function RootLayout({
   return (
 <html lang="ar" dir="rtl">
   <body className="font-serif flex flex-col min-h-screen">
-    <Navbar />
+    {/* <Navbar /> */}
     
     <main className="flex-grow">
-      {children}
+       <ClientLayout><Providers>{children}</Providers></ClientLayout>
     </main>
 
-    <FooterComponent />
+    {/* <FooterComponent /> */}
 
     <ToastContainer
       position="top-right"
@@ -53,4 +55,18 @@ export default function RootLayout({
 }
 
 
-//npm install date-fns --legacy-peer-deps
+// //npm install date-fns --legacy-peer-deps
+
+
+// app/layout.tsx
+// import ClientLayout from './ClientLayout';
+
+// export default function RootLayout({ children }: { children: React.ReactNode }) {
+//   return (
+//     <html lang="ar" dir="rtl">
+//       <body>
+//         <ClientLayout>{children}</ClientLayout>
+//       </body>
+//     </html>
+//   );
+// }

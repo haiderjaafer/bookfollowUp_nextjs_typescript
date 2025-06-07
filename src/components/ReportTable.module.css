@@ -1,0 +1,93 @@
+.reportContainer {
+  direction: rtl;
+  font-family: 'Arial', sans-serif;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.header h1 {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  flex-grow: 1;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table th,
+.table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+.table th {
+  background-color: #e6f3ff;
+  font-weight: bold;
+}
+
+.table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.printButton {
+  display: block;
+  margin: 20px auto;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.printButton:hover {
+  background-color: #0056b3;
+}
+
+/* Hide unwanted elements during printing */
+@media print {
+  .navbar,
+  .layout > *:not(.reportContainer) {
+    display: none !important;
+  }
+
+  .reportContainer {
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+    max-width: 100%;
+  }
+
+  .printButton {
+    display: none;
+  }
+
+  @page {
+     size: A4 landscape;  /*can also portrait  */
+    margin: 20mm;
+  }
+
+  
+
+ body {
+  print-color-adjust: exact;         /* Standard syntax */
+  -webkit-print-color-adjust: exact; /* WebKit-specific */
+  counter-reset: page;
+}
+
+}

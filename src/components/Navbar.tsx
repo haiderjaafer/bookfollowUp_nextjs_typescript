@@ -1,3 +1,4 @@
+// components/Navbar.tsx
 "use client";
 
 import Link from "next/link";
@@ -11,6 +12,7 @@ import { motion, AnimatePresence } from "framer-motion";
 export type NavItem = {
   title: string;
   href?: string;
+  target?: string; // Add target property
   children?: NavItem[];
   description?: string;
 };
@@ -20,7 +22,7 @@ const NAV_ITEMS: NavItem[] = [
     title: "الإضافة",
     children: [
       {
-        title: "إضافة  كتاب",
+        title: "إضافة كتاب",
         href: "/addBooks/",
         description: "إضافة كتاب جديد إلى النظام",
       },
@@ -42,7 +44,7 @@ const NAV_ITEMS: NavItem[] = [
       {
         title: "رقم طلبية",
         href: "/search/orders",
-        description: "البحث عن طريق رقم الطليية  ",
+        description: "البحث عن طريق رقم الطلبية",
       },
       {
         title: "اسم المادة",
@@ -54,8 +56,7 @@ const NAV_ITEMS: NavItem[] = [
         href: "/dynmicTableWithPagination/",
         description: "خيارات البحث المتقدم مع فلاتر متعددة",
       },
-
-         {
+      {
         title: "Search Panel",
         href: "/searchPanel",
         description: "خيارات البحث المتقدم مع فلاتر متعددة",
@@ -66,13 +67,14 @@ const NAV_ITEMS: NavItem[] = [
     title: "التقارير",
     children: [
       {
-        title: "الإدارات",
-        href: "/structure/departments",
-        description: "هيكلة الإدارات والفرق",
+        title: "تقرير الكتب",
+        href: "/print/report",
+        target: "_blank", // Open in new tab
+        description: "تقرير كل الكتب",
       },
       {
-        title: "الموظفون",
-        href: "/structure/employees",
+        title: "report all",
+        href: "/report_all",
         description: "سجل موظفي الشركة",
       },
       {
@@ -84,8 +86,6 @@ const NAV_ITEMS: NavItem[] = [
   },
 ];
 
-
-
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
@@ -93,34 +93,34 @@ export function Navbar() {
   // Animation variants for Framer Motion
   const menuVariants = {
     hidden: { opacity: 0, y: -10 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
-      transition: { duration: 0.3, ease: "easeOut" }
+      transition: { duration: 0.3, ease: "easeOut" },
     },
-    exit: { 
-      opacity: 0, 
+    exit: {
+      opacity: 0,
       y: -10,
-      transition: { duration: 0.2, ease: "easeIn" }
-    }
+      transition: { duration: 0.2, ease: "easeIn" },
+    },
   };
 
   const submenuVariants = {
     hidden: { opacity: 0, scale: 0.95 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       scale: 1,
-      transition: { duration: 0.3, ease: "easeOut" }
+      transition: { duration: 0.3, ease: "easeOut" },
     },
-    exit: { 
-      opacity: 0, 
+    exit: {
+      opacity: 0,
       scale: 0.95,
-      transition: { duration: 0.2, ease: "easeIn" }
-    }
+      transition: { duration: 0.2, ease: "easeIn" },
+    },
   };
 
   return (
-    <header 
+    <header
       className="sticky top-0 z-50 w-full border-b bg-gradient-to-r from-background to-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 shadow-sm"
       dir="rtl"
     >
@@ -129,9 +129,9 @@ export function Navbar() {
         <div className="md:hidden">
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              <Button
+                variant="ghost"
+                size="icon"
                 className="hover:bg-sky-100/50 transition-colors duration-300"
               >
                 <motion.div
@@ -144,7 +144,7 @@ export function Navbar() {
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="text-right bg-background/95">
-              <motion.div 
+              <motion.div
                 className="flex flex-col space-y-4 pt-6"
                 initial="hidden"
                 animate="visible"
@@ -158,9 +158,11 @@ export function Navbar() {
                         <motion.button
                           whileHover={{ x: 5 }}
                           transition={{ duration: 0.2 }}
-                          onClick={() => setActiveSubmenu(
-                            activeSubmenu === item.title ? null : item.title
-                          )}
+                          onClick={() =>
+                            setActiveSubmenu(
+                              activeSubmenu === item.title ? null : item.title
+                            )
+                          }
                           className={cn(
                             "flex items-center justify-between font-medium font-arabic py-2 text-base",
                             "hover:text-sky-600 hover:bg-sky-50 rounded-md px-3 transition-all duration-300"
@@ -176,7 +178,7 @@ export function Navbar() {
                         </motion.button>
                         <AnimatePresence>
                           {activeSubmenu === item.title && (
-                            <motion.div 
+                            <motion.div
                               className="flex flex-col pr-4 space-y-2 mt-2"
                               initial="hidden"
                               animate="visible"
@@ -187,13 +189,14 @@ export function Navbar() {
                                 <Link
                                   key={child.title}
                                   href={child.href || "#"}
+                                  target={child.target || "_self"} // Use target property
                                   className={cn(
                                     "text-sm py-1.5 block font-arabic text-right",
                                     "hover:text-sky-600 hover:bg-sky-50 rounded-md px-3 transition-all duration-300"
                                   )}
                                   onClick={() => setIsOpen(false)}
                                 >
-                                  <motion.div 
+                                  <motion.div
                                     className="flex flex-col items-end"
                                     whileHover={{ x: 3 }}
                                     transition={{ duration: 0.2 }}
@@ -214,6 +217,7 @@ export function Navbar() {
                     ) : (
                       <Link
                         href={item.href || "#"}
+                        target={item.target || "_self"} // Use target property
                         className={cn(
                           "font-medium font-arabic py-2 text-base",
                           "hover:text-sky-600 hover:bg-sky-50 rounded-md px-3 transition-all duration-300"
@@ -237,7 +241,7 @@ export function Navbar() {
 
         {/* Logo - Hidden on mobile, visible on md and above */}
         <Link href="/" className="hidden md:flex items-center mx-4 font-arabic">
-          <motion.span 
+          <motion.span
             className="inline-block font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-sky-500 to-blue-600"
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.2 }}
@@ -249,7 +253,7 @@ export function Navbar() {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex flex-1 justify-center items-center gap-2">
           {NAV_ITEMS.map((item) => (
-            <div 
+            <div
               key={item.title}
               className="relative group"
               onMouseEnter={() => setActiveSubmenu(item.title)}
@@ -295,12 +299,13 @@ export function Navbar() {
                             <Link
                               key={child.title}
                               href={child.href || "#"}
+                              target={child.target || "_self"} // Use target property
                               className={cn(
                                 "text-sm block px-4 py-2 font-arabic text-right",
                                 "hover:text-sky-600 hover:bg-sky-50 rounded-md transition-all duration-300"
                               )}
                             >
-                              <motion.div 
+                              <motion.div
                                 className="flex flex-col"
                                 whileHover={{ x: 3 }}
                                 transition={{ duration: 0.2 }}
@@ -322,6 +327,7 @@ export function Navbar() {
               ) : (
                 <Link
                   href={item.href || "#"}
+                  target={item.target || "_self"} // Use target property
                   className={cn(
                     "font-arabic text-base font-semibold px-4 py-2",
                     "hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-all duration-300"
@@ -355,8 +361,3 @@ export function Navbar() {
     </header>
   );
 }
-
-
-
-
-
