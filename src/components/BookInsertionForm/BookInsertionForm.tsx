@@ -1,177 +1,208 @@
+'use client';
 
-"use client";
+import { useState, useCallback } from 'react';
+import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button'; // Shadcn/UI Button
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+import { DatePicker } from '../ui/date-picker'; // Custom DatePicker component
+import DirectoryNameInput from '../directoryName/directoryNameInput';
+import SubjectInput from '../subject/subjectInput';
+import DestinationInput from '../destination/destinationInput';
+import { BookInsertionType } from '../../../bookInsertionType'; // Type definition for form data
+import { toast } from 'react-toastify';
+import DropzoneComponent from '../ReactDropZoneComponont'; // Dropzone for file uploads
+import axios from 'axios'; // For API requests
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button"; // shadcn/ui Button
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { DatePicker } from "../ui/date-picker";
-import DirectoryNameInput from "../directoryName/directoryNameInput";
-import SubjectInput from "../subject/subjectInput";
-import { BookInsertionType } from "../../../bookInsertionType";
-import DestinationInput from "../destination/destinationInput";
-import { toast } from "react-toastify";
-import DropzoneComponent from "../ReactDropZoneComponont";
-import ReusableButton from "../Hover-Button";
+// Define animation variants for Framer Motion
+const formVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: 'easeOut' },
+  },
+};
+
+const inputVariants = {
+  hidden: { opacity: 0, x: -10 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.3, ease: 'easeOut' },
+  },
+};
 
 export default function BookInsertionForm() {
-
-    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-
-    const [selectedBookDate, setSelectedBookDate] = useState<string | null>(null);
+  // State for the selected PDF file from DropzoneComponent
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   // State for form fields
   const [formData, setFormData] = useState<BookInsertionType>({
-    bookType: "",
-    bookNo: "",
-    bookDate: selectedBookDate ?? "",
-    directoryName: "",
-    incomingNo: "",
-    incomingDate: "",
-    subject: "",
-    destination: "",
-    bookAction: "",
-    bookStatus: "",
-    notes: "",
-    userID: "1",
+    bookType: '',
+    bookNo: '',
+    bookDate: format(new Date(), 'yyyy-MM-dd'), // Default to current date
+    directoryName: '',
+    incomingNo: '',
+    incomingDate: format(new Date(), 'yyyy-MM-dd'), // Default to current date
+    subject: '',
+    destination: '',
+    bookAction: '',
+    bookStatus: '',
+    notes: '',
+    userID: '1', // Default userID (adjust based on auth context if needed)
   });
+  // State for submission status
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Handle form input changes
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  // Handle text input and select changes
+  const handleChange = useCallback(
+    (
+      e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    ) => {
+      const { name, value } = e.target;
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    },
+    []
+  );
 
+  // Handle bookDate selection
+  const handleChangeBookDate = useCallback((date: Date) => {
+    const formattedDate = format(date, 'yyyy-MM-dd');
+    setFormData((prev) => ({
+      ...prev,
+      bookDate: formattedDate,
+    }));
+  }, []);
 
-    // if (name === 'incomingNo') {
+  // Handle incomingDate selection
+  const handleChangeIncomingDate = useCallback((date: Date) => {
+    const formattedDate = format(date, 'yyyy-MM-dd');
+    setFormData((prev) => ({
+      ...prev,
+      incomingDate: formattedDate,
+    }));
+  }, []);
 
-    //     console.log("name",value);
-
-    // }
-  };
-
-  // Handle form submission (to be connected to your FastAPI backend)
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    // Replace with your API call to FastAPI
-    console.log("Form submitted:", formData);
-    // Example: fetch('/api/book', { method: 'POST', body: JSON.stringify(formData) })
-
-        // Check if at least one file is selected
-    if (!selectedFiles.length) {
-      toast("الملف فارغ");
-      return;
+  // Handle file acceptance from DropzoneComponent
+  const handleFilesAccepted = useCallback((files: File[]) => {
+    if (files.length > 0) {
+      setSelectedFile(files[0]); // Store the first file
+      toast.info(`File ${files[0].name} selected`);
     }
+  }, []);
 
-    // Append the file(s) to FormData
-    selectedFiles.forEach((file) => {
-        console.log("file",file);
-    });
+  // Handle file removal from DropzoneComponent
+  const handleFileRemoved = useCallback((fileName: string) => {
+    setSelectedFile(null); // Clear the selected file
+    toast.info(`File ${fileName} removed`);
+  }, []);
 
-    try {
-    const response = await fetch( `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/bookfollowUpPost`, {  // change fetch to axios
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    });
-    if (response.ok) {
-      toast.success("تم حفظ الكتاب بنجاح");
-      console.log("Book added successfully!");
-      setFormData({
-        bookType: "",
-        bookNo: "",
-        bookDate: format(new Date(), "yyyy-MM-dd"), // Initialize with current date,
-        directoryName: "",
-        incomingNo: "",
-        incomingDate: format(new Date(), "yyyy-MM-dd"),
-        subject: "",
-        destination: "",
-        bookAction: "",
-        bookStatus: "",
-        notes: "",
-        userID: "",
+  // Handle form submission to FastAPI endpoint
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      setIsSubmitting(true);
+
+      // Validate required fields
+      const requiredFields = [
+        'bookNo',
+        'bookType',
+        'bookDate',
+        'directoryName',
+        'subject',
+        'destination',
+        'bookAction',
+        'bookStatus',
+        'userID',
+      ];
+      for (const field of requiredFields) {
+        if (!formData[field as keyof BookInsertionType]) {
+          toast.error(`يرجى ملء حقل ${field}`);
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      // Validate file
+      if (!selectedFile) {
+        toast.error('يرجى تحميل ملف PDF');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Create FormData object for multipart/form-data submission
+      const formDataToSend = new FormData();
+      // Append form fields
+      Object.entries(formData).forEach(([key, value]) => {
+        formDataToSend.append(key, value);
       });
-    } else {
-      console.error("Failed to add book");
-       toast.warning(`حدث فشل اثناء الحفظ`);
-    }
-  } catch (error) {
-    console.error("Error submitting form:", error);
-  }
+      // Append the PDF file
+      formDataToSend.append('file', selectedFile);
 
-  finally {
-    //setIsSubmitting(false);
-  }
-    
-  };
+      try {
+        // Send POST request to FastAPI endpoint
+        const response = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp`,
+          formDataToSend,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          }
+        );
 
-  // Animation variants for Framer Motion
-  const formVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5, ease: "easeOut" },
+        if (response.status === 200) {
+          toast.success('تم حفظ الكتاب وملف PDF بنجاح!');
+          // Reset form data to initial state
+          setFormData({
+            bookType: '',
+            bookNo: '',
+            bookDate: format(new Date(), 'yyyy-MM-dd'),
+            directoryName: '',
+            incomingNo: '',
+            incomingDate: format(new Date(), 'yyyy-MM-dd'),
+            subject: '',
+            destination: '',
+            bookAction: '',
+            bookStatus: '',
+            notes: '',
+            userID: '1',
+          });
+          // Reset file state
+          setSelectedFile(null);
+        } else {
+          throw new Error('Failed to add book');
+        }
+      } catch (error) {
+        console.error('Error submitting form:', error);
+        toast.error('فشل في إرسال النموذج. يرجى المحاولة مرة أخرى');
+      } finally {
+        setIsSubmitting(false);
+      }
     },
-  };
-
-  const inputVariants = {
-    hidden: { opacity: 0, x: -10 },
-    visible: {
-      opacity: 1,
-      x: 0,
-      transition: { duration: 0.3, ease: "easeOut" },
-    },
-  };
-
-
-   const handleChangeBookDate = (date: Date) => {
-    const formattedDate = format(date, "yyyy-MM-dd");
-    console.log("formattedDate", formattedDate);
-    //setSelectedBookDate(formattedDate);
-    setFormData(prev => ({
-      ...prev,
-      bookDate: formattedDate
-    }));
-  };    
-
-const handleChangeIncomingDate = (date: Date) => {
-    const formattedDate = format(date, "yyyy-MM-dd");
-    console.log("formattedDate", formattedDate);
-    setFormData(prev => ({
-      ...prev,
-      incomingDate: formattedDate
-    }));
-  };
-  
-  
-    const handleFilesAccepted = (files: File[]) => {
-    setSelectedFiles((prev) => [...prev, ...files]);
-  };
-
-  const handleFileRemoved = (fileName: string) => {
-    setSelectedFiles((prev) => prev.filter((file) => file.name !== fileName));
-  };
-
-
+    [formData, selectedFile]
+  );
 
   return (
     <motion.div
-      className="flex min-h-screen items-center justify-center bg-gradient-to-b from-background to-sky-50/50 py-8"
+      className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-sky-50/50 py-4 sm:py-6 md:py-8 lg:py-12"
       initial="hidden"
       animate="visible"
       variants={formVariants}
     >
-      <div className="w-full max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto p-6 bg-white rounded-2xl shadow-lg border border-sky-100/50">
+      <div className="w-full max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-4xl mx-auto p-4 sm:p-6 md:p-8 bg-white rounded-2xl shadow-lg border border-sky-100/50">
         {/* Page Heading */}
-        <h1 className="text-2xl md:text-3xl font-bold font-arabic text-center text-sky-600 mb-8">
-          صفحة إضافة كتاب
+        <h1 className="text-2xl sm:text-3xl md:text-3xl lg:text-3xl font-bold font-arabic text-center text-sky-600 mb-6 sm:mb-8">
+          إضافة كتاب جديد
         </h1>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
           {/* Grid for Form Fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Book Type */}
             <motion.div variants={inputVariants}>
               <label
@@ -191,7 +222,7 @@ const handleChangeIncomingDate = (date: Date) => {
                 <option value="">اختر نوع الكتاب</option>
                 <option value="خارجي">خارجي</option>
                 <option value="داخلي">داخلي</option>
-                
+                <option value="فاكس">فاكس</option>
               </select>
             </motion.div>
 
@@ -214,38 +245,26 @@ const handleChangeIncomingDate = (date: Date) => {
               />
             </motion.div>
 
-            {/* Book Date {selectedBookDate} */}
+            {/* Book Date */}
             <motion.div variants={inputVariants}>
-              
               <label
                 htmlFor="bookDate"
                 className="block text-sm font-medium font-arabic text-gray-700 mb-1 text-right"
               >
                 تاريخ الكتاب
               </label>
-               <DatePicker onDateChange={handleChangeBookDate}  />
-        
+              <DatePicker onDateChange={handleChangeBookDate} />
             </motion.div>
 
-            
-            <motion.div variants={inputVariants} className="md:col-span-2 lg:col-span-3">
+            {/* Directory Name */}
+            <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-3">
               <label
                 htmlFor="directoryName"
                 className="block text-sm font-medium font-arabic text-gray-700 mb-1 text-right"
               >
                 اسم الدائرة
               </label>
-
-              <DirectoryNameInput formData={formData} setFormData={setFormData}/>
-              {/* <input
-                id="directoryName"
-                name="directoryName"
-                type="text"
-                value={formData.directoryName}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
-                required
-              /> */}
+              <DirectoryNameInput formData={formData} setFormData={setFormData} />
             </motion.div>
 
             {/* Incoming Number */}
@@ -274,58 +293,29 @@ const handleChangeIncomingDate = (date: Date) => {
               >
                 تاريخ الوارد
               </label>
-
-               <DatePicker onDateChange={handleChangeIncomingDate}  />
-              {/* <input
-                id="incomingDate"
-                name="incomingDate"
-                type="date"
-                value={formData.incomingDate}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right [direction:rtl]"
-              /> */}
+              <DatePicker onDateChange={handleChangeIncomingDate} />
             </motion.div>
 
             {/* Subject */}
-            <motion.div variants={inputVariants} className="md:col-span-2 lg:col-span-3">
+            <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-3">
               <label
                 htmlFor="subject"
                 className="block text-sm font-medium font-arabic text-gray-700 mb-1 text-right"
               >
                 الموضوع
               </label>
-
-              <SubjectInput formData={formData} setFormData={setFormData}/>
-              {/* <input
-                id="subject"
-                name="subject"
-                type="text"
-                value={formData.subject}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
-                required
-              /> */}
+              <SubjectInput formData={formData} setFormData={setFormData} />
             </motion.div>
 
             {/* Destination */}
-            <motion.div variants={inputVariants} className="md:col-span-2 lg:col-span-3">
+            <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-3">
               <label
                 htmlFor="destination"
-                className="block text-lg font-serif font-arabic text-gray-700 mb-1 text-right"
+                className="block text-sm font-medium font-arabic text-gray-700 mb-1 text-right"
               >
                 جهة تحويل البريد
               </label>
-
-              <DestinationInput formData={formData} setFormData={setFormData}  />
-              {/* <input
-                id="destination"
-                name="destination"
-                type="text"
-                value={formData.destination}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
-                required
-              /> */}
+              <DestinationInput formData={formData} setFormData={setFormData} />
             </motion.div>
 
             {/* Book Action */}
@@ -339,12 +329,11 @@ const handleChangeIncomingDate = (date: Date) => {
               <input
                 id="bookAction"
                 name="bookAction"
+                type="text"
                 value={formData.bookAction}
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
                 required
-              
-             
               />
             </motion.div>
 
@@ -367,31 +356,12 @@ const handleChangeIncomingDate = (date: Date) => {
                 <option value="">اختر الحالة</option>
                 <option value="منجز">منجز</option>
                 <option value="قيد الانجاز">قيد الانجاز</option>
-                
+                <option value="مداولة">مداولة</option>
               </select>
             </motion.div>
 
-            {/* User ID */}
-            {/* <motion.div variants={inputVariants}>
-              <label
-                htmlFor="userID"
-                className="block text-sm font-medium font-arabic text-gray-700 mb-1 text-right"
-              >
-                معرف المستخدم
-              </label>
-              <input
-                id="userID"
-                name="userID"
-                type="text"
-                value={formData.userID}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
-                required
-              />
-            </motion.div> */}
-
             {/* Notes */}
-            <motion.div variants={inputVariants} className="md:col-span-2 lg:col-span-3">
+            <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-3">
               <label
                 htmlFor="notes"
                 className="block text-sm font-medium font-arabic text-gray-700 mb-1 text-right"
@@ -409,29 +379,31 @@ const handleChangeIncomingDate = (date: Date) => {
             </motion.div>
           </div>
 
-             <DropzoneComponent
-        onFilesAccepted={handleFilesAccepted}
-        onFileRemoved={handleFileRemoved}
-      />
+          {/* Dropzone for PDF Upload */}
+          <motion.div variants={inputVariants} className="mt-6">
+            <label className="block text-sm font-medium font-arabic text-gray-700 mb-1 text-right">
+              تحميل ملف PDF
+            </label>
+            <DropzoneComponent
+              onFilesAccepted={handleFilesAccepted}
+              onFileRemoved={handleFileRemoved}
+            />
+          </motion.div>
 
-          {/* Submit Button 
+          {/* Submit Button */}
           <motion.div
-            className="flex justify-center"
+            className="flex justify-center mt-6"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
             <Button
               type="submit"
-              className="w-full md:w-auto px-8 py-2 bg-sky-600 hover:bg-sky-700 text-white font-arabic font-semibold rounded-lg transition-all duration-300"
+              disabled={isSubmitting}
+              className="w-full md:w-auto px-8 py-2 bg-sky-600 hover:bg-sky-700 text-white font-arabic font-semibold rounded-lg transition-all duration-300 disabled:opacity-50"
             >
-              إضافة الكتاب
+              {isSubmitting ? 'جاري الحفظ...' : 'إضافة الكتاب'}
             </Button>
           </motion.div>
-          */}
-<div className="flex justify-center">
-          <ReusableButton type="submit" onClick={() => alert("Clicked!")} />
-
-          </div>
         </form>
       </div>
     </motion.div>
