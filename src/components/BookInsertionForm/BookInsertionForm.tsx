@@ -1,18 +1,19 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button'; // Shadcn/UI Button
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { DatePicker } from '../ui/date-picker'; // Custom DatePicker component
+import { DatePicker } from '../ui/date-picker';
 import DirectoryNameInput from '../directoryName/directoryNameInput';
 import SubjectInput from '../subject/subjectInput';
 import DestinationInput from '../destination/destinationInput';
-import { BookInsertionType } from '../../../bookInsertionType'; // Type definition for form data
+import { BookInsertionType } from '../../../bookInsertionType';
 import { toast } from 'react-toastify';
-import DropzoneComponent from '../ReactDropZoneComponont'; // Dropzone for file uploads
-import axios from 'axios'; // For API requests
+import DropzoneComponent from '../ReactDropZoneComponont';
+import axios from 'axios';
+import debounce from 'debounce'; // Import debounce
 
 // Define animation variants for Framer Motion
 const formVariants = {
@@ -53,11 +54,59 @@ export default function BookInsertionForm() {
   });
   // State for submission status
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // State for book existence validation
+  const [bookExists, setBookExists] = useState<boolean | null>(null);
+
+  // Function to check if book exists (will be debounced)
+  const checkBookExists = useCallback(
+    async (bookType: string, bookNo: string, bookDate: string) => {
+      if (!bookType || !bookNo || !bookDate) return; // Skip if any field is empty
+      try {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/checkBookNoExistsForDebounce`,
+          { params: { bookType, bookNo, bookDate } }
+        );
+        setBookExists(response.data.exists);
+        if (response.data.exists) {
+          toast.warning('رقم الكتاب موجود بالفعل لهذا العام');
+        }
+      } catch (error) {
+        console.error('Error checking book existence:', error);
+        setBookExists(false); // Assume non-existent on error to avoid blocking user
+      }
+    },
+    []
+  );
+
+  // Create debounced version of checkBookExists (500ms delay)
+  const debouncedCheckBookExists = useCallback(
+    debounce(checkBookExists, 500),
+    [checkBookExists]
+  );
+
+  // Monitor bookNo, bookType, and bookDate changes to trigger debounced check
+  useEffect(() => {
+    if (formData.bookNo && formData.bookType && formData.bookDate) {
+      debouncedCheckBookExists(
+        formData.bookType,
+        formData.bookNo,
+        formData.bookDate
+      );
+    } else {
+      setBookExists(null); // Reset existence state if fields are incomplete
+    }
+    // Cleanup debounce on unmount
+    return () => {
+      debouncedCheckBookExists.clear();
+    };
+  }, [formData.bookNo, formData.bookType, formData.bookDate, debouncedCheckBookExists]);
 
   // Handle text input and select changes
   const handleChange = useCallback(
     (
-      e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+      e: React.ChangeEvent<
+        HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+      >
     ) => {
       const { name, value } = e.target;
       setFormData((prev) => ({
@@ -89,14 +138,14 @@ export default function BookInsertionForm() {
   // Handle file acceptance from DropzoneComponent
   const handleFilesAccepted = useCallback((files: File[]) => {
     if (files.length > 0) {
-      setSelectedFile(files[0]); // Store the first file
+      setSelectedFile(files[0]);
       toast.info(`File ${files[0].name} selected`);
     }
   }, []);
 
   // Handle file removal from DropzoneComponent
   const handleFileRemoved = useCallback((fileName: string) => {
-    setSelectedFile(null); // Clear the selected file
+    setSelectedFile(null);
     toast.info(`File ${fileName} removed`);
   }, []);
 
@@ -133,17 +182,20 @@ export default function BookInsertionForm() {
         return;
       }
 
+      // Optional: Warn if book exists before submitting
+      // if (bookExists) {
+      //   toast.warning('تحذير: رقم الكتاب موجود بالفعل. هل تريد المتابعة؟');
+      //   // Proceed with submission despite warning
+      // }
+
       // Create FormData object for multipart/form-data submission
       const formDataToSend = new FormData();
-      // Append form fields
       Object.entries(formData).forEach(([key, value]) => {
         formDataToSend.append(key, value);
       });
-      // Append the PDF file
       formDataToSend.append('file', selectedFile);
 
       try {
-        // Send POST request to FastAPI endpoint
         const response = await axios.post(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp`,
           formDataToSend,
@@ -156,7 +208,6 @@ export default function BookInsertionForm() {
 
         if (response.status === 200) {
           toast.success('تم حفظ الكتاب وملف PDF بنجاح!');
-          // Reset form data to initial state
           setFormData({
             bookType: '',
             bookNo: '',
@@ -171,8 +222,8 @@ export default function BookInsertionForm() {
             notes: '',
             userID: '1',
           });
-          // Reset file state
           setSelectedFile(null);
+          setBookExists(null); // Reset existence state
         } else {
           throw new Error('Failed to add book');
         }
@@ -183,9 +234,10 @@ export default function BookInsertionForm() {
         setIsSubmitting(false);
       }
     },
-    [formData, selectedFile]
+    [formData, selectedFile, bookExists]
   );
 
+  // JSX remains unchanged, but ensure bookNo input uses handleChange
   return (
     <motion.div
       className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-sky-50/50 py-4 sm:py-6 md:py-8 lg:py-12"
@@ -194,14 +246,10 @@ export default function BookInsertionForm() {
       variants={formVariants}
     >
       <div className="w-full max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-4xl mx-auto p-4 sm:p-6 md:p-8 bg-white rounded-2xl shadow-lg border border-sky-100/50">
-        {/* Page Heading */}
         <h1 className="text-2xl sm:text-3xl md:text-3xl lg:text-3xl font-bold font-arabic text-center text-sky-600 mb-6 sm:mb-8">
           إضافة كتاب جديد
         </h1>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
-          {/* Grid for Form Fields */}
+        <form  onSubmit={handleSubmit} className="space-y-6 sm:space-y-8" noValidate >
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Book Type */}
             <motion.div variants={inputVariants}>
@@ -226,6 +274,18 @@ export default function BookInsertionForm() {
               </select>
             </motion.div>
 
+             {/* Book Date */}
+            <motion.div variants={inputVariants}>
+              <label
+                htmlFor="bookDate"
+                className="block text-sm font-medium font-arabic text-gray-700 mb-1 text-right"
+              >
+                تاريخ الكتاب
+              </label>
+              <DatePicker onDateChange={handleChangeBookDate} />
+            </motion.div>
+
+
             {/* Book Number */}
             <motion.div variants={inputVariants}>
               <label
@@ -245,17 +305,7 @@ export default function BookInsertionForm() {
               />
             </motion.div>
 
-            {/* Book Date */}
-            <motion.div variants={inputVariants}>
-              <label
-                htmlFor="bookDate"
-                className="block text-sm font-medium font-arabic text-gray-700 mb-1 text-right"
-              >
-                تاريخ الكتاب
-              </label>
-              <DatePicker onDateChange={handleChangeBookDate} />
-            </motion.div>
-
+           
             {/* Directory Name */}
             <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-3">
               <label
@@ -373,7 +423,7 @@ export default function BookInsertionForm() {
                 name="notes"
                 value={formData.notes}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right resize-y"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all duration-200 font-arabic text-right resize-y"
                 rows={4}
               />
             </motion.div>
