@@ -112,15 +112,28 @@ export default function DynamicTable<T extends TableData>({
               );
             }
 
+             if (key === 'bookDate') {
+             // const status = valueStr;
+             // const bgColorClass = getStatusBackgroundColor(status);
+              return (
+                <div className="text-right px-2 py-1 rounded-lg w-25 ">
+                  {valueStr}
+                </div>
+              );
+            }
+
             return <div className="text-right">{valueStr}</div>;
           },
           size: 0,
         };
+         
+       
+
 
         // Assign specific widths to columns
         if (key === 'notes') {
           columnDef.size = 200;
-        } else if (['orderNo', 'orderDate', 'orderYear', 'bookStatus'].includes(key)) {
+        } else if (['bookNo', 'bookDate', 'bookStatus'].includes(key)) {  // what does this comparing to  if (key === 'bookDate') { 
           columnDef.size = 100;
         } else {
           columnDef.size = 120;

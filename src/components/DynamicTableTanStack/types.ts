@@ -54,4 +54,5 @@ id: "الايدي",
   notes: "الملاحظات",
   userID: "المستخدم",
   currentDate: "تأريخ الادخال",
+  countOfLateBooks: "عدد الكتب المتأخرة"
 };
