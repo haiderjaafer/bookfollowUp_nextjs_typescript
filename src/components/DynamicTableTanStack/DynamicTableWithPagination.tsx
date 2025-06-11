@@ -4,8 +4,11 @@ import { useMemo, useState, useEffect, useCallback } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
+  getSortedRowModel,
   flexRender,
   ColumnDef,
+  SortingState,
+  HeaderContext, // Added for explicit typing
 } from '@tanstack/react-table';
 import { useMediaQuery } from 'react-responsive';
 import { AccessorColumnDef, HeaderMap, BookFollowUpData, PDF } from './types';
@@ -23,8 +26,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { FileText } from 'lucide-react';
+import { FileText, BookOpen, ArrowUpDown } from 'lucide-react';
 import { toast } from 'react-toastify';
+import axios from 'axios';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Pagination {
   page: number;
@@ -49,10 +55,12 @@ export default function DynamicTable<T extends BookFollowUpData>({
   pagination,
 }: DynamicTableProps<T>) {
   const [isMounted, setIsMounted] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialog] = useState(false);
   const [pdfDialogOpen, setPdfDialogOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<T | null>(null);
   const [selectedPdfs, setSelectedPdfs] = useState<PDF[]>([]);
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [isLoadingPdfs, setIsLoadingPdfs] = useState(false);
 
   const isMobile = useMediaQuery({ maxWidth: 640 }) && isMounted;
 
@@ -68,7 +76,7 @@ export default function DynamicTable<T extends BookFollowUpData>({
     return `${words.slice(0, maxWords).join(' ')}...`;
   }, []);
 
-  // Determine if a field should be truncated (string fields with potential long text)
+  // Determine if a field should be truncated
   const shouldTruncate = useCallback((key: string) => {
     return [
       'notes',
@@ -105,14 +113,28 @@ export default function DynamicTable<T extends BookFollowUpData>({
     const generatedColumns = Object.keys(firstItem)
       .filter((key) => !excludeFields.includes(key))
       .map((key) => {
-        const columnDef: AccessorColumnDef<T> = {
+        const columnDef: ColumnDef<T> = {
           accessorKey: key,
-          header: headerMap[key] || key,
+          // CHANGED: Handle header as string or function explicitly
+          header: key === 'username'
+            ? ({ column }: HeaderContext<T, unknown>) => (
+                <div className="flex items-center justify-end gap-1">
+                  <span>{headerMap[key] || key}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                  >
+                    <ArrowUpDown className="h-4 w-4" />
+                  </Button>
+                </div>
+              )
+            : headerMap[key] || key,
           cell: ({ row }) => {
             const value = row.getValue(key);
             const valueStr = String(value ?? '');
 
-            // Handle bookStatus with background color
+            // Handle bookStatus
             if (key === 'bookStatus') {
               const status = valueStr;
               const bgColorClass = getStatusBackgroundColor(status);
@@ -125,7 +147,7 @@ export default function DynamicTable<T extends BookFollowUpData>({
               );
             }
 
-            // Handle date fields with fixed width
+            // Handle date fields
             if (key === 'bookDate' || key === 'incomingDate') {
               return (
                 <div className="text-right px-1 py-1 rounded-lg w-32">
@@ -134,7 +156,16 @@ export default function DynamicTable<T extends BookFollowUpData>({
               );
             }
 
-            // Handle truncatable fields dynamically
+            // Handle username
+            if (key === 'username') {
+              return (
+                <div className="text-right font-bold text-blue-600">
+                  {valueStr || 'غير معروف'}
+                </div>
+              );
+            }
+
+            // Handle truncatable fields
             if (shouldTruncate(key)) {
               const truncatedText = truncateText(valueStr);
               return (
@@ -159,6 +190,8 @@ export default function DynamicTable<T extends BookFollowUpData>({
           ['bookNo', 'bookDate', 'bookStatus', 'incomingDate'].includes(key)
         ) {
           columnDef.size = 100;
+        } else if (key === 'username') {
+          columnDef.size = 150;
         } else {
           columnDef.size = 120;
         }
@@ -170,38 +203,47 @@ export default function DynamicTable<T extends BookFollowUpData>({
       id: 'actions',
       header: 'الإجراءات',
       size: 120,
-      cell: ({ row }) => {
-        const pdfFiles = row.original.pdfFiles || [];
-        return (
-          <div className="text-right flex gap-2">
-            <Button
-              className="font-extrabold"
-              variant="outline"
-              onClick={() => {
-                setSelectedRecord(row.original);
-                setEditDialogOpen(true);
-              }}
-            >
-              تعديل
-            </Button>
-            <Button
-              variant="ghost"
-              className="p-2"
-              onClick={() => {
-                if (pdfFiles.length === 0) {
+      cell: ({ row }) => (
+        <div className="text-right flex gap-2">
+          <Button
+            className="font-extrabold"
+            variant="outline"
+            onClick={() => {
+              setSelectedRecord(row.original);
+              setEditDialog(true);
+            }}
+          >
+            تعديل
+          </Button>
+          <Button
+            variant="ghost"
+            className="p-2"
+            onClick={async () => {
+              setIsLoadingPdfs(true);
+              try {
+                const response = await axios.get(
+                  `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/pdf/${row.original.bookNo}`
+                );
+                const pdfs = response.data;
+                if (pdfs.length === 0) {
                   toast.info('لا توجد ملفات PDF لهذا السجل');
                 } else {
-                  setSelectedPdfs(pdfFiles);
+                  setSelectedPdfs(pdfs);
                   setPdfDialogOpen(true);
                 }
-              }}
-              title="عرض ملفات PDF"
-            >
-              <FileText className="h-5 w-5 text-gray-600" />
-            </Button>
-          </div>
-        );
-      },
+              } catch (error) {
+                console.error('Error fetching PDFs:', error);
+                toast.error('فشل تحميل ملفات PDF');
+              } finally {
+                setIsLoadingPdfs(false);
+              }
+            }}
+            title="عرض ملفات PDF"
+          >
+            <BookOpen className="h-5 w-5 text-gray-600" />
+          </Button>
+        </div>
+      ),
     };
 
     return [...generatedColumns, actionColumn];
@@ -211,6 +253,11 @@ export default function DynamicTable<T extends BookFollowUpData>({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    onSortingChange: setSorting,
+    state: {
+      sorting,
+    },
     columnResizeMode: 'onChange',
     defaultColumn: {
       size: 120,
@@ -375,7 +422,7 @@ export default function DynamicTable<T extends BookFollowUpData>({
         )}
         {renderPagination()}
         {/* Edit Dialog */}
-        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <Dialog open={editDialogOpen} onOpenChange={setEditDialog}>
           <DialogContent className="sm:max-w-[600px]" dir="rtl">
             <DialogHeader>
               <DialogTitle className="text-xl font-bold">تعديل الكتاب</DialogTitle>
@@ -401,40 +448,75 @@ export default function DynamicTable<T extends BookFollowUpData>({
             )}
           </DialogContent>
         </Dialog>
-        {/* PDF Dialog will show all pdf  */}
-       <Dialog open={pdfDialogOpen} onOpenChange={setPdfDialogOpen}>
-  <DialogContent className="sm:max-w-[600px]" dir="rtl">
-    <DialogHeader>
-      <DialogTitle className="text-xl font-bold">ملفات PDF المرتبطة</DialogTitle>
-    </DialogHeader>
-    {selectedPdfs.length > 0 ? (
-      <div className="space-y-4 max-h-[60vh] overflow-y-auto text-right">
-        {selectedPdfs.map((pdf) => (
-          <div key={pdf.id} className="flex items-center justify-between border-b pb-2">
-            <div className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-blue-600" />
-              <div>
-                <p className="text-sm font-medium">معرف الملف: {pdf.id}</p>
-                <p className="text-xs text-gray-500">تاريخ: {pdf.currentDate || 'غير متوفر'}</p>
+        {/* PDF Dialog */}
+        <Dialog open={pdfDialogOpen} onOpenChange={setPdfDialogOpen}>
+          <DialogContent className="sm:max-w-[600px] p-6 bg-gray-50" dir="rtl">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-gray-800 text-center">
+                ملفات PDF المرتبطة
+              </DialogTitle>
+            </DialogHeader>
+            {isLoadingPdfs ? (
+              <div className="space-y-4">
+                <Skeleton className="h-24 w-full rounded-lg" />
+                <Skeleton className="h-24 w-full rounded-lg" />
               </div>
-            </div>
-            <Button
-              variant="outline"
-              className="font-bold"
-              onClick={() => {
-                window.open(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/pdf/${pdf.id}`);
-              }}
-            >
-              فتح
-            </Button>
-          </div>
-        ))}
-      </div>
-    ) : (
-      <div>لا توجد ملفات PDF</div>
-    )}
-  </DialogContent>
-</Dialog>
+            ) : selectedPdfs.length > 0 ? (
+              <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                {selectedPdfs.map((pdf) => (
+                  <Card
+                    key={pdf.id}
+                    className="bg-white shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg border border-gray-200"
+                  >
+                    <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-gray-200">
+                      <div className="flex items-center gap-1">
+                        <FileText className="h-6 w-6 text-blue-600 animate-pulse" />
+                        <div>
+                          <p className="text-lg font-extrabold text-gray-600">
+                            رقم الكتاب: {pdf.bookNo || 'غير متوفر'}
+                          </p>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-1">
+                      <div className="space-y-2 text-right">
+                        <div className="flex items-center gap-x-1">
+                          <span className="font-extrabold">تاريخ الإضافة :</span>{' '}
+                          <span className="font-extrabold">
+                            {pdf.currentDate || 'غير متوفر'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-x-1">
+                          <span className="font-extrabold">المستخدم :</span>{' '}
+                          <span className="font-extrabold text-blue-500">
+                            {pdf.username || 'غير معروف'}
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                    <CardFooter className="justify-end pt-1">
+                      <Button
+                        variant="default"
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold transition-colors duration-200"
+                        onClick={() => {
+                          window.open(
+                            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/pdf/file/${pdf.id}`
+                          );
+                        }}
+                      >
+                        <BookOpen className="mr-2 h-4 w-4" /> فتح الملف
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                لا توجد ملفات PDF
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
@@ -468,7 +550,7 @@ export default function DynamicTable<T extends BookFollowUpData>({
                       className="mb-2 flex justify-between"
                     >
                       <strong className="text-gray-900">
-                        {column.header as string}:
+                        {headerMap[key] || key}:
                       </strong>
                       <span
                         className={`text-gray-700 px-2 py-1 rounded ${bgColorClass}`}
@@ -479,17 +561,29 @@ export default function DynamicTable<T extends BookFollowUpData>({
                   );
                 }
 
+                if (key === 'username') {
+                  return (
+                    <div key={key} className="mb-2 flex justify-between">
+                      <strong className="text-gray-900">
+                        {headerMap[key] || key}:
+                      </strong>
+                      <span className="text-blue-600 font-bold">
+                        {valueStr || 'غير معروف'}
+                      </span>
+                    </div>
+                  );
+                }
+
                 return (
                   <div key={key} className="mb-2 flex justify-between">
                     <strong className="text-gray-900">
-                      {column.header as string}:
+                      {headerMap[key] || key}:
                     </strong>
                     <span className="text-gray-700">{valueStr}</span>
                   </div>
                 );
               }
               if (column.id === 'actions') {
-                const pdfFiles = item.pdfFiles || [];
                 return (
                   <div key="actions" className="mt-2 flex justify-end gap-2">
                     <Button
@@ -497,7 +591,7 @@ export default function DynamicTable<T extends BookFollowUpData>({
                       className="font-bold"
                       onClick={() => {
                         setSelectedRecord(item);
-                        setEditDialogOpen(true);
+                        setEditDialog(true);
                       }}
                     >
                       تعديل
@@ -505,17 +599,29 @@ export default function DynamicTable<T extends BookFollowUpData>({
                     <Button
                       variant="ghost"
                       className="p-2"
-                      onClick={() => {
-                        if (pdfFiles.length === 0) {
-                          toast.info('لا توجد ملفات PDF لهذا السجل');
-                        } else {
-                          setSelectedPdfs(pdfFiles);
-                          setPdfDialogOpen(true);
+                      onClick={async () => {
+                        setIsLoadingPdfs(true);
+                        try {
+                          const response = await axios.get(
+                            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/pdf/${item.bookNo}`
+                          );
+                          const pdfs = response.data;
+                          if (pdfs.length === 0) {
+                            toast.info('لا توجد ملفات PDF لهذا السجل');
+                          } else {
+                            setSelectedPdfs(pdfs);
+                            setPdfDialogOpen(true);
+                          }
+                        } catch (error) {
+                          console.error('Error fetching PDFs:', error);
+                          toast.error('فشل تحميل ملفات PDF');
+                        } finally {
+                          setIsLoadingPdfs(false);
                         }
                       }}
                       title="عرض ملفات PDF"
                     >
-                      <FileText className="h-5 w-5 text-gray-600" />
+                      <BookOpen className="h-5 w-5 text-gray-600" />
                     </Button>
                   </div>
                 );
@@ -526,7 +632,7 @@ export default function DynamicTable<T extends BookFollowUpData>({
         ))
       )}
       {renderPagination()}
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialog}>
         <DialogContent className="sm:max-w-[600px]" dir="rtl">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">تعديل الكتاب</DialogTitle>
@@ -553,43 +659,70 @@ export default function DynamicTable<T extends BookFollowUpData>({
         </DialogContent>
       </Dialog>
       <Dialog open={pdfDialogOpen} onOpenChange={setPdfDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]" dir="rtl">
+        <DialogContent className="sm:max-w-[600px] p-6 bg-gray-50" dir="rtl">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold">
+            <DialogTitle className="text-2xl font-bold text-gray-800 text-center">
               ملفات PDF المرتبطة
             </DialogTitle>
           </DialogHeader>
-          {selectedPdfs.length > 0 ? (
-            <div className="space-y-4 max-h-[60vh] overflow-y-auto text-right">
+          {isLoadingPdfs ? (
+            <div className="space-y-4">
+              <Skeleton className="h-24 w-full rounded-lg" />
+              <Skeleton className="h-24 w-full rounded-lg" />
+            </div>
+          ) : selectedPdfs.length > 0 ? (
+            <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
               {selectedPdfs.map((pdf) => (
-                <div
+                <Card
                   key={pdf.id}
-                  className="flex items-center justify-between border-b pb-2"
+                  className="bg-white shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg border border-gray-200"
                 >
-                  <div className="flex items-center gap-2">
-                    <FileText className="h-5 w-5 text-blue-600" />
-                    <div>
-                      <p className="text-sm font-medium">معرف الملف: {pdf.id}</p>
-                      <p className="text-xs text-gray-500">
-                        تاريخ: {pdf.currentDate || 'غير متوفر'}
-                      </p>
+                  <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-gray-200">
+                    <div className="flex items-center gap-1">
+                      <FileText className="h-6 w-6 text-blue-600 animate-pulse" />
+                      <div>
+                        <p className="text-lg font-extrabold text-gray-600">
+                          رقم الكتاب: {pdf.bookNo || 'غير متوفر'}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <Button
-                    variant="outline"
-                    className="font-bold"
-                    onClick={() => {
-                      toast.info(`فتح ملف PDF: ${pdf.pdf}`);
-                      // Example: window.open(`/api/bookFollowUp/pdf/${pdf.id}`);
-                    }}
-                  >
-                    فتح
-                  </Button>
-                </div>
+                  </CardHeader>
+                  <CardContent className="pt-1">
+                    <div className="space-y-2 text-right">
+                      <div className="flex items-center gap-x-1">
+                        <span className="font-extrabold">تاريخ الإضافة :</span>{' '}
+                        <span className="font-extrabold">
+                          {pdf.currentDate || 'غير متوفر'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-x-1">
+                        <span className="font-extrabold">المستخدم :</span>{' '}
+                        <span className="font-extrabold text-blue-500">
+                          {pdf.username || 'غير معروف'}
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="justify-end pt-1">
+                    <Button
+                      variant="default"
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-bold transition-colors duration-200"
+                      onClick={() => {
+                        window.open(
+                          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/pdf/file/${pdf.id}`
+                        );
+                      }}
+                    >
+                      <BookOpen className="mr-2 h-4 w-4" /> فتح الملف
+                    </Button>
+                  </CardFooter>
+                </Card>
               ))}
             </div>
           ) : (
-            <div>لا توجد ملفات PDF</div>
+            <div className="text-center py-8 text-gray-500">
+              لا توجد ملفات PDF
+            </div>
           )}
         </DialogContent>
       </Dialog>

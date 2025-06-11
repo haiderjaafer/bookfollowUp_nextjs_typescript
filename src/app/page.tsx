@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
-import { orderHeaderMap } from '@/components/DynamicTableTanStack/types';
+import { orderHeaderMap, PDF } from '@/components/DynamicTableTanStack/types';
 import dynamic from 'next/dynamic';
 
 const DynamicTable = dynamic(() => import('@/components/DynamicTableTanStack/DynamicTableWithPagination'), {
@@ -29,6 +29,8 @@ interface LateBook {
   countOfLateBooks: number;
   currentDate: string | null;
   userID: number | null;
+  username: string | null;
+  pdfFiles: PDF[];
 }
 
 interface LateBooksResponse {

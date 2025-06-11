@@ -25,7 +25,9 @@ export interface HeaderMap {
 export interface PDF {
   id: number;
   pdf: string;
+  bookNo: string | null;
   currentDate: string | null;
+  username: string | null;  // Added username
 }
 
 // Update TableData to include pdfFiles
@@ -44,6 +46,7 @@ export interface BookFollowUpData extends TableData {
   notes: string | null;
   currentDate: string | null;
   userID: number | null;
+  username: string | null;
   pdfFiles: PDF[];
 }
 
@@ -60,7 +63,8 @@ export const orderHeaderMap: HeaderMap = {
   bookAction: "الهامش",
   bookStatus: "الاجراء",
   notes: "الملاحظات",
-  userID: "المستخدم",
+  userID: "userID",
+  username: "المستخدم",
   currentDate: "تأريخ الادخال",
   countOfLateBooks: "عدد الكتب المتأخرة"
 };

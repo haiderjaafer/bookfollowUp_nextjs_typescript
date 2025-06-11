@@ -352,7 +352,7 @@ export function Navbar() {
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.2 }}
           >
-            <span className="inline-block font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-sky-500 to-blue-600">
+            <span className="inline-block font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-sky-500 to-blue-600 animate-pulse">
               نظام متابعة اكتب
             </span>
           </motion.div>
