@@ -10,7 +10,7 @@ import { CircleOff, Search } from 'lucide-react';
 import BookNoCombobox from '../BookNoComboboxComponent';
 import IncomingNoCombobox from '../IncomingNoComponent';
 import DirectoryNameCombobox from '../DirectoryNameSearchComponent';
-import { BookFollowUp, orderHeaderMap } from '@/components/DynamicTableTanStack/types';
+import { BookFollowUpData, orderHeaderMap } from '@/components/DynamicTableTanStack/types';
 
 const DynamicTable = dynamic(() => import('@/components/DynamicTableTanStack/DynamicTableWithPagination'), {
   ssr: false,
@@ -28,7 +28,7 @@ interface Filters {
 
 // Define API response interface
 interface ApiResponse {
-  data: BookFollowUp[];
+  data: BookFollowUpData[];
   total: number;
   page: number;
   limit: number;
@@ -253,7 +253,7 @@ const SearchPanel = () => {
           <DynamicTable
             data={data?.data || []}
             headerMap={orderHeaderMap}
-            excludeFields={['checkOrderLink', 'userID']}
+            excludeFields={['checkOrderLink', 'userID','countOfLateBooks','pdfFiles']}
             pagination={{
               page: data?.page || 1,
               limit: data?.limit || 10,

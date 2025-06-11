@@ -21,8 +21,15 @@ export interface HeaderMap {
 
 
 
-// API response type based on provided example
-export interface BookFollowUp {
+// Add PDF type for pdfFiles
+export interface PDF {
+  id: number;
+  pdf: string;
+  currentDate: string | null;
+}
+
+// Update TableData to include pdfFiles
+export interface BookFollowUpData extends TableData {
   id: number;
   bookType: string | null;
   bookNo: string | null;
@@ -35,12 +42,13 @@ export interface BookFollowUp {
   bookAction: string | null;
   bookStatus: string | null;
   notes: string | null;
-  userID: string | null;
   currentDate: string | null;
+  userID: number | null;
+  pdfFiles: PDF[];
 }
 
 export const orderHeaderMap: HeaderMap = {
-id: "الايدي",
+  id: "الايدي",
   bookType: "نوع الكتاب",
   bookNo: "رقم الكتاب",
   bookDate: "تأريخ الكتاب",
@@ -56,3 +64,7 @@ id: "الايدي",
   currentDate: "تأريخ الادخال",
   countOfLateBooks: "عدد الكتب المتأخرة"
 };
+
+
+
+
