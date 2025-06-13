@@ -31,6 +31,7 @@ import { toast } from 'react-toastify';
 import axios from 'axios';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import Link from 'next/link';
 
 interface Pagination {
   page: number;
@@ -116,7 +117,7 @@ export default function DynamicTable<T extends BookFollowUpData>({
         const columnDef: ColumnDef<T> = {
           accessorKey: key,
           // CHANGED: Handle header as string or function explicitly
-          header: key === 'username'
+            header: key === 'incomingDate' || key === 'bookDate'
             ? ({ column }: HeaderContext<T, unknown>) => (
                 <div className="flex items-center justify-end gap-1">
                   <span>{headerMap[key] || key}</span>
@@ -165,6 +166,17 @@ export default function DynamicTable<T extends BookFollowUpData>({
               );
             }
 
+
+                 if (key === 'countOfLateBooks') {
+              const days = Number(valueStr);
+              const bgColor = days > 3 ? 'bg-red-400' : days > 1 ? 'bg-yellow-200' : 'bg-green-200';
+              return (
+                <div className={`text-right px-2 py-1 rounded-lg font-bold ${bgColor}`}>
+                  {valueStr} أيام
+                </div>
+              );
+            }
+
             // Handle truncatable fields
             if (shouldTruncate(key)) {
               const truncatedText = truncateText(valueStr);
@@ -184,13 +196,11 @@ export default function DynamicTable<T extends BookFollowUpData>({
         };
 
         // Assign column widths
-        if (shouldTruncate(key)) {
+      if (shouldTruncate(key)) {
           columnDef.size = 200;
-        } else if (
-          ['bookNo', 'bookDate', 'bookStatus', 'incomingDate'].includes(key)
-        ) {
+        } else if (['bookNo', 'bookDate', 'bookStatus', 'incomingDate'].includes(key)) {
           columnDef.size = 100;
-        } else if (key === 'username') {
+        } else if (key === 'username' || key === 'countOfLateBooks') {
           columnDef.size = 150;
         } else {
           columnDef.size = 120;
@@ -210,11 +220,23 @@ export default function DynamicTable<T extends BookFollowUpData>({
             variant="outline"
             onClick={() => {
               setSelectedRecord(row.original);
-              setEditDialog(true);
+               setEditDialog(true);
             }}
           >
-            تعديل
+            تعديل     
           </Button>
+
+
+          
+              <Link 
+              
+               href={`/updateBooks/${row.original.id}`} 
+                              
+                    >
+                    
+                    open updat page
+                    </Link>   
+          
           <Button
             variant="ghost"
             className="p-2"
@@ -594,8 +616,9 @@ export default function DynamicTable<T extends BookFollowUpData>({
                         setEditDialog(true);
                       }}
                     >
-                      تعديل
+                      تعديل    
                     </Button>
+                   
                     <Button
                       variant="ghost"
                       className="p-2"

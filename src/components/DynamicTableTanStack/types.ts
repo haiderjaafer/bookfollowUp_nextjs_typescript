@@ -38,7 +38,7 @@ export interface BookFollowUpData extends TableData {
   bookDate: string | null;
   directoryName: string | null;
   incomingNo: string | null;
-  incomingDate: string | null;
+  c: string | null;
   subject: string | null;
   destination: string | null;
   bookAction: string | null;
@@ -48,6 +48,7 @@ export interface BookFollowUpData extends TableData {
   userID: number | null;
   username: string | null;
   pdfFiles: PDF[];
+  countOfLateBooks?: number; // Optional for lateBooks
 }
 
 export const orderHeaderMap: HeaderMap = {
