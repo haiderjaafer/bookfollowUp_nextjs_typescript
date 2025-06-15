@@ -18,30 +18,42 @@ interface DatePickerProps {
   startYear?: number;
   endYear?: number;
   onDateChange?: (date: Date) => void;
+  initialDate?: Date;
 }
 
 export function DatePicker({
   startYear = getYear(new Date()) - 100,
   endYear = getYear(new Date()) + 100,
   onDateChange,
+  initialDate,
 }: DatePickerProps) {
-  const [date, setDate] = React.useState<Date>(new Date());
+  // CHANGED: Initialize date with initialDate or new Date(), and track if initialized
+  const [date, setDate] = React.useState<Date>(initialDate || new Date());
   const [isOpen, setIsOpen] = React.useState(false);
+  const [isInitialized, setIsInitialized] = React.useState(false);
+
+  // CHANGED: Update date when initialDate changes, but only if not already initialized
+  React.useEffect(() => {
+    if (initialDate && !isInitialized) {
+      setDate(initialDate);
+      setIsInitialized(true);
+    }
+  }, [initialDate, isInitialized]);
 
   // Arabic month names for RTL support
   const months = [
-    "يناير", // January
-    "فبراير", // February
-    "مارس", // March
-    "أبريل", // April
-    "مايو", // May
-    "يونيو", // June
-    "يوليو", // July
-    "أغسطس", // August
-    "سبتمبر", // September
-    "أكتوبر", // October
-    "نوفمبر", // November
-    "ديسمبر", // December
+    "يناير",
+    "فبراير",
+    "مارس",
+    "أبريل",
+    "مايو",
+    "يونيو",
+    "يوليو",
+    "أغسطس",
+    "سبتمبر",
+    "أكتوبر",
+    "نوفمبر",
+    "ديسمبر",
   ];
 
   const years = Array.from(
@@ -49,27 +61,26 @@ export function DatePicker({
     (_, i) => startYear + i
   );
 
-  // Pass the initial date to the parent on mount
-  React.useEffect(() => {
-    onDateChange?.(date);
-  }, []); // Empty dependency array ensures this runs only on mount
+  // CHANGED: Removed onDateChange from useEffect to prevent premature calls
+  // onDateChange is now only called in handleSelect
 
   const handleMonthChange = (month: string) => {
     const newDate = setMonth(date, months.indexOf(month));
     setDate(newDate);
+    onDateChange?.(newDate);
   };
 
   const handleYearChange = (year: string) => {
     const newDate = setYear(date, parseInt(year));
     setDate(newDate);
+    onDateChange?.(newDate);
   };
 
   const handleSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {
-      // Always update the date and trigger onDateChange, even if the date is the same
       setDate(selectedDate);
-      setIsOpen(false); // Close the calendar after selecting a date
-      onDateChange?.(selectedDate); // Pass Date directly
+      setIsOpen(false);
+      onDateChange?.(selectedDate);
     }
   };
 
@@ -118,12 +129,12 @@ export function DatePicker({
         <Calendar
           mode="single"
           selected={date}
-          onSelect={(day) => handleSelect(day)} // Explicitly handle selection
+          onSelect={(day) => handleSelect(day)}
           initialFocus
           month={date}
           onMonthChange={setDate}
           dir="rtl"
-          className="text-lg text-black  font-serif font-extrabold"
+          className="text-lg text-black font-serif font-extrabold"
         />
       </PopoverContent>
     </Popover>

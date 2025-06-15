@@ -32,6 +32,9 @@ import axios from 'axios';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
+import { GrUpdate,GrDocumentPdf } from "react-icons/gr";
+import { FaRegFilePdf } from "react-icons/fa6";
+
 
 interface Pagination {
   page: number;
@@ -214,8 +217,8 @@ export default function DynamicTable<T extends BookFollowUpData>({
       header: 'الإجراءات',
       size: 120,
       cell: ({ row }) => (
-        <div className="text-right flex gap-2">
-          <Button
+        <div className="text-right flex items-center gap-2">
+          {/* <Button
             className="font-extrabold"
             variant="outline"
             onClick={() => {
@@ -224,7 +227,7 @@ export default function DynamicTable<T extends BookFollowUpData>({
             }}
           >
             تعديل     
-          </Button>
+          </Button> */}
 
 
           
@@ -234,12 +237,13 @@ export default function DynamicTable<T extends BookFollowUpData>({
                               
                     >
                     
-                    open updat page
+                     <GrUpdate color='green' size={'1.4rem'}   /> 
+
                     </Link>   
           
           <Button
             variant="ghost"
-            className="p-2"
+            className=" cursor-pointer "
             onClick={async () => {
               setIsLoadingPdfs(true);
               try {
@@ -262,8 +266,11 @@ export default function DynamicTable<T extends BookFollowUpData>({
             }}
             title="عرض ملفات PDF"
           >
-            <BookOpen className="h-5 w-5 text-gray-600" />
+            {/* <BookOpen className="h-5 w-5 text-gray-600 " /> */}
+            <GrDocumentPdf  color='blue'  size={"2.4rem"} />
           </Button>
+
+           {/* <GrDocumentPdf  color='blue'  size={"2.4rem"} /> */}
         </div>
       ),
     };

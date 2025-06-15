@@ -1,4 +1,5 @@
-// app/updateBooks/[id]/page.tsx
+import UpdateBooksFollowUpByBookID from "@/components/UpdateBooksFollowUpByBookID/UpdateBooksFollowUpByBookID";
+
 
 interface PageProps {
   params: {
@@ -6,18 +7,14 @@ interface PageProps {
   };
 }
 
-const UpdateBooksPage = async ({ params }: PageProps) => {
-    const { id } = await params
-
-
-  // optionally fetch data here using the ID
-  // const data = await getBookById(id);
+const UpdateBooksFollowUpByBookIDPage = async ({ params }: PageProps) => {
+  const { id } = params;
 
   return (
     <div>
-      UpdateBooksPage {id}
+      <UpdateBooksFollowUpByBookID bookId={id} />
     </div>
   );
 };
 
-export default UpdateBooksPage;
+export default UpdateBooksFollowUpByBookIDPage;
