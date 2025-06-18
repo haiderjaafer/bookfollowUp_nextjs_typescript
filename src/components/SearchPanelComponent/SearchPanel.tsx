@@ -125,7 +125,7 @@ const SearchPanel = () => {
     queryKey: ['orders', queryParams],
     queryFn: fetchBookFollowUp,
     enabled: Object.values(activeFilters).some((value) => !!value) || page > 1 || Object.keys(queryParams).length === 2, // Allow fetch with no filters
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 2, // now 2 minute data will stay in cached after 2 min will bring new data from server
     retry: 2,
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,

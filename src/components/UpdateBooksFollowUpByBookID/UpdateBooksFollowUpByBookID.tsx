@@ -288,7 +288,7 @@ const fetchBookData = useCallback(async () => {
 
         if (response.status === 200) {
           toast.success('تم تحديث الكتاب بنجاح!');
-          router.push('/'); // Redirect to the main page or table
+         // router.push('/'); // Redirect to the main page or table
         } else {
           throw new Error('Failed to update book');
         }
@@ -436,7 +436,7 @@ const renderPDFs = useMemo(() => {
     >
       <div className="w-full max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-4xl mx-auto p-4 sm:p-6 md:p-8 bg-white rounded-2xl shadow-lg border border-sky-100/50">
         <h1 className="text-2xl sm:text-3xl md:text-3xl lg:text-3xl font-bold font-arabic text-center text-sky-600 mb-6 sm:mb-8">
-          تحديث الكتاب رقم {bookId}
+          تحديث الكتاب رقم {formData.bookNo}
         </h1>
         <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8" noValidate>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
