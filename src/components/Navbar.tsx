@@ -75,7 +75,7 @@ const NAV_ITEMS: NavItem[] = [
       {
         title: "report all",
         href: "/report_all",
-        target: "_blank",
+        //target: "_blank",
         description: "سجل موظفي الشركة",
       },
       {

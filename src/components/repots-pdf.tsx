@@ -1,271 +1,118 @@
-
-// "use client"
-
-// import React from 'react';
-// import Image from 'next/image';
-// import styles from './ReportTable.module.css';
-
-// interface ReportData {
-//   status: string;
-//   result: string;
-//   studentName: string;
-//   seatNumber: string;
-//   totalMarks: number;
-//   date: string;
-//   serialNumber: string;
-// }
-
-// const predefinedData: ReportData[] = [
-//   {
-//     status: 'ناجح',
-//     result: 'الدور الأول',
-//     studentName: 'احمد جمال محمد',
-//     seatNumber: 'C91A5B710',
-//     totalMarks: 5081,
-//     date: '2025-05-27',
-//     serialNumber: '301GS',
-//   },
-//   {
-//     status: 'ناجح',
-//     result: 'الدور الأول',
-//     studentName: 'محمد جمال احمد',
-//     seatNumber: 'EBT5 CS 22',
-//     totalMarks: 5815,
-//     date: '2025-05-27',
-//     serialNumber: '10RSR',
-//   },
-//   {
-//     status: 'ناجح',
-//     result: 'الدور الأول',
-//     studentName: 'علي محمد حسن',
-//     seatNumber: 'Y01F5 82 ZR',
-//     totalMarks: 5860,
-//     date: '2025-05-27',
-//     serialNumber: '1R10R',
-//   },
-//   {
-//     status: 'كل',
-//     result: 'متخلفة',
-//     studentName: 'مريم عبد الرحمن',
-//     seatNumber: 'ABES CR 3T',
-//     totalMarks: 5660,
-//     date: '2025-05-26',
-//     serialNumber: 'S65',
-//   },
-// ];
-
-// const ReportTable: React.FC = () => {
-//   const handlePrint = () => {
-//     window.print(); // Trigger the browser's print dialog
-//    //window.open('/print/report', '_blank');
-//   };
-
-//   return (
-//     <div className={styles.reportContainer}>
-//       <div className={styles.header}>
-//         <Image src="/slogan.gif" alt="Logo" width={100} height={100} />
-//         <h1>تقرير الأداء في المرحلة</h1>
-//       </div>
-//       <table className={styles.table}>
-//         <thead>
-//           <tr>
-//             <th>الرقم</th>
-//             <th>اسم الطالب</th>
-//             <th>رقم الجلوس</th>
-//             <th>المجموع</th>
-//             <th>تاريخ التسجيل</th>
-//             <th>رقم التسلسل</th>
-//             <th>الحالة</th>
-//             <th>الدور</th>
-//           </tr>
-//         </thead>
-//         <tbody>
-//           {predefinedData.map((item, index) => (
-//             <tr key={index}>
-//               <td>{index + 1}</td>
-//               <td>{item.studentName}</td>
-//               <td>{item.seatNumber}</td>
-//               <td>{item.totalMarks}</td>
-//               <td>{item.date}</td>
-//               <td>{item.serialNumber}</td>
-//               <td>{item.status}</td>
-//               <td>{item.result}</td>
-//             </tr>
-//           ))}
-//         </tbody>
-//       </table>
-//       <button className={styles.printButton} onClick={handlePrint}>
-//         Print to PDF
-//       </button>
-//     </div>
-//   );
-// };
-
-// export default ReportTable
-
-
-
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import styles from './ReportTable.module.css';
 
+
 interface Book {
   id: number;
-  bookType: string | null;
-  bookNo: string | null;
-  bookDate: string | null;
-  directoryName: string | null;
-  IncomingNo: string | null;
-  IncomingDate: string | null;
-  subject: string | null;
-  destination: string | null;
-  bookAction: string | null;
-  bookStatus: string | null;
-  notes: string | null;
-  userID: string | null;
-  currentDate: string | null;
+  bookType: string;
+  bookNo: string;
+  bookDate: string;
+  directoryName: string;
+  incomingNo: string;
+  incomingDate: string;
+  subject: string;
+  destination: string;
+  bookAction: string;
+  bookStatus: string;
+  notes?: string;
+  currentDate: string;
+  userID: number;
+  countOfLateBooks?: number | null;
 }
 
-
-const testData: Book[] = [
-  {
-    id: 1,
-    bookType: 'صادر',
-    bookNo: '2025/01',
-    bookDate: '2025-06-01',
-    directoryName: 'مجلد الصادر',
-    IncomingNo: 'ورود/123',
-    IncomingDate: '2025-06-02',
-    subject: 'طلب موافقة على مشروع',
-    destination: 'المديرية العامة',
-    bookAction: 'قيد الانتظار',
-    bookStatus: 'جديد',
-    notes: 'تم استلام الكتاب إلكترونيًا',
-    userID: 'A123',
-    currentDate: '2025-06-03',
-  },
-  {
-    id: 2,
-    bookType: 'وارد',
-    bookNo: '2025/02',
-    bookDate: '2025-06-03',
-    directoryName: 'مجلد الوارد',
-    IncomingNo: 'ورود/456',
-    IncomingDate: '2025-06-04',
-    subject: 'استفسار بخصوص الميزانية',
-    destination: 'قسم الحسابات',
-    bookAction: 'تم الرد',
-    bookStatus: 'منجز',
-    notes: 'تمت المتابعة من قبل القسم المختص',
-    userID: 'Y987',
-    currentDate: '2025-06-05',
-  },
-  {
-    id: 3,
-    bookType: 'داخلي',
-    bookNo: '2025/03',
-    bookDate: '2025-06-05',
-    directoryName: 'مجلد المتابعة',
-    IncomingNo: null,
-    IncomingDate: null,
-    subject: 'مذكرة داخلية بشأن تحديث الأنظمة',
-    destination: 'شعبة التقنية',
-    bookAction: 'جارٍ التنفيذ',
-    bookStatus: 'تحت الإجراء',
-    notes: 'المطلوب الإنجاز خلال أسبوع',
-    userID: 'S456',
-    currentDate: '2025-06-06',
-  },
-  {
-    id: 4,
-    bookType: 'وارد',
-    bookNo: '2025/04',
-    bookDate: '2025-05-30',
-    directoryName: 'أرشيف',
-    IncomingNo: 'ورود/789',
-    IncomingDate: '2025-05-31',
-    subject: 'شكوى مواطن',
-    destination: 'قسم الشكاوى',
-    bookAction: 'محال للجهة المختصة',
-    bookStatus: 'محال',
-    notes: 'قيد المراجعة',
-    userID: 'PO321',
-    currentDate: '2025-06-01',
-  },
-];
-
-
-const ReportTable: React.FC = () => {
+export default function PrintReportPage() {
+  const searchParams = useSearchParams();
   const [data, setData] = useState<Book[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const bookType = searchParams.get('bookType');
+  const bookStatus = searchParams.get('bookStatus');
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!bookType && !bookStatus) return;
+
       try {
-        const res = await fetch('http://localhost:8000/books');
+        const url = new URL('http://127.0.0.1:9000/api/bookFollowUp/report');
+        if (bookType) url.searchParams.append('bookType', bookType);
+        if (bookStatus) url.searchParams.append('bookStatus', bookStatus);
+
+        const res = await fetch(url.toString());
         const result = await res.json();
         setData(result);
       } catch (error) {
         console.error('Error fetching report data:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [bookType, bookStatus]);
 
-  const handlePrint = () => {
-    window.print();
-  };
+  const handlePrint = () => window.print();
 
   return (
-    <div className={styles.reportContainer}>
-        
-      <div className={styles.header}>
-        <Image src="/slogan.gif" alt="Logo" width={100} height={100} />
-
-        <h1>تقرير الكتب</h1>
+    <div dir="rtl" className={`${styles.container} max-w-7xl mx-auto p-6 font-sans bg-white`}>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-4">
+          <Image src="/slogan.gif" alt="Logo" width={80} height={80} />
+          <h1 className="text-2xl font-bold text-gray-800">تقرير الكتب</h1>
+        </div>
+        <button
+          onClick={handlePrint}
+          className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 print:hidden"
+        >
+          طباعة 
+        </button>
       </div>
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th>الرقم</th>
-            <th>النوع</th>
-            <th>رقم الكتاب</th>
-            <th>تاريخ الكتاب</th>
-            <th>الوارد</th>
-            <th>تاريخ الوارد</th>
-            <th>الموضوع</th>
-            <th>الجهة</th>
-            <th>الإجراء</th>
-            <th>الحالة</th>
-          </tr>
-        </thead>
-        <tbody>
-          {testData.map((item, index) => (
-            <tr key={item.id}>
-              <td>{index + 1}</td>
-              <td>{item.bookType}</td>
-              <td>{item.bookNo}</td>
-              <td>{item.bookDate}</td>
-              <td>{item.IncomingNo}</td>
-              <td>{item.IncomingDate}</td>
-              <td>{item.subject}</td>
-              <td>{item.destination}</td>
-              <td>{item.bookAction}</td>
-              <td>{item.bookStatus}</td>
+
+      {loading ? (
+        <p className="text-center text-gray-500 text-lg">جاري التحميل...</p>
+      ) : data.length === 0 ? (
+        <p className="text-center text-gray-500 text-lg">لا توجد بيانات مطابقة</p>
+      ) : (
+        <table className="w-full border border-gray-300 text-sm">
+          <thead>
+            <tr className="bg-gray-100 text-center">
+              <th className="border p-2">الرقم</th>
+              <th className="border p-2">النوع</th>
+              <th className="border p-2">رقم الكتاب</th>
+              <th className="border p-2">تاريخ الكتاب</th>
+              <th className="border p-2">الوارد</th>
+              <th className="border p-2">تاريخ الوارد</th>
+              <th className="border p-2">الموضوع</th>
+              <th className="border p-2">الجهة</th>
+              <th className="border p-2">الإجراء</th>
+              <th className="border p-2">الحالة</th>
+               <th className="border p-2">الملاحظات</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-      <button className={styles.printButton} onClick={handlePrint}>
-        Print to PDF
-      </button>
-      <div className="print-footer">
-  
-</div>
+          </thead>
+          <tbody>
+            {data.map((item, index) => (
+              <tr key={item.id} className="text-center">
+                <td className="border p-2">{index + 1}</td>
+                <td className="border p-2">{item.bookType}</td>
+                <td className="border p-2">{item.bookNo}</td>
+                <td className="border p-2">{item.bookDate}</td>
+                <td className="border p-2">{item.incomingNo || '-'}</td>
+                <td className="border p-2">{item.incomingDate}</td>
+                <td className="border p-2">{item.subject}</td>
+                <td className="border p-2">{item.destination}</td>
+                <td className="border p-2">{item.bookAction}</td>
+                <td className="border p-2">{item.bookStatus}</td>
+                <td className="border p-2">{item.notes}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+    
     </div>
   );
-};
-
-export default ReportTable;
+}
