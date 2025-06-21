@@ -26,38 +26,38 @@ const NAV_ITEMS: NavItem[] = [
         href: "/addBooks/",
         description: "إضافة كتاب جديد إلى النظام",
       },
-      {
-        title: "إضافة ارتباط",
-        href: "/add/user",
-        description: "إضافة مستخدم جديد إلى النظام",
-      },
-      {
-        title: "إضافة فئة",
-        href: "/add/category",
-        description: "إضافة فئة جديدة للمنتجات",
-      },
+      // {
+      //   title: "إضافة ارتباط",
+      //   href: "/add/user",
+      //   description: "إضافة مستخدم جديد إلى النظام",
+      // },
+      // {
+      //   title: "إضافة فئة",
+      //   href: "/add/category",
+      //   description: "إضافة فئة جديدة للمنتجات",
+      // },
     ],
   },
   {
     title: "البحث",
     children: [
+      // {
+      //   title: "رقم طلبية",
+      //   href: "/search/orders",
+      //   description: "البحث عن طريق رقم الطلبية",
+      // },
+      // {
+      //   title: "اسم المادة",
+      //   href: "/search/materialName",
+      //   description: "البحث عن طريق اسم المادة",
+      // },
+      // {
+      //   title: "بحث متقدم",
+      //   href: "/dynmicTableWithPagination/",
+      //   description: "خيارات البحث المتقدم مع فلاتر متعددة",
+      // },
       {
-        title: "رقم طلبية",
-        href: "/search/orders",
-        description: "البحث عن طريق رقم الطلبية",
-      },
-      {
-        title: "اسم المادة",
-        href: "/search/materialName",
-        description: "البحث عن طريق اسم المادة",
-      },
-      {
-        title: "بحث متقدم",
-        href: "/dynmicTableWithPagination/",
-        description: "خيارات البحث المتقدم مع فلاتر متعددة",
-      },
-      {
-        title: "Search Panel",
+        title: "بحث",
         href: "/searchPanel",
         description: "خيارات البحث المتقدم مع فلاتر متعددة",
       },
@@ -66,23 +66,24 @@ const NAV_ITEMS: NavItem[] = [
   {
     title: "التقارير",
     children: [
-      {
+          {
         title: "تقرير الكتب",
-        href: "/print/report",
-        target: "_blank", // Open in new tab
-        description: "تقرير كل الكتب",
-      },
-      {
-        title: "report all",
         href: "/report_all",
         //target: "_blank",
-        description: "سجل موظفي الشركة",
+        description: "تقرير الكتب المنجزة وقيد الانجاز",
       },
-      {
-        title: "الفروع",
-        href: "/structure/branches",
-        description: "فروع الشركة والمخازن",
-      },
+      // {
+      //   title: "تقرير الكتب",
+      //   href: "/print/report",
+      //   target: "_blank", // Open in new tab
+      //   description: "تقرير كل الكتب",
+      // },
+  
+      // {
+      //   title: "الفروع",
+      //   href: "/structure/branches",
+      //   description: "فروع الشركة والمخازن",
+      // },
     ],
   },
 ];
@@ -311,9 +312,9 @@ export function Navbar() {
                                 whileHover={{ x: 3 }}
                                 transition={{ duration: 0.2 }}
                               >
-                                <span className="font-medium">{child.title}</span>
+                                <span className="font-extrabold">{child.title}</span>
                                 {child.description && (
-                                  <span className="text-xs text-muted-foreground mt-1">
+                                  <span className="text-xs font-bold text-muted-foreground mt-1">
                                     {child.description}
                                   </span>
                                 )}
@@ -354,7 +355,7 @@ export function Navbar() {
             transition={{ duration: 0.2 }}
           >
             <span className="inline-block font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-sky-500 to-blue-600 animate-pulse">
-              نظام متابعة اكتب
+              نظام متابعة الكتب الالكتروني
             </span>
           </motion.div>
         </Link>

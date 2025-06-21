@@ -13,6 +13,7 @@ const FIRST_SELECT_OPTION = { label: 'حالة الكتاب', value: 'has_status
 const BOOK_STATUS_OPTIONS = [
   { label: 'منجز', value: 'منجز' },
   { label: 'قيد الانجاز', value: 'قيد الانجاز' },
+  { label: 'مداولة', value: 'مداولة' },
 ];
 
 export default function SenderPage() {
@@ -93,25 +94,25 @@ export default function SenderPage() {
   return (
     <div className="container mx-auto p-6 max-w-2xl">
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h1 className="text-2xl font-bold mb-6 text-gray-800">إرسال بيانات الكتاب</h1>
+        <h1 className="text-2xl font-bold mb-6 text-gray-800">اختيار بيانات الكتاب</h1>
 
         {/* First Select */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">اختر الحقل</label>
+          <label className="block text-sm font-extrabold text-gray-700 mb-2">اختر الحقل</label>
           <select
             onChange={(e) => handleFirstSelect(e.target.value)}
             className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
             disabled={loading}
           >
             <option value="">اختر</option>
-            <option value={FIRST_SELECT_OPTION.value}>{FIRST_SELECT_OPTION.label}</option>
+            <option className='text-sm font-extrabold text-gray-700' value={FIRST_SELECT_OPTION.value}>{FIRST_SELECT_OPTION.label}</option>
           </select>
         </div>
 
         {/* Second Select - Book Status */}
         {showStatusOptions && (
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">حالة الكتاب</label>
+            <label className="block text-sm font-extrabold text-gray-700 mb-2">حالة الكتاب</label>
             <select
               value={formData.bookStatus}
               onChange={(e) => handleStatusSelect(e.target.value)}
@@ -120,7 +121,7 @@ export default function SenderPage() {
             >
               <option value="">اختر حالة الكتاب</option>
               {BOOK_STATUS_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
+                <option key={option.value} value={option.value} className='text-sm font-extrabold text-gray-700'>
                   {option.label}
                 </option>
               ))}
@@ -143,7 +144,8 @@ export default function SenderPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                 d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
             </svg>
-            {loading ? 'جاري فتح التقرير...' : 'فتح تقرير الطباعة'}
+            {/* {loading ? 'جاري فتح التقرير...' : 'فتح تقرير الطباعة'} */}
+            معاينة التقرير
           </button>
 
           <button
@@ -158,9 +160,9 @@ export default function SenderPage() {
         {/* Preview */}
         {formData.bookStatus && (
           <div className="mt-6 p-4 bg-gray-50 rounded-md">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">معاينة البيانات:</h3>
+            
             <div className="text-sm text-gray-600">
-              <strong>حالة الكتاب:</strong> {formData.bookStatus}
+              <strong> الاختيار:</strong> <strong className='text-sm font-extrabold text-gray-700'>{formData.bookStatus}</strong>        
             </div>
           </div>
         )}

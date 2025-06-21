@@ -37,7 +37,9 @@ export default function PrintReportPage() {
       if (!bookType && !bookStatus) return;
 
       try {
-        const url = new URL('http://127.0.0.1:9000/api/bookFollowUp/report');
+        const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/report`); // this new URL is we are construct it as api endpoint
+
+        console.log("url.........................."+ url);
         if (bookType) url.searchParams.append('bookType', bookType);
         if (bookStatus) url.searchParams.append('bookStatus', bookStatus);
 
@@ -55,40 +57,63 @@ export default function PrintReportPage() {
   }, [bookType, bookStatus]);
 
   const handlePrint = () => window.print();
+  const cancelPrint = () => window.close();
 
   return (
     <div dir="rtl" className={`${styles.container} max-w-7xl mx-auto p-6 font-sans bg-white`}>
+
+
+      
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
           <Image src="/slogan.gif" alt="Logo" width={80} height={80} />
-          <h1 className="text-2xl font-bold text-gray-800">تقرير الكتب</h1>
+          <h1 className="text-2xl font-bold text-gray-800">
+  تقرير الكتب
+  {bookType && ` - ${bookType}`}
+  {bookStatus && ` - ${bookStatus}`}
+</h1>
+
         </div>
-        <button
-          onClick={handlePrint}
-          className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 print:hidden"
-        >
-          طباعة 
-        </button>
+     
       </div>
+
+
+ <div className="absolute top-4 left-4 z-50 flex gap-2 print:hidden">
+  <button
+    onClick={handlePrint}
+    className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+  >
+    طباعة
+  </button>
+  <button
+    onClick={cancelPrint}
+    className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+  >
+    الغاء
+  </button>
+</div>
+
+
+      
 
       {loading ? (
         <p className="text-center text-gray-500 text-lg">جاري التحميل...</p>
       ) : data.length === 0 ? (
         <p className="text-center text-gray-500 text-lg">لا توجد بيانات مطابقة</p>
       ) : (
-        <table className="w-full border border-gray-300 text-sm">
-          <thead>
+        <table className={`${styles.table}`}    >
+          <thead >
             <tr className="bg-gray-100 text-center">
-              <th className="border p-2">الرقم</th>
-              <th className="border p-2">النوع</th>
+              <th className="border p-2">ت</th>
+              <th className="border p-2"> نوع الكتاب</th>
               <th className="border p-2">رقم الكتاب</th>
-              <th className="border p-2">تاريخ الكتاب</th>
+              <th className="border p-2 ">تاريخ الكتاب</th>
               <th className="border p-2">الوارد</th>
               <th className="border p-2">تاريخ الوارد</th>
               <th className="border p-2">الموضوع</th>
               <th className="border p-2">الجهة</th>
               <th className="border p-2">الإجراء</th>
-              <th className="border p-2">الحالة</th>
+              {/* <th className="border p-2">الحالة</th> */}
                <th className="border p-2">الملاحظات</th>
             </tr>
           </thead>
@@ -96,16 +121,16 @@ export default function PrintReportPage() {
             {data.map((item, index) => (
               <tr key={item.id} className="text-center">
                 <td className="border p-2">{index + 1}</td>
-                <td className="border p-2">{item.bookType}</td>
+                <td className="border p-2 w-20">{item.bookType}</td>
                 <td className="border p-2">{item.bookNo}</td>
-                <td className="border p-2">{item.bookDate}</td>
+                <td className="border p-2 w-24 ">{item.bookDate}</td>
                 <td className="border p-2">{item.incomingNo || '-'}</td>
-                <td className="border p-2">{item.incomingDate}</td>
-                <td className="border p-2">{item.subject}</td>
+                <td className="border p-2 w-24">{item.incomingDate}</td>
+                <td className="border p-2  ">{item.subject}</td>
                 <td className="border p-2">{item.destination}</td>
                 <td className="border p-2">{item.bookAction}</td>
-                <td className="border p-2">{item.bookStatus}</td>
-                <td className="border p-2">{item.notes}</td>
+                {/* <td className="border p-2 w-24">{item.bookStatus}</td> */}
+                <td className="border ">{item.notes}</td>
               </tr>
             ))}
           </tbody>

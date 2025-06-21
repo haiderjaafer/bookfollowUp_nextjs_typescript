@@ -421,7 +421,7 @@ export default function DynamicTable<T extends BookFollowUpData>({
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
-                      className="px-4 py-2 text-right text-lg font-extrabold text-gray-900 border border-gray-200"
+                      className="px-4 py-2 text-right text-sm font-bold text-gray-900 border border-gray-200"
                       style={{ width: header.column.getSize() }}
                     >
                       {header.isPlaceholder
@@ -438,7 +438,7 @@ export default function DynamicTable<T extends BookFollowUpData>({
                   {row.getVisibleCells().map((cell) => (
                     <td
                       key={cell.id}
-                      className="px-4 py-2 text-right text-lg font-bold text-gray-700 border border-gray-200"
+                      className="px-4 py-2 text-right text-sm font-bold text-gray-700 border border-gray-200"
                       style={{ width: cell.column.getSize() }}
                     >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
