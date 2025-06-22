@@ -9,13 +9,14 @@ import Image from 'next/image';
 import { BookFollowUpData, orderHeaderMap } from '@/components/DynamicTableTanStack/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card } from '@/components/ui/card';
+import ResponsiveLogin from '@/components/login';
 
 // CHANGED: Sample Footer component; replace with your actual footer
-const Footer = () => (
-  <footer className="bg-gray-800 text-white text-center py-4 text-sm font-arabic">
-    © {new Date().getFullYear()} نظام متابعة الكتب. جميع الحقوق محفوظة.
-  </footer>
-);
+// const Footer = () => (
+//   <footer className="bg-gray-800 text-white text-center py-4 text-sm font-arabic">
+//     © {new Date().getFullYear()} نظام متابعة الكتب. جميع الحقوق محفوظة.
+//   </footer>
+// );
 
 const DynamicTable = dynamic(() => import('@/components/DynamicTableTanStack/DynamicTableWithPagination'), {
   ssr: false,
@@ -109,61 +110,64 @@ const Home = () => {
 
   return (
     // CHANGED: Added flexbox layout for full-screen height and sticky table
-    <div className="flex flex-col min-h-screen bg-gray-50 font-serif" dir="rtl">
-      {/* CHANGED: Header section with title */}
-      <header className="p-4">
-        <h1 className="text-3xl font-bold text-right text-gray-800">
-          الكتب المتأخرة
-        </h1>
-      </header>
-      {/* CHANGED: Main content with flex-grow to push table to bottom */}
-      <main className="flex-grow flex flex-col px-4 pb-1 max-w-8xl mx-auto w-full">
-        {loading ? (
-          // CHANGED: Loading skeleton remains the same
-          <div className="space-y-4">
-            <Skeleton className="h-10 w-full rounded-lg" />
-            <Skeleton className="h-16 w-full rounded-lg" />
-            <Skeleton className="h-16 w-full rounded-lg" />
-            <Skeleton className="h-16 w-full rounded-lg" />
-          </div>
-        ) : !data || data.data.length === 0 ? (
-          // CHANGED: Empty state moved to center vertically
-          <div className="flex-grow flex items-center justify-center">
-            <Card className="p-8 text-center bg-white shadow-sm max-w-md w-full">
-              <Image
-                src="/no-data.png"
-                alt="لا توجد كتب متأخرة"
-                width={200}
-                height={200}
-                className="mx-auto mb-4"
-              />
-              <p className="text-lg text-gray-600">لا توجد كتب متأخرة حالياً</p>
-            </Card>
-          </div>
-        ) : (
-          // CHANGED: Table container with sticky positioning
-   <div className="relative flex">
-  <div className="sticky bottom-0 bg-white z-10 rounded-lg shadow-md  w-full">
-    <DynamicTable
-      data={data.data}
-      headerMap={orderHeaderMap}
-      excludeFields={['userID', 'pdfFiles']}
-      pagination={{
-        page: data.page,
-        limit: data.limit,
-        total: data.total,
-        totalPages: data.totalPages,
-        onPageChange: handlePageChange,
-        onLimitChange: handleLimitChange,
-      }}
-    />
-  </div>
-</div>
-        )}
-      </main>
-      {/* CHANGED: Added footer at the bottom */}
+//     <div className="flex flex-col min-h-screen bg-gray-50 font-serif" dir="rtl">
+//       {/* CHANGED: Header section with title */}
+//       <header className="p-4">
+//         <h1 className="text-3xl font-bold text-right text-gray-800">
+//           الكتب المتأخرة
+//         </h1>
+//       </header>
+//       {/* CHANGED: Main content with flex-grow to push table to bottom */}
+//       <main className="flex-grow flex flex-col px-4 pb-1 max-w-8xl mx-auto w-full">
+//         {loading ? (
+//           // CHANGED: Loading skeleton remains the same
+//           <div className="space-y-4">
+//             <Skeleton className="h-10 w-full rounded-lg" />
+//             <Skeleton className="h-16 w-full rounded-lg" />
+//             <Skeleton className="h-16 w-full rounded-lg" />
+//             <Skeleton className="h-16 w-full rounded-lg" />
+//           </div>
+//         ) : !data || data.data.length === 0 ? (
+//           // CHANGED: Empty state moved to center vertically
+//           <div className="flex-grow flex items-center justify-center">
+//             <Card className="p-8 text-center bg-white shadow-sm max-w-md w-full">
+//               <Image
+//                 src="/no-data.png"
+//                 alt="لا توجد كتب متأخرة"
+//                 width={200}
+//                 height={200}
+//                 className="mx-auto mb-4"
+//               />
+//               <p className="text-lg text-gray-600">لا توجد كتب متأخرة حالياً</p>
+//             </Card>
+//           </div>
+//         ) : (
+//           // CHANGED: Table container with sticky positioning
+//    <div className="relative flex">
+//   <div className="sticky bottom-0 bg-white z-10 rounded-lg shadow-md  w-full">
+//     <DynamicTable
+//       data={data.data}
+//       headerMap={orderHeaderMap}
+//       excludeFields={['userID', 'pdfFiles']}
+//       pagination={{
+//         page: data.page,
+//         limit: data.limit,
+//         total: data.total,
+//         totalPages: data.totalPages,
+//         onPageChange: handlePageChange,
+//         onLimitChange: handleLimitChange,
+//       }}
+//     />
+//   </div>
+// </div>
+//         )}
+//       </main>
+      
      
-    </div>
+    // </div>
+
+    <ResponsiveLogin/>
+
   );
 };
 
