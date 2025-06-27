@@ -1,0 +1,11 @@
+set package.json as 
+
+ "scripts": {
+    "dev": "next dev -H 127.0.0.1 -p 3000 --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+
+  -H or --host will be refer to host
+  -p or --port will be refer to port

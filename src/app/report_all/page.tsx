@@ -1,47 +1,73 @@
-'use client';
+// app/SenderPage.tsx
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { useState, useCallback } from 'react';
+import ArabicDatePicker from "@/components/ArabicDatePicker";
+import { useRouter } from "next/navigation";
+import { useState, useCallback } from "react";
+import { toast } from "react-toastify";
 
 interface BookData {
   bookStatus: string;
+  check: string;
+  startDate: string;
+  endDate: string;
   [key: string]: string;
 }
 
-const FIRST_SELECT_OPTION = { label: 'حالة الكتاب', value: 'has_status' };
+const FIRST_SELECT_OPTION = { label: "حالة الكتاب", value: "has_status" };
 
 const BOOK_STATUS_OPTIONS = [
-  { label: 'منجز', value: 'منجز' },
-  { label: 'قيد الانجاز', value: 'قيد الانجاز' },
-  { label: 'مداولة', value: 'مداولة' },
+  { label: "منجز", value: "منجز" },
+  { label: "قيد الانجاز", value: "قيد الانجاز" },
+  { label: "مداولة", value: "مداولة" },
 ];
 
 export default function SenderPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-
   const [showStatusOptions, setShowStatusOptions] = useState(false);
   const [formData, setFormData] = useState<BookData>({
-    bookStatus: '',
+    bookStatus: "",
+    check: "false",
+    startDate: "",
+    endDate: "",
   });
 
   const handleFirstSelect = useCallback((value: string) => {
-    if (value === 'has_status') {
+    if (value === "has_status") {
       setShowStatusOptions(true);
     } else {
       setShowStatusOptions(false);
-      setFormData({ bookStatus: '' });
+      setFormData({ bookStatus: "", check: "false", startDate: "", endDate: "" });
     }
   }, []);
 
   const handleStatusSelect = useCallback((value: string) => {
-    setFormData({ bookStatus: value });
+    setFormData((prev) => ({ ...prev, bookStatus: value }));
   }, []);
+
+  const handleCheckChange = useCallback((checked: boolean) => {
+    setFormData((prev) => ({ ...prev, check: checked.toString() }));
+  }, []);
+
+ const handleDateChange = useCallback(
+  (key: "startDate" | "endDate", value: string) => {
+    if (value && !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      toast.error("يرجى إدخال التاريخ بصيغة YYYY-MM-DD");
+      return;
+    }
+    setFormData((prev) => ({ ...prev, [key]: value }));
+  },
+  []
+);
+
 
   const buildQueryString = useCallback((data: BookData): string => {
     const params = new URLSearchParams();
     Object.entries(data).forEach(([key, value]) => {
-      if (value.trim()) params.append(key, value);
+      if (key === "check" || value.trim()) {
+        params.append(key, value);
+      }
     });
     return params.toString();
   }, []);
@@ -51,12 +77,18 @@ export default function SenderPage() {
       setLoading(true);
 
       if (!formData.bookStatus) {
-        alert('يرجى اختيار حالة الكتاب');
+        toast.error("يرجى اختيار حالة الكتاب");
+        return;
+      }
+
+      if (formData.check === "true" && (!formData.startDate || !formData.endDate)) {
+        toast.error("يرجى إدخال تاريخ البدء وتاريخ الانتهاء");
         return;
       }
 
       const queryString = buildQueryString(formData);
       const printUrl = `/print/report?${queryString}`;
+      console.log("Opening print URL:", printUrl);
 
       const width = 1000;
       const height = 700;
@@ -64,23 +96,22 @@ export default function SenderPage() {
       const top = window.screenY + (window.outerHeight - height) / 2;
 
       const features = `width=${width},height=${height},left=${left},top=${top},scrollbars=yes,resizable=yes,noopener,noreferrer`;
-      const printWindow = window.open(printUrl, '_blank', features);
+      const printWindow = window.open(printUrl, "_blank", features);
 
-      if (!printWindow || printWindow.closed || typeof printWindow.closed === 'undefined') {
-        const fallback = document.createElement('a');
+      if (!printWindow || printWindow.closed || typeof printWindow.closed === "undefined") {
+        const fallback = document.createElement("a");
         fallback.href = printUrl;
-        fallback.target = '_blank';
-        fallback.rel = 'noopener noreferrer';
+        fallback.target = "_blank";
+        fallback.rel = "noopener noreferrer";
         document.body.appendChild(fallback);
         fallback.click();
         document.body.removeChild(fallback);
       } else {
         printWindow.focus();
       }
-
     } catch (error) {
-      console.error('Error opening print report:', error);
-      alert('حدث خطأ أثناء فتح تقرير الطباعة');
+      console.error("Error opening print report:", error);
+      toast.error("حدث خطأ أثناء فتح تقرير الطباعة");
     } finally {
       setLoading(false);
     }
@@ -88,8 +119,22 @@ export default function SenderPage() {
 
   const resetForm = () => {
     setShowStatusOptions(false);
-    setFormData({ bookStatus: '' });
+    setFormData({ bookStatus: "", check: "false", startDate: "", endDate: "" });
   };
+
+
+  function formatArabicDate(dateStr: string): string {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  return date
+    .toLocaleDateString('ar-EG', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    })
+    .replace(/\//g, '-');
+}
+
 
   return (
     <div className="container mx-auto p-6 max-w-2xl">
@@ -105,28 +150,94 @@ export default function SenderPage() {
             disabled={loading}
           >
             <option value="">اختر</option>
-            <option className='text-sm font-extrabold text-gray-700' value={FIRST_SELECT_OPTION.value}>{FIRST_SELECT_OPTION.label}</option>
+            <option className="text-sm font-extrabold text-gray-700" value={FIRST_SELECT_OPTION.value}>
+              {FIRST_SELECT_OPTION.label}
+            </option>
           </select>
         </div>
 
         {/* Second Select - Book Status */}
         {showStatusOptions && (
-          <div className="mb-6">
-            <label className="block text-sm font-extrabold text-gray-700 mb-2">حالة الكتاب</label>
-            <select
-              value={formData.bookStatus}
-              onChange={(e) => handleStatusSelect(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-              disabled={loading}
-            >
-              <option value="">اختر حالة الكتاب</option>
-              {BOOK_STATUS_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value} className='text-sm font-extrabold text-gray-700'>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
+          <>
+            <div className="mb-6">
+              <label className="block text-sm font-extrabold text-gray-700 mb-2">حالة الكتاب</label>
+              <select
+                value={formData.bookStatus}
+                onChange={(e) => handleStatusSelect(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                disabled={loading}
+              >
+                <option value="">اختر حالة الكتاب</option>
+                {BOOK_STATUS_OPTIONS.map((option) => (
+                  <option
+                    key={option.value}
+                    value={option.value}
+                    className="text-sm font-extrabold text-gray-700"
+                  >
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Date Filters */}
+            <div className="mb-6">
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={formData.check === "true"}
+                  onChange={(e) => handleCheckChange(e.target.checked)}
+                  className="h-5 w-5"
+                  disabled={loading}
+                />
+                <span className="text-sm font-extrabold text-gray-700">تصفية حسب نطاق التاريخ</span>
+              </label>
+              {formData.check === "true" && (
+                <div className="flex gap-4 mt-2">
+              
+
+              {/* <div>
+  <label className="block text-sm font-extrabold text-gray-700">تاريخ البدء</label>
+  <input
+    type="date"
+    dir="rtl"
+    value={formData.startDate}
+    onChange={(e) => handleDateChange("startDate", e.target.value)}
+    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+    disabled={loading}
+    pattern="\d{4}-\d{2}-\d{2}"
+  />
+</div> */}
+
+<ArabicDatePicker
+  selected={formData.startDate}
+  onChange={(value) => handleDateChange('startDate', value)}
+  label="تاريخ البدء"
+/>
+{/* <div>
+  <label className="block text-sm font-extrabold text-gray-700">تاريخ الانتهاء</label>
+  <input
+    type="date"
+    dir="rtl"
+    value={formData.endDate}
+    onChange={(e) => handleDateChange("endDate", e.target.value)}
+    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+    disabled={loading}
+    pattern="\d{4}-\d{2}-\d{2}"
+  />
+</div> */}
+
+<ArabicDatePicker
+  selected={formData.endDate}
+  onChange={(value) => handleDateChange('endDate', value)}
+  label="تاريخ الانتهاء"
+/>
+
+             
+                </div>
+              )}
+            </div>
+          </>
         )}
 
         {/* Actions */}
@@ -136,15 +247,18 @@ export default function SenderPage() {
             disabled={loading || !formData.bookStatus}
             className={`w-full py-3 px-6 rounded-md flex items-center justify-center gap-2 font-extrabold transition-colors ${
               loading || !formData.bookStatus
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-orange-600 text-white hover:bg-orange-700 focus:ring-2 focus:ring-orange-500'
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-orange-600 text-white hover:bg-orange-700 focus:ring-2 focus:ring-orange-500"
             }`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+              />
             </svg>
-            {/* {loading ? 'جاري فتح التقرير...' : 'فتح تقرير الطباعة'} */}
             معاينة التقرير
           </button>
 
@@ -157,15 +271,43 @@ export default function SenderPage() {
           </button>
         </div>
 
-        {/* Preview */}
+  {formData.check === "true" && formData.startDate && formData.endDate && (
+  <div className="mt-4 text-sm text-gray-700">
+    <p>
+      <strong>من:</strong> {formatArabicDate(formData.startDate)}
+    </p>
+    <p>
+      <strong>إلى:</strong> {formatArabicDate(formData.endDate)}
+    </p>
+  </div>
+)}
+
+
+{/* 
+        Preview
         {formData.bookStatus && (
           <div className="mt-6 p-4 bg-gray-50 rounded-md">
-            
             <div className="text-sm text-gray-600">
-              <strong> الاختيار:</strong> <strong className='text-sm font-extrabold text-gray-700'>{formData.bookStatus}</strong>        
+              <strong>الاختيار:</strong>{" "}
+              <strong className="text-sm font-extrabold text-gray-700">{formData.bookStatus}</strong>
+              {formData.check === "true" && formData.startDate && formData.endDate ? (
+                <>
+                  <br />
+                  <strong>نطاق التاريخ:</strong>{" "}
+                  <strong className="text-sm font-extrabold text-gray-700">
+                    من {formData.startDate} إلى {formData.endDate}
+                  </strong>
+                </>
+              ) : formData.check === "false" ? (
+                <>
+                  <br />
+                  <strong>نطاق التاريخ:</strong>{" "}
+                  <strong className="text-sm font-extrabold text-gray-700">بدون تاريخ</strong>
+                </>
+              ) : null}
             </div>
-          </div>
-        )}
+          </div> */}
+        {/* )} */}
       </div>
     </div>
   );

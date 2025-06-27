@@ -163,10 +163,12 @@
     overflow-wrap: break-word;
   } /* الملاحظات - flexible width */
   
+  
   /* Ensure notes content wraps properly */
   .table td:nth-child(11) {
     word-break: break-word;
     hyphens: auto;
     line-height: 1.4;
   }
+  .table th:nth-child(12), .table td:nth-child(12) { width: 80px !important; min-width: 80px; }
 }

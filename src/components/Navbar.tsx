@@ -8,6 +8,7 @@ import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { Logout } from "./ui/logout";
 
 export type NavItem = {
   title: string;
@@ -359,6 +360,7 @@ export function Navbar() {
             </span>
           </motion.div>
         </Link>
+        <Logout/>
       </div>
     </header>
   );
