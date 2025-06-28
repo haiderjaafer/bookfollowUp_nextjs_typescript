@@ -11,6 +11,7 @@ import BookNoCombobox from '../BookNoComboboxComponent';
 import IncomingNoCombobox from '../IncomingNoComponent';
 import DirectoryNameCombobox from '../DirectoryNameSearchComponent';
 import { BookFollowUpData, orderHeaderMap } from '@/components/DynamicTableTanStack/types';
+import SubjectSearchCombobox from '../SubjectSearchComboBox';
 
 const DynamicTable = dynamic(() => import('@/components/DynamicTableTanStack/DynamicTableWithPagination'), {
   ssr: false,
@@ -24,6 +25,7 @@ interface Filters {
   incomingNo: string;
   bookType: string;
   bookStatus: string;
+  subject: string,
 }
 
 // Define API response interface
@@ -42,6 +44,7 @@ const FILTER_FIELDS = {
   incomingNo: 'incomingNo',
   bookType: 'bookType',
   bookStatus: 'bookStatus',
+  subject: 'subject',
 } as const;
 
 const SearchPanel = () => {
@@ -51,6 +54,7 @@ const SearchPanel = () => {
     incomingNo: '',
     bookType: '',
     bookStatus: '',
+    subject: '',
   });
   const [activeFilters, setActiveFilters] = useState<Filters>({
     bookNo: '',
@@ -58,6 +62,7 @@ const SearchPanel = () => {
     incomingNo: '',
     bookType: '',
     bookStatus: '',
+    subject: '',
   });
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -81,6 +86,7 @@ const SearchPanel = () => {
       incomingNo: '',
       bookType: '',
       bookStatus: '',
+      subject: '',
     });
     setActiveFilters({
       bookNo: '',
@@ -88,6 +94,7 @@ const SearchPanel = () => {
       incomingNo: '',
       bookType: '',
       bookStatus: '',
+      subject: '',
     });
     setPage(1);
     setLimit(10); // Reset to default limit
@@ -217,9 +224,22 @@ const SearchPanel = () => {
             fetchUrl={`${API_BASE_URL}/api/bookFollowUp/getAllIncomingNo`}
           />
         </div>
+
+ <div className="flex flex-col">
+          <label className="font-extrabold text-gray-700">الموضوع</label>
+          <SubjectSearchCombobox
+            value={pendingFilters.subject}
+            onChange={(value) => handleSelect(FILTER_FIELDS.subject, value)}
+            fetchUrl={`${API_BASE_URL}/api/bookFollowUp/getSubjects`}
+          />
+        </div>
+
+
+
+
       </div>
 
-      <div className="w-full flex flex-col sm:flex-row justify-center mt-4 sm:mt-0 gap-2 sm:gap-4">
+      <div className="w-full flex flex-col sm:flex-row justify-center mt-4 sm:mt-9 gap-2 sm:gap-4">
   <Button
     className="bg-sky-600 hover:bg-sky-700 w-full sm:w-32 md:w-36 lg:w-40 py-2 sm:py-2.5 text-sm sm:text-base font-extrabold focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 disabled:opacity-50"
     onClick={handleSearch}

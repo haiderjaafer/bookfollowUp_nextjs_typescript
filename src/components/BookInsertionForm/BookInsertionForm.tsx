@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -14,6 +14,9 @@ import { toast } from 'react-toastify';
 import DropzoneComponent from '../ReactDropZoneComponont';
 import axios from 'axios';
 import debounce from 'debounce'; // Import debounce
+import DirectoryNameCombobox from './DirectoryNameComboboxAutoComplete';
+import SubjectAutoCompleteComboBox from './SubjectAutoComplete';
+
 
 // Define animation variants for Framer Motion
 const formVariants = {
@@ -35,6 +38,13 @@ const inputVariants = {
 };
 
 export default function BookInsertionForm() {
+
+  
+// Memoize API base URL
+  const API_BASE_URL = useMemo(() => process.env.NEXT_PUBLIC_API_BASE_URL || '', []);
+
+
+
   // State for the selected PDF file from DropzoneComponent
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   // State for form fields
@@ -237,6 +247,9 @@ export default function BookInsertionForm() {
     [formData, selectedFile, bookExists]
   );
 
+
+  
+
   // JSX remains unchanged, but ensure bookNo input uses handleChange
   return (
     <motion.div
@@ -307,14 +320,38 @@ export default function BookInsertionForm() {
 
            
             {/* Directory Name */}
-            <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-3">
-              <label
+            <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-2">
+
+<div className="flex flex-col">
+                       <label className="font-extrabold text-gray-700">اسم الدائرة</label>
+
+              <DirectoryNameCombobox
+  value={formData.directoryName}
+  onChange={(val) => setFormData((prev) => ({ ...prev, directoryName: val }))}
+  fetchUrl={`${API_BASE_URL}/api/bookFollowUp/getAllDirectoryNames`}
+/>
+
+             
+          </div>    
+              {/* <div className="flex flex-col">
+                       <label className="font-extrabold text-gray-700">اسم الدائرة</label>
+                       <DirectoryNameCombobox
+  value={formData.directoryName}
+  onChange={(val) => setFormData((prev) => ({ ...prev, directoryName: val }))}
+  fetchUrl={`${API_BASE_URL}/api/bookFollowUp/getAllDirectoryNames`}
+/>
+
+                     </div> */}
+             
+             
+             
+              {/* <label
                 htmlFor="directoryName"
                 className="block text-sm font-medium font-arabic text-gray-700 mb-1 text-right"
               >
                 اسم الدائرة
               </label>
-              <DirectoryNameInput formData={formData} setFormData={setFormData} />
+              <DirectoryNameInput formData={formData} setFormData={setFormData} /> */}
             </motion.div>
 
             {/* Incoming Number */}
@@ -347,14 +384,21 @@ export default function BookInsertionForm() {
             </motion.div>
 
             {/* Subject */}
-            <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-3">
+            <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-2">
               <label
                 htmlFor="subject"
                 className="block text-sm font-medium font-arabic text-gray-700 mb-1 text-right"
               >
                 الموضوع
               </label>
-              <SubjectInput formData={formData} setFormData={setFormData} />
+
+             <SubjectAutoCompleteComboBox
+  value={formData.subject}
+  onChange={(val) => setFormData((prev) => ({ ...prev, subject: val }))}
+  fetchUrl={`${API_BASE_URL}/api/bookFollowUp/getSubjects`}
+/>
+
+              {/* <SubjectInput formData={formData} setFormData={setFormData} /> */}
             </motion.div>
 
             {/* Destination */}

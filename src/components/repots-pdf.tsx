@@ -1,9 +1,10 @@
 'use client';
-
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import styles from './ReportTable.module.css';
+import { TiPrinter } from "react-icons/ti";
+
 
 interface Book {
   id: number;
@@ -78,10 +79,10 @@ export default function PrintReportPage() {
       </div>
 
       <div className="absolute top-4 left-4 z-50 flex gap-2 print:hidden">
-        <button onClick={handlePrint} className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
-          طباعة
+        <button onClick={handlePrint} className="bg-red-700 flex items-center gap-x-1   text-white font-extrabold px-2 py-2 rounded-lg hover:bg-red-500">
+          <TiPrinter size={25}/>   طباعة  
         </button>
-        <button onClick={cancelPrint} className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+        <button onClick={cancelPrint} className="bg-red-700 text-white font-extrabold px-4 py-2 rounded-lg hover:bg-red-500">
           الغاء
         </button>
       </div>
@@ -95,7 +96,7 @@ export default function PrintReportPage() {
           <thead>
             <tr className="bg-gray-100 text-center">
               <th className="border p-2">ت</th>
-              <th className="border p-2">نوع الكتاب</th>
+              {/* <th className="border p-2">نوع الكتاب</th> */}
               <th className="border p-2">رقم الكتاب</th>
               <th className="border p-2">تاريخ الكتاب</th>
               <th className="border p-2">الوارد</th>
@@ -112,7 +113,7 @@ export default function PrintReportPage() {
             {data.map((item, index) => (
               <tr key={item.id} className="text-center">
                 <td className="border p-2">{index + 1}</td>
-                <td className="border p-2 w-20">{item.bookType}</td>
+                {/* <td className="border p-2 w-20">{item.bookType}</td> */}
                 <td className="border p-2">{item.bookNo}</td>
                 <td className="border p-2 w-24">{item.bookDate}</td>
                 <td className="border p-2">{item.incomingNo || '-'}</td>

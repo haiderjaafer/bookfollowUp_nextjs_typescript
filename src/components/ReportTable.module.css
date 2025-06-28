@@ -145,16 +145,16 @@
   
   /* Specific column widths to maintain alignment */
   .table th:nth-child(1), .table td:nth-child(1) { width: 10px !important; min-width: 10px; }   /* الرقم */
-  .table th:nth-child(2), .table td:nth-child(2) { width: 20px !important; min-width: 80px; }   /*  نوع الكتاب */
-  .table th:nth-child(3), .table td:nth-child(3) { width: 10px !important; min-width: 10px; }  /* رقم الكتاب */
-  .table th:nth-child(4), .table td:nth-child(4) { width: 96px !important; min-width: 96px; }  /* تاريخ الكتاب - w-24 equivalent */
-  .table th:nth-child(5), .table td:nth-child(5) { width: 10px !important; min-width: 10px; }   /* الوارد */
-  .table th:nth-child(6), .table td:nth-child(6) { width: 96px !important; min-width: 96px; }  /* تاريخ الوارد - w-24 equivalent */
-  .table th:nth-child(7), .table td:nth-child(7) { width: 100px !important; min-width: 100px; }  /* الموضوع */
-  .table th:nth-child(8), .table td:nth-child(8) { width: 20px !important; min-width: 20px; }  /* الجهة */
-  .table th:nth-child(9), .table td:nth-child(9) { width: 70px; }   /* الإجراء */
+  /* .table th:nth-child(2), .table td:nth-child(2) { width: 20px !important; min-width: 80px; }    نوع الكتاب */
+  .table th:nth-child(2), .table td:nth-child(2) { width: 10px !important; min-width: 10px; }  /* رقم الكتاب */
+  .table th:nth-child(3), .table td:nth-child(3) { width: 96px !important; min-width: 96px; }  /* تاريخ الكتاب - w-24 equivalent */
+  .table th:nth-child(4), .table td:nth-child(4) { width: 10px !important; min-width: 10px; }   /* الوارد */
+  .table th:nth-child(5), .table td:nth-child(5) { width: 96px !important; min-width: 96px; }  /* تاريخ الوارد - w-24 equivalent */
+  .table th:nth-child(6), .table td:nth-child(6) { width: 100px !important; min-width: 100px; }  /* الموضوع */
+  .table th:nth-child(7), .table td:nth-child(7) { width: 20px !important; min-width: 20px; }  /* الجهة */
+  .table th:nth-child(8), .table td:nth-child(8) { width: 70px; }   /* الإجراء */
   /*.table th:nth-child(10), .table td:nth-child(10) { width: 30px !important; min-width: 30px; }  الحالة - w-24 equivalent */
-  .table th:nth-child(10), .table td:nth-child(10) { 
+  .table th:nth-child(9), .table td:nth-child(9) { 
     width: auto; 
     min-width: 50px; 
     max-width: 50px; 
@@ -165,10 +165,10 @@
   
   
   /* Ensure notes content wraps properly */
-  .table td:nth-child(11) {
+  .table td:nth-child(10) {
     word-break: break-word;
     hyphens: auto;
     line-height: 1.4;
   }
-  .table th:nth-child(12), .table td:nth-child(12) { width: 80px !important; min-width: 80px; }
+  .table th:nth-child(11), .table td:nth-child(11) { width: 90px !important; min-width: 90px; }
 }
