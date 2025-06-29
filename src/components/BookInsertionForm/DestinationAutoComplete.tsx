@@ -18,23 +18,23 @@ import { cn } from '@/lib/utils';
 import { ChevronsUpDown, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-interface DirectoryNameComboboxProps {
+interface DestinationAutoCompleteProps {
   value: string;
   onChange: (value: string) => void;
   fetchUrl: string;
 }
 
-export default function DirectoryNameCombobox({
+export default function DestinationAutoComplete({
   value,
   onChange,
   fetchUrl,
-}: DirectoryNameComboboxProps) {
+}: DestinationAutoCompleteProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [directoryNames, setDirectoryNames] = useState<string[]>([]);
+  const [subject, setSubject] = useState<string[]>([]);
 
-  const filtered = directoryNames.filter((name) =>
-    name.toLowerCase().includes(query.toLowerCase())
+  const filtered = subject.filter((subject) =>
+    subject.toLowerCase().includes(query.toLowerCase())
   );
 
   useEffect(() => {
@@ -43,10 +43,10 @@ export default function DirectoryNameCombobox({
         const res = await fetch(fetchUrl);
         const data = await res.json();
         if (Array.isArray(data)) {
-          setDirectoryNames(data);
+          setSubject(data);
         }
       } catch (err) {
-        console.error('Failed to load directory names', err);
+        console.error('Failed to load destination', err);
       }
     };
     fetchData();
@@ -68,14 +68,14 @@ export default function DirectoryNameCombobox({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <div className="relative w-full  ">
+        <div className="relative w-full">
           <Input
             dir="rtl"
             onClick={() => setOpen(true)}
             value={value}
             readOnly
-            placeholder="اختر أو أدخل اسم الدائرة"
-            className="w-full pr-10  h-12   text-right font-serif font-extrabold shadow-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500"
+            placeholder="اختر أو أدخل  جهة البريد"
+            className="w-full pr-10 h-12 text-right font-sans font-extrabold shadow-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500"
           />
           {value && (
             <XCircle
@@ -92,7 +92,7 @@ export default function DirectoryNameCombobox({
             value={query}
             onValueChange={setQuery}
             placeholder="اكتب للبحث أو الإضافة..."
-            className="text-right font-arabic py-2"
+            className="text-right font-arabic"
           />
           <CommandList className="max-h-48 overflow-y-auto">
             {filtered.length > 0 ? (

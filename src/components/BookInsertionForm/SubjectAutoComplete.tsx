@@ -75,7 +75,7 @@ export default function SubjectAutoCompleteComboBox({
             value={value}
             readOnly
             placeholder="اختر أو أدخل  الموضوع"
-            className="w-full pr-10 text-right font-arabic shadow-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500"
+            className="w-full pr-10 h-12 text-right font-sans font-extrabold shadow-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500"
           />
           {value && (
             <XCircle

@@ -25,7 +25,7 @@ interface ArabicDatePickerProps {
 export default function ArabicDatePicker({
   selected,
   onChange,
-  label,
+  label ,
 }: ArabicDatePickerProps) {
   const [date, setDate] = useState<Date | null>(
     selected ? new Date(selected) : null
@@ -42,7 +42,7 @@ export default function ArabicDatePicker({
 
   return (
     <div className="mb-4" dir="rtl">
-      <label className="block text-sm font-extrabold text-gray-700 mb-2">{label}</label>
+      <label className="block text-sm font-extrabold text-gray-700 mb-1">{label}</label>
       <div className="relative">
         <DatePicker
           selected={date}
@@ -50,7 +50,7 @@ export default function ArabicDatePicker({
           locale="ar"
           dateFormat="yyyy-MM-dd"
           placeholderText="اختر التاريخ"
-          className="w-full p-2 pr-10 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+          className="w-full h-12 p-2 pr-10 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
           calendarStartDay={6}
           isClearable
           showPopperArrow={false}

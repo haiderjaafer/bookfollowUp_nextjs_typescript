@@ -97,14 +97,14 @@ export default function PrintReportPage() {
             <tr className="bg-gray-100 text-center">
               <th className="border p-2">ت</th>
               {/* <th className="border p-2">نوع الكتاب</th> */}
-              <th className="border p-2">رقم الكتاب</th>
+              <th className="border p-2 col-bookNo">رقم الكتاب</th>
               <th className="border p-2">تاريخ الكتاب</th>
               <th className="border p-2">الوارد</th>
               <th className="border p-2">تاريخ الوارد</th>
-              <th className="border p-2">الموضوع</th>
+              <th className="border p-2 col-subject">الموضوع</th>
               <th className="border p-2">الجهة</th>
-              <th className="border p-2">الإجراء</th>
-              <th className="border p-2">الحالة</th>
+              <th className="border p-2 col-bookAction">الإجراء</th>
+              {/* <th className="border p-2">الحالة</th> */}
               <th className="border p-2">الملاحظات</th>
               <th className="border p-2">تاريخ الإدخال</th>
             </tr>
@@ -114,14 +114,14 @@ export default function PrintReportPage() {
               <tr key={item.id} className="text-center">
                 <td className="border p-2">{index + 1}</td>
                 {/* <td className="border p-2 w-20">{item.bookType}</td> */}
-                <td className="border p-2">{item.bookNo}</td>
+                <td className="border p-2 col-bookNo">{item.bookNo}</td>
                 <td className="border p-2 w-24">{item.bookDate}</td>
                 <td className="border p-2">{item.incomingNo || '-'}</td>
                 <td className="border p-2 w-24">{item.incomingDate}</td>
-                <td className="border p-2">{item.subject}</td>
+                <td className="border p-2 col-subject">{item.subject}</td>
                 <td className="border p-2">{item.destination}</td>
-                <td className="border p-2">{item.bookAction}</td>
-                <td className="border p-2 w-24">{item.bookStatus}</td>
+                <td className="border p-2 col-bookAction">{item.bookAction}</td>
+                {/* <td className="border p-2 w-24">{item.bookStatus}</td> */}
                 <td className="border p-2">{item.notes}</td>
                 <td className="border p-2 w-24">{item.currentDate}</td>
               </tr>
