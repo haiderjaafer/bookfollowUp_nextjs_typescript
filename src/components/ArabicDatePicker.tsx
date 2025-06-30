@@ -42,8 +42,8 @@ export default function ArabicDatePicker({
 
   return (
     <div className="mb-4" dir="rtl">
-      <label className="block text-sm font-extrabold text-gray-700 mb-1">{label}</label>
-      <div className="relative">
+      {/* <label className="block text-sm font-extrabold text-gray-700 mb-1 ">{label}</label> */}
+      <div className="relative ">
         <DatePicker
           selected={date}
           onChange={(date) => setDate(date as Date)}

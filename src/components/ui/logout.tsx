@@ -26,11 +26,27 @@ export const Logout = () => {
   };
 
   return (
-    <nav className="">
-      {/* Other nav items */}
-      <button onClick={handleLogout} className="text-white bg-transparent px-4 py-2 rounded flex items-center cursor-pointer">
-        تسجيل الخروج  <LogOut color="black" className="h-5 w-5 "/>
-      </button>
-    </nav>
+   
+      
+    <div className="relative group inline-block">
+  <button
+    onClick={handleLogout}
+    className="px-4 py-2 rounded flex items-center cursor-pointer"
+  >
+    <LogOut color="black" className="h-5 w-5" />
+  </button>
+
+  {/* Tooltip Below */}
+  <div
+    className="absolute top-full mt-2 left-1/2 -translate-x-1/2
+               whitespace-nowrap bg-gray-800 text-white text-xs
+               rounded px-2 py-1 opacity-0 group-hover:opacity-100
+               transition-opacity duration-300 z-10 font-bold"
+  >
+    تسجيل الخروج
+  </div>
+</div>
+
+   
   );
 };

@@ -19,6 +19,8 @@ import SubjectAutoCompleteComboBox from './SubjectAutoComplete';
 import ArabicDatePicker from '../ArabicDatePicker';
 import DestinationAutoComplete from './DestinationAutoComplete';
 
+import BookActionInput from './bookActionDialogInput/bookActionInput';
+
 
 // Define animation variants for Framer Motion
 const formVariants = {
@@ -279,7 +281,7 @@ export default function BookInsertionForm() {
             <motion.div variants={inputVariants}>
               <label
                 htmlFor="bookType"
-                className="block text-sm  font-san font-extrabold text-gray-700 mb-1 text-right"
+                className="block text-sm  font-san font-extrabold text-gray-700 mb-1 lg:text-right text-center "
               >
                 نوع الكتاب
               </label>
@@ -288,24 +290,24 @@ export default function BookInsertionForm() {
                 name="bookType"
                 value={formData.bookType}
                 onChange={handleChange}
-                className="w-full h-12 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
+                className="w-full h-12 px-4 py-2 border border-gray-300 font-extrabold rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
                 required
               >
-                <option value="">اختر نوع الكتاب</option>
-                <option value="خارجي">خارجي</option>
-                <option value="داخلي">داخلي</option>
-                <option value="فاكس">فاكس</option>
+                <option className='font-extrabold' value="">اختر نوع الكتاب</option>
+                <option className='font-extrabold' value="خارجي">خارجي</option>
+                <option className='font-extrabold' value="داخلي">داخلي</option>
+                <option className='font-extrabold' value="فاكس">فاكس</option>
               </select>
             </motion.div>
 
              {/* Book Date */}
-            <motion.div variants={inputVariants}>
-              {/* <label
+            <motion.div variants={inputVariants} className="text-center ">
+              <label
                 htmlFor="bookDate"
-                className="block text-sm font-medium font-arabic text-gray-700 mb-1 text-right"
+                className="block text-sm  font-sans font-extrabold text-gray-700 mb-1  lg:text-center text-center "
               >
                 تاريخ الكتاب
-              </label> */}
+              </label>
               {/* <DatePicker onDateChange={handleChangeBookDate} /> */}
               <ArabicDatePicker
                 selected={formData.bookDate}
@@ -319,7 +321,7 @@ export default function BookInsertionForm() {
             <motion.div variants={inputVariants}>
               <label
                 htmlFor="bookNo"
-                className="block text-sm  font-san font-extrabold text-gray-700 mb-1 text-right"
+                className="block text-sm  font-san font-extrabold text-gray-700 mb-1 lg:text-right text-center"
               >
                 رقم الكتاب
               </label>
@@ -329,6 +331,7 @@ export default function BookInsertionForm() {
                 type="text"
                 value={formData.bookNo}
                 onChange={handleChange}
+                placeholder='رقم الكتاب'
                 className="w-full h-12 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
                 required
               />
@@ -339,7 +342,7 @@ export default function BookInsertionForm() {
             <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-2">
 
 <div className="flex flex-col">
-                       <label className="font-extrabold text-gray-700">اسم الدائرة</label>
+                       <label className="font-extrabold text-gray-700 lg:text-right text-center">اسم الدائرة</label>
 
               <DirectoryNameCombobox
   value={formData.directoryName}
@@ -374,7 +377,7 @@ export default function BookInsertionForm() {
             <motion.div variants={inputVariants}>
               <label
                 htmlFor="incomingNo"
-                className="block text-sm font-extrabold font-san  text-gray-700 mb-1 text-right"
+                className="block text-sm font-extrabold font-san  text-gray-700 mb-1 lg:text-right text-center"
               >
                 رقم الوارد
               </label>
@@ -384,19 +387,20 @@ export default function BookInsertionForm() {
                 type="text"
                 value={formData.incomingNo}
                 onChange={handleChange}
+                placeholder='رقم الوارد'
                 className="w-full px-4 py-2 h-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
               />
             </motion.div>
 
             {/* Incoming Date */}
-            <motion.div variants={inputVariants}>
-              {/* <label
+            <motion.div variants={inputVariants} className='text-center'>
+              <label
                 htmlFor="incomingDate"
-                className="block text-sm font-medium font-arabic text-gray-700 mb-1 text-right"
+                className="block text-sm font-extrabold  font-arabic text-gray-700 mb-1 lg:text-center   text-center"
               >
                 تاريخ الوارد
               </label>
-              <DatePicker onDateChange={handleChangeIncomingDate} /> */}
+              {/* <DatePicker onDateChange={handleChangeIncomingDate} /> */}
 
                   <ArabicDatePicker
                 selected={formData.incomingDate}
@@ -409,7 +413,7 @@ export default function BookInsertionForm() {
             <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-2">
               <label
                 htmlFor="subject"
-                className="block text-sm font-extrabold font-san text-gray-700 mb-1 text-right"
+                className="block text-sm font-extrabold font-san text-gray-700 mb-1 lg:text-right text-center"
               >
                 الموضوع
               </label>
@@ -427,7 +431,7 @@ export default function BookInsertionForm() {
             <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-3">
               <label
                 htmlFor="destination"
-                className="block text-sm font-extrabold font-san text-gray-700 mb-1 text-right"
+                className="block text-sm font-extrabold font-san text-gray-700 mb-1 lg:text-right text-center"
               >
                 جهة تحويل البريد
               </label>
@@ -442,14 +446,16 @@ export default function BookInsertionForm() {
             </motion.div>
 
             {/* Book Action */}
-            <motion.div variants={inputVariants}>
+            <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-2">
               <label
                 htmlFor="bookAction"
-                className="block text-sm font-extrabold font-san text-gray-700 mb-1 text-right"
+                className="block text-sm font-extrabold font-san text-gray-700 mb-1 lg:text-right text-center"
               >
                 إجراء الكتاب
               </label>
-              <input
+< BookActionInput formData={formData} setFormData={setFormData}/>
+
+              {/* <input
                 id="bookAction"
                 name="bookAction"
                 type="text"
@@ -457,14 +463,14 @@ export default function BookInsertionForm() {
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
                 required
-              />
+              /> */}
             </motion.div>
 
             {/* Book Status */}
             <motion.div variants={inputVariants}>
               <label
                 htmlFor="bookStatus"
-                className="block text-sm font-extrabold font-san text-gray-700 mb-1 text-right"
+                className="block text-sm font-extrabold font-san text-gray-700 mb-1 lg:text-right text-center"
               >
                 حالة الكتاب
               </label>
@@ -473,13 +479,13 @@ export default function BookInsertionForm() {
                 name="bookStatus"
                 value={formData.bookStatus}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg font-extrabold focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
                 required
               >
-                <option value="">اختر الحالة</option>
-                <option value="منجز">منجز</option>
-                <option value="قيد الانجاز">قيد الانجاز</option>
-                <option value="مداولة">مداولة</option>
+                <option  value="">اختر حالة الكتاب</option>
+                <option className='font-extrabold' value="منجز">منجز</option>
+                <option className='font-extrabold' value="قيد الانجاز">قيد الانجاز</option>
+                <option className='font-extrabold' value="مداولة">مداولة</option>
               </select>
             </motion.div>
 
@@ -487,7 +493,7 @@ export default function BookInsertionForm() {
             <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-3">
               <label
                 htmlFor="notes"
-                className="block text-sm font-extrabold font-san text-gray-700 mb-1 text-right"
+                className="block text-sm font-extrabold font-san text-gray-700 mb-1 lg:text-right text-center"
               >
                 ملاحظات
               </label>
@@ -496,7 +502,8 @@ export default function BookInsertionForm() {
                 name="notes"
                 value={formData.notes}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all duration-200 font-arabic text-right resize-y"
+                placeholder='الملاحظات '
+                className="w-full px-4 py-2 border placeholder:text-center  placeholder:font-extrabold placeholder:text-gray-300 placeholder:italic border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all duration-200 font-arabic text-right resize-y"
                 rows={4}
               />
             </motion.div>

@@ -9,6 +9,8 @@ import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Logout } from "./ui/logout";
+import Image from 'next/image';
+import RotatingLogo from "./RotatingLogo/RotatingLogo";
 
 export type NavItem = {
   title: string;
@@ -243,7 +245,12 @@ export function Navbar() {
         </div>
 
         {/* Logo - Hidden on mobile, visible on md and above */}
-        <Link href="/" className="hidden md:flex items-center mx-4 font-arabic">
+        <Link href="/" className="hidden md:flex gap-1.5 items-center mx-4 font-arabic">
+            
+    
+
+    <RotatingLogo/>
+           
           <motion.span
             className="inline-block font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-sky-500 to-blue-600"
             whileHover={{ scale: 1.05 }}
@@ -251,7 +258,11 @@ export function Navbar() {
           >
             شركة مصافي الوسط
           </motion.span>
+
+          
         </Link>
+
+        
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex flex-1 justify-center items-center gap-2">

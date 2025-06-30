@@ -67,16 +67,29 @@ export default function PrintReportPage() {
 
   return (
     <div dir="rtl" className={`${styles.container} max-w-7xl mx-auto p-6 font-sans bg-white`}>
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <Image src="/slogan.gif" alt="Logo" width={80} height={80} />
-          <h1 className="text-2xl font-bold text-gray-800">
-            تقرير الكتب
-            {bookType && ` - ${bookType}`}
-            {bookStatus && ` - ${bookStatus}`}
-          </h1>
-        </div>
-      </div>
+  <div className="flex items-center justify-between mb-6 w-full px-4">
+  {/* right: title */}
+
+<div>
+    <h1 className="text-2xl font-serif font-bold text-gray-800">شعبة المتابعة</h1>
+  </div>
+  {/* Center: Report Title */}
+  <div className="text-center">
+    <h1 className="text-2xl font-serif font-bold text-gray-800">
+      تقرير الكتب
+      {bookType && ` - ${bookType}`}
+      {bookStatus && ` - ${bookStatus}`}
+    </h1>
+  </div>
+
+  {/* left: Logo */}
+
+    <div>
+    <Image src="/slogan.gif" alt="Logo" width={80} height={80} />
+  </div>
+  
+</div>
+
 
       <div className="absolute top-4 left-4 z-50 flex gap-2 print:hidden">
         <button onClick={handlePrint} className="bg-red-700 flex items-center gap-x-1   text-white font-extrabold px-2 py-2 rounded-lg hover:bg-red-500">
@@ -92,42 +105,40 @@ export default function PrintReportPage() {
       ) : data.length === 0 ? (
         <p className="text-center text-gray-500 text-lg">لا توجد بيانات مطابقة</p>
       ) : (
-        <table className={`${styles.table}`}>
-          <thead>
-            <tr className="bg-gray-100 text-center">
-              <th className="border p-2">ت</th>
-              {/* <th className="border p-2">نوع الكتاب</th> */}
-              <th className="border p-2 col-bookNo">رقم الكتاب</th>
-              <th className="border p-2">تاريخ الكتاب</th>
-              <th className="border p-2">الوارد</th>
-              <th className="border p-2">تاريخ الوارد</th>
-              <th className="border p-2 col-subject">الموضوع</th>
-              <th className="border p-2">الجهة</th>
-              <th className="border p-2 col-bookAction">الإجراء</th>
-              {/* <th className="border p-2">الحالة</th> */}
-              <th className="border p-2">الملاحظات</th>
-              <th className="border p-2">تاريخ الإدخال</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((item, index) => (
-              <tr key={item.id} className="text-center">
-                <td className="border p-2">{index + 1}</td>
-                {/* <td className="border p-2 w-20">{item.bookType}</td> */}
-                <td className="border p-2 col-bookNo">{item.bookNo}</td>
-                <td className="border p-2 w-24">{item.bookDate}</td>
-                <td className="border p-2">{item.incomingNo || '-'}</td>
-                <td className="border p-2 w-24">{item.incomingDate}</td>
-                <td className="border p-2 col-subject">{item.subject}</td>
-                <td className="border p-2">{item.destination}</td>
-                <td className="border p-2 col-bookAction">{item.bookAction}</td>
-                {/* <td className="border p-2 w-24">{item.bookStatus}</td> */}
-                <td className="border p-2">{item.notes}</td>
-                <td className="border p-2 w-24">{item.currentDate}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+
+        <div className="max-w-[1200px] mx-auto bg-white p-6 font-sans direction-rtl">
+        <table className="w-full border-collapse text-sm table-auto">
+  <thead>
+    <tr className="bg-blue-100 text-center">
+      <th className="border border-gray-400 p-2 text-lg font-extrabold ">ت</th>
+      <th className="border border-gray-400 p-2 text-lg font-extrabold  min-w-[80px]">رقم الكتاب</th>
+      <th className="border border-gray-400 p-2 text-lg font-extrabold min-w-[112px]">تاريخ الكتاب</th>
+      <th className="border border-gray-400 p-2 text-lg font-extrabold">الوارد</th>
+      <th className="border border-gray-400 p-2 text-lg font-extrabold min-w-[112px]">تاريخ الوارد</th>
+      <th className="border border-gray-400 p-2 text-lg font-extrabold min-w-[150px]">الموضوع</th>
+      <th className="border border-gray-400 p-2 text-lg font-extrabold">الجهة</th>
+      <th className="border border-gray-400 p-2 text-lg font-extrabold min-w-[96px]">الإجراء</th>
+      <th className="border border-gray-400 p-2 text-lg font-extrabold">الملاحظات</th>
+    </tr>
+  </thead>
+  <tbody>
+    {data.map((item, index) => (
+      <tr key={item.id} className="text-center even:bg-gray-100">
+        <td className="border border-gray-400 textlg font-serif font-bold   p-2">{index + 1}</td>
+        <td className="border border-gray-400 textlg font-serif font-bold   p-2 min-w-[80px] max-w-[100px] overflow-hidden text-ellipsis whitespace-wrap break-words">{item.bookNo}</td>
+        <td className="border border-gray-400 textlg font-serif font-bold   p-2 min-w-[112px]">{item.bookDate}</td>
+        <td className="border border-gray-400 textlg font-serif font-bold   p-2">{item.incomingNo || '-'}</td>
+        <td className="border border-gray-400 textlg font-serif font-bold   p-2 min-w-[112px]">{item.incomingDate}</td>
+        <td className="border border-gray-400 textlg font-serif font-bold   p-2 min-w-[150px] break-words">{item.subject}</td>
+        <td className="border border-gray-400 textlg font-serif font-bold   p-2">{item.destination}</td>
+        <td className="border border-gray-400 textlg font-serif font-bold   p-2 min-w-[96px]">{item.bookAction}</td>
+        <td className="border border-gray-400 textlg font-serif font-bold   p-2 break-words">{item.notes}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+</div>
       )}
     </div>
   );
