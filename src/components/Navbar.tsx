@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
@@ -124,9 +124,50 @@ export function Navbar() {
     },
   };
 
+
+   const headerRef = useRef<HTMLElement>(null);
+  const spanRef = useRef<HTMLSpanElement>(null);
+  const spanRefCompanyName = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const isScrolled = window.scrollY > 100;
+
+      if (headerRef.current) {
+        headerRef.current.style.background = isScrolled ? "#9FB3DF" : "transparent";
+       // headerRef.current.style.padding = isScrolled ? "20px 0" : "60px 0";
+      }
+
+      if (spanRef.current) {
+        if (isScrolled) {
+          spanRef.current.className =
+            "text-black text-lg bg-clip-text font-extrabold font-extrabold animate-pulse";
+        } else {
+          spanRef.current.className =
+            " text-lg bg-clip-text font-extrabold text-black animate-pulse";
+        }
+      }
+
+
+          if (spanRefCompanyName.current) {
+        if (isScrolled) {
+          spanRefCompanyName.current.className =
+            "text-black text-lg bg-clip-text font-extrabold animate-pulse";
+        } else {
+          spanRefCompanyName.current.className =
+            " font-bold text-lg bg-clip-text  text-black font-extrabold animate-pulse";
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <header
-      className="sticky top-0 z-50 w-full border-b bg-gradient-to-r from-background to-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 shadow-sm"
+     ref={headerRef}
+      className="sticky top-0 z-50 w-full border-b bg-[#EAEFEF] shadow-sm transition-all duration-200"
       dir="rtl"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex h-16 items-center justify-between">
@@ -255,9 +296,14 @@ export function Navbar() {
             className="inline-block font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-sky-500 to-blue-600"
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.2 }}
+            ref={spanRefCompanyName}
           >
             شركة مصافي الوسط
           </motion.span>
+
+           {/* <span ref={spanRefCompanyName} className="inline-block font-bold  text-lg bg-clip-text text-transparent bg-gradient-to-r from-sky-500 to-blue-600 animate-pulse">
+              شركة مصافي الوسط
+            </span> */}
 
           
         </Link>
@@ -366,7 +412,7 @@ export function Navbar() {
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.2 }}
           >
-            <span className="inline-block font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-sky-500 to-blue-600 animate-pulse">
+            <span ref={spanRef} className="inline-block font-bold  text-lg bg-clip-text text-transparent bg-gradient-to-r from-sky-500 to-blue-600 animate-pulse">
               نظام متابعة الكتب الالكتروني
             </span>
           </motion.div>

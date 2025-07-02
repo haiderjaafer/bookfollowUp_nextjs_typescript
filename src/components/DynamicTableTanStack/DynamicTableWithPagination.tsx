@@ -11,7 +11,7 @@ import {
   HeaderContext, // Added for explicit typing
 } from '@tanstack/react-table';
 import { useMediaQuery } from 'react-responsive';
-import { AccessorColumnDef, HeaderMap, BookFollowUpData, PDF } from './types';
+import { AccessorColumnDef, HeaderMap, BookFollowUpData, PDF, PDFRecord } from './types';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -26,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { FileText, BookOpen, ArrowUpDown } from 'lucide-react';
+import { FileText, BookOpen, ArrowUpDown,Trash2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
@@ -65,6 +65,10 @@ export default function DynamicTable<T extends BookFollowUpData>({
   const [selectedPdfs, setSelectedPdfs] = useState<PDF[]>([]);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [isLoadingPdfs, setIsLoadingPdfs] = useState(false);
+
+
+  const [pdfs, setPdfs] = useState<PDFRecord[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const isMobile = useMediaQuery({ maxWidth: 640 }) && isMounted;
 
@@ -524,7 +528,9 @@ export default function DynamicTable<T extends BookFollowUpData>({
                       </div>
                     </CardContent>
                     <CardFooter className="justify-end pt-1">
-                      <Button
+                 <section className='flex items-center gap-x-1'>
+
+                       <Button
                         variant="default"
                         className="bg-blue-600 hover:bg-blue-700 text-white font-bold transition-colors duration-200"
                         onClick={() => {
@@ -535,6 +541,53 @@ export default function DynamicTable<T extends BookFollowUpData>({
                       >
                         <BookOpen className="mr-2 h-4 w-4" /> فتح الملف
                       </Button>
+
+                           <Button
+                        variant="default"
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold transition-colors duration-200"
+                        onClick={async()  =>  {
+                         
+                          //alert(`pdf file will be delete${pdf.pdf}`);// this will be sent to backend
+
+                          // app/PDFListPage.tsx (partial)
+//const handleDeletePDF = async (pdf: PDFRecord) => {
+  alert(`pdf file will be delete${pdf.id}`);
+  alert(`pdf file will be delete${pdf.pdf}`);
+  if (!confirm(`هل أنت متأكد من حذف الملف ${pdf.pdf} (ID: ${pdf.id})؟`)) return;
+
+  try {
+    const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/delete_pdf`;
+    console.log("Deleting PDF with payload:", { id: pdf.id, pdf: pdf.pdf });
+    const res = await fetch(url, {
+      method: "DELETE",
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ id: pdf.id, pdf: pdf.pdf?.replace(/\//g, "\\") }), // Normalize to backslashes
+    });
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.detail || `HTTP error! status: ${res.status}`);
+    }
+    const result = await res.json();
+    if (result.success) {
+      toast.success(`تم حذف الملف ${pdf.pdf}`);
+      setPdfs((prev:any) => prev.filter((item:any) => item.id !== pdf.id));
+    } else {
+      toast.error("فشل حذف الملف");
+    }
+  } catch (error: any) {
+    console.error("Error deleting PDF:", error);
+    toast.error(`فشل حذف الملف: ${error.message}`);
+  }
+//};
+
+                        }}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" /> حذف الملف
+                      </Button>
+                 </section>
                     </CardFooter>
                   </Card>
                 ))}

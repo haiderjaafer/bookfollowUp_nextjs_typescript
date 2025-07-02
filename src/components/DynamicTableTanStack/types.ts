@@ -71,5 +71,15 @@ export const orderHeaderMap: HeaderMap = {
 };
 
 
+export interface PDFRecord {
+  id: number;
+  bookID: number | null;
+  bookNo: string | null;
+  countPdf: number | null;
+  pdf: string | null;
+  userID: number | null;
+  currentDate: string | null;
+}
+
 
 
