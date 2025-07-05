@@ -30,7 +30,7 @@ const ResponsiveLogin: React.FC<ResponsiveLoginProps> = () => {
 
         // --- Replacing fetch with Axios ---
         const response = await axios.post(
-            'http://127.0.0.1:9000/auth/login', // Your FastAPI endpoint URL
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/login`, // Your FastAPI endpoint URL
             { username, password }, // Axios automatically serializes this to JSON body
             {
                 withCredentials: true, // This is the Axios equivalent of credentials: 'include'

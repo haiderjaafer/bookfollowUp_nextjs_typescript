@@ -24,7 +24,7 @@ export default function BookActionInput({ formData, setFormData }:BookActionInpu
       <input
         type="text"
         id="destination"
-        className="p-2 border border-gray-300 rounded-md font-extrabold focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        className="p-2 border h-12 border-gray-300 rounded-md font-extrabold focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         value={formData.bookAction}
         placeholder="اجراء او هامش الكتاب"
         onClick={() => setDialogOpen(true)} // open dialog on click

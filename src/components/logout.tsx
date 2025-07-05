@@ -11,7 +11,8 @@ export const Logout = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post("http://127.0.0.1:9000/auth/logout", {},
+      await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/logout`, {},
+        
      { withCredentials: true,
       headers: { 'Content-Type': 'application/json' }, 
     

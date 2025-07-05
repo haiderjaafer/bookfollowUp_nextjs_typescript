@@ -86,7 +86,7 @@ export default function SubjectAutoCompleteComboBox({
           <ChevronsUpDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         </div>
       </PopoverTrigger>
-      <PopoverContent className=" w-[550px]  mt-1 z-50 p-0 max-h-64 overflow-y-auto shadow-xl rounded-lg" align="start" sideOffset={4}>
+      <PopoverContent className=" w-[550px] font-extrabold mt-1 z-50 p-0 max-h-64 overflow-y-auto shadow-xl rounded-lg" align="start" sideOffset={4}>
         <Command>
           <CommandInput
             value={query}

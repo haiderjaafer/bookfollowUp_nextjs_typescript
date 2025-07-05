@@ -34,6 +34,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { GrUpdate,GrDocumentPdf } from "react-icons/gr";
 import { FaRegFilePdf } from "react-icons/fa6";
+import { AlertDialogDelete } from './AlertDialogDelete';
 
 
 interface Pagination {
@@ -69,6 +70,11 @@ export default function DynamicTable<T extends BookFollowUpData>({
 
   const [pdfs, setPdfs] = useState<PDFRecord[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [selectedPdf, setSelectedPdf] = useState<PDFRecord | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+
 
   const isMobile = useMediaQuery({ maxWidth: 640 }) && isMounted;
 
@@ -544,49 +550,68 @@ export default function DynamicTable<T extends BookFollowUpData>({
 
                            <Button
                         variant="default"
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold transition-colors duration-200"
-                        onClick={async()  =>  {
-                         
-                          //alert(`pdf file will be delete${pdf.pdf}`);// this will be sent to backend
-
-                          // app/PDFListPage.tsx (partial)
-//const handleDeletePDF = async (pdf: PDFRecord) => {
-  alert(`pdf file will be delete${pdf.id}`);
-  alert(`pdf file will be delete${pdf.pdf}`);
-  if (!confirm(`هل أنت متأكد من حذف الملف ${pdf.pdf} (ID: ${pdf.id})؟`)) return;
-
-  try {
-    const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/delete_pdf`;
-    console.log("Deleting PDF with payload:", { id: pdf.id, pdf: pdf.pdf });
-    const res = await fetch(url, {
-      method: "DELETE",
-      headers: {
-        "Accept": "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ id: pdf.id, pdf: pdf.pdf?.replace(/\//g, "\\") }), // Normalize to backslashes
+                        className="bg-red-600 hover:bg-red-700 text-white font-bold transition-colors duration-200"
+     
+onClick={() => {
+    setSelectedPdf({
+      id: pdf.id,
+      bookNo:pdf.bookNo,
+      pdf: pdf.pdf,
+      currentDate: pdf.currentDate,
     });
-    if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
-      throw new Error(errorData.detail || `HTTP error! status: ${res.status}`);
-    }
-    const result = await res.json();
-    if (result.success) {
-      toast.success(`تم حذف الملف ${pdf.pdf}`);
-      setPdfs((prev:any) => prev.filter((item:any) => item.id !== pdf.id));
-    } else {
-      toast.error("فشل حذف الملف");
-    }
-  } catch (error: any) {
-    console.error("Error deleting PDF:", error);
-    toast.error(`فشل حذف الملف: ${error.message}`);
-  }
-//};
+    setIsDialogOpen(true); // Open the dialog
+  }}
 
-                        }}
+
+
+
+                       
+  // alert(`pdf file will be delete${pdf.id}`);
+  // alert(`pdf file will be delete${pdf.pdf}`);
+  // if (!confirm(`هل أنت متأكد من حذف الملف ${pdf.pdf} (ID: ${pdf.id})؟`)) return;
+
+  // try {
+  //   const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/delete_pdf`;
+  //   console.log("Deleting PDF with payload:", { id: pdf.id, pdf: pdf.pdf });
+  //   const res = await fetch(url, {
+  //     method: "DELETE",
+  //     headers: {
+  //       "Accept": "application/json",
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify({ id: pdf.id, pdf: pdf.pdf?.replace(/\//g, "\\") }), // Normalize to backslashes
+  //   });
+  //   if (!res.ok) {
+  //     const errorData = await res.json().catch(() => ({}));
+  //     throw new Error(errorData.detail || `HTTP error! status: ${res.status}`);
+  //   }
+  //   const result = await res.json();
+  //   if (result.success) {
+  //     toast.success(`تم حذف الملف ${pdf.pdf}`);
+  //     setPdfs((prev:any) => prev.filter((item:any) => item.id !== pdf.id));
+  //   } else {
+  //     toast.error("فشل حذف الملف");
+  //   }
+  // } catch (error: any) {
+  //   console.error("Error deleting PDF:", error);
+  //   toast.error(`فشل حذف الملف: ${error.message}`);
+  // }
+
+
+                      
                       >
                         <Trash2 className="mr-2 h-4 w-4" /> حذف الملف
                       </Button>
+
+                      {selectedPdf && (
+  <AlertDialogDelete
+    open={isDialogOpen}
+    onOpenChange={setIsDialogOpen}
+    pdf={selectedPdf}
+    setPdfs={setPdfs}
+  />
+)}
+
                  </section>
                     </CardFooter>
                   </Card>

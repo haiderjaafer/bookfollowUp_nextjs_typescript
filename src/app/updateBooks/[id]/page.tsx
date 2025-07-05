@@ -8,7 +8,9 @@ interface PageProps {
 }
 
 const UpdateBooksFollowUpByBookIDPage = async ({ params }: PageProps) => {
-  const { id } = params;
+  const { id } = await params;
+
+
 
   return (
     <div>

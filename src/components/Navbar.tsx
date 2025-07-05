@@ -8,7 +8,7 @@ import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { Logout } from "./ui/logout";
+import { Logout } from "./logout";
 import Image from 'next/image';
 import RotatingLogo from "./RotatingLogo/RotatingLogo";
 
@@ -134,14 +134,15 @@ export function Navbar() {
       const isScrolled = window.scrollY > 100;
 
       if (headerRef.current) {
-        headerRef.current.style.background = isScrolled ? "#9FB3DF" : "transparent";
+         headerRef.current.style.background = isScrolled ? "#99a1af" : "#99a1af";
+        //headerRef.current.style.background = isScrolled ? "#99a1af" : "transparent";
        // headerRef.current.style.padding = isScrolled ? "20px 0" : "60px 0";
       }
 
       if (spanRef.current) {
         if (isScrolled) {
           spanRef.current.className =
-            "text-black text-lg bg-clip-text font-extrabold font-extrabold animate-pulse";
+            "text-black text-lg bg-clip-text font-extrabold   font-extrabold animate-pulse";
         } else {
           spanRef.current.className =
             " text-lg bg-clip-text font-extrabold text-black animate-pulse";
@@ -167,7 +168,7 @@ export function Navbar() {
   return (
     <header
      ref={headerRef}
-      className="sticky top-0 z-50 w-full border-b bg-[#EAEFEF] shadow-sm transition-all duration-200"
+      className="sticky top-0 z-50 w-full border-b bg-gray-400 shadow-sm transition-all duration-200"
       dir="rtl"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex h-16 items-center justify-between">
@@ -285,29 +286,23 @@ export function Navbar() {
           </Sheet>
         </div>
 
-        {/* Logo - Hidden on mobile, visible on md and above */}
-        <Link href="/" className="hidden md:flex gap-1.5 items-center mx-4 font-arabic">
-            
-    
+       <Link
+  href="/"
+  className="hidden md:flex gap-1.5 items-center mx-4 font-sans focus:outline-none focus:ring-0"
+>
+  <RotatingLogo />
 
-    <RotatingLogo/>
-           
-          <motion.span
-            className="inline-block font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-sky-500 to-blue-600"
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 0.2 }}
-            ref={spanRefCompanyName}
-          >
-            شركة مصافي الوسط
-          </motion.span>
+  <motion.span
+    className="inline-block font-extrabold text-lg bg-clip-text border-none text-black"
+    whileHover={{ scale: 1.05 }}
+    transition={{ duration: 0.2 }}
+    ref={spanRefCompanyName}
+  >
+    شركة مصافي الوسط
+  </motion.span>
+</Link>
 
-           {/* <span ref={spanRefCompanyName} className="inline-block font-bold  text-lg bg-clip-text text-transparent bg-gradient-to-r from-sky-500 to-blue-600 animate-pulse">
-              شركة مصافي الوسط
-            </span> */}
-
-          
-        </Link>
-
+       
         
 
         {/* Desktop Navigation */}
@@ -412,7 +407,7 @@ export function Navbar() {
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.2 }}
           >
-            <span ref={spanRef} className="inline-block font-bold  text-lg bg-clip-text text-transparent bg-gradient-to-r from-sky-500 to-blue-600 animate-pulse">
+            <span ref={spanRef} className="inline-block font-bold  text-lg bg-clip-text text-black animate-pulse">
               نظام متابعة الكتب الالكتروني
             </span>
           </motion.div>

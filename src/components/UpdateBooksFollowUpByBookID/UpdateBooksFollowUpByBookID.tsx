@@ -25,6 +25,11 @@ import {
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FileText, BookOpen, Eye, Download } from 'lucide-react'; // Icons for visual appeal
+import DirectoryNameCombobox from '../BookInsertionForm/DirectoryNameComboboxAutoComplete';
+import ArabicDatePicker from '../ArabicDatePicker';
+import BookActionInput from '../BookInsertionForm/bookActionDialogInput/bookActionInput';
+import SubjectAutoCompleteComboBox from '../BookInsertionForm/SubjectAutoComplete';
+import DestinationAutoComplete from '../BookInsertionForm/DestinationAutoComplete';
 
 // Define the response type based on the FastAPI model
 interface PDFResponse {
@@ -83,7 +88,15 @@ interface UpdateBooksFollowUpByBookIDProps {
   bookId: string;
 }
 
+
+
 export default function UpdateBooksFollowUpByBookID({ bookId }: UpdateBooksFollowUpByBookIDProps) {
+
+  // Memoize API base URL
+  const API_BASE_URL = useMemo(() => process.env.NEXT_PUBLIC_API_BASE_URL || '', []);
+
+
+  console.log("bookID"+ bookId);
   const router = useRouter();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [formData, setFormData] = useState<BookInsertionType>({
@@ -208,6 +221,17 @@ const fetchBookData = useCallback(async () => {
     []
   );
 
+     const handleDateChange = useCallback(
+    (key: "bookDate" | "incomingDate", value: string) => {
+      if (value && !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        toast.error("يرجى إدخال التاريخ بصيغة YYYY-MM-DD");
+        return;
+      }
+      setFormData((prev) => ({ ...prev, [key]: value }));
+    },
+    []
+  );
+
   // Handle bookDate selection
   const handleChangeBookDate = useCallback((date: Date) => {
     const formattedDate = format(date, 'yyyy-MM-dd');
@@ -279,11 +303,7 @@ const fetchBookData = useCallback(async () => {
         const response = await axios.patch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/${bookId}`,
           formDataToSend,
-          {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-          }
+        
         );
 
         if (response.status === 200) {
@@ -294,7 +314,23 @@ const fetchBookData = useCallback(async () => {
         }
       } catch (error) {
         console.error('Error updating book:', error);
-        toast.error('فشل في تحديث الكتاب. يرجى المحاولة مرة أخرى');
+        toast.error(`فشل في تحديث الكتاب. يرجى المحاولة مرة أخرى${error}`);
+
+          let message = 'فشل في تحديث الكتاب. يرجى المحاولة مرة أخرى';
+
+
+         if (axios.isAxiosError(error)) {
+    if (error.response?.data?.detail) {
+      // FastAPI often returns errors like { detail: "some error" }
+      message += `: ${error.response.data.detail}`;
+    } else if (error.message) {
+      message += `: ${error.message}`;
+    }
+  } else if (error instanceof Error) {
+    message += `: ${error.message}`;
+  }
+
+  toast.error(message);
       } finally {
         setIsSubmitting(false);
       }
@@ -314,6 +350,8 @@ const renderPDFs = useMemo(() => {
       </motion.div>
     );
   }
+
+  
 
   return (
     <motion.div variants={inputVariants} className="mt-6">
@@ -427,6 +465,8 @@ const renderPDFs = useMemo(() => {
     );
   }
 
+
+
   return (
     <motion.div
       className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-sky-50/50 py-4 sm:py-6 md:py-8 lg:py-12"
@@ -444,7 +484,7 @@ const renderPDFs = useMemo(() => {
             <motion.div variants={inputVariants}>
               <label
                 htmlFor="bookType"
-                className="block text-sm font-medium font-arabic text-gray-700 mb-1 text-right"
+                className="block text-sm font-extrabold font-sans text-gray-700 mb-1 text-right"
               >
                 نوع الكتاب
               </label>
@@ -453,7 +493,7 @@ const renderPDFs = useMemo(() => {
                 name="bookType"
                 value={formData.bookType}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
+                className="w-full px-4 py-2 h-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
                 required
               >
                 <option value="">اختر نوع الكتاب</option>
@@ -467,23 +507,29 @@ const renderPDFs = useMemo(() => {
             <motion.div variants={inputVariants}>
               <label
                 htmlFor="bookDate"
-                className="block text-sm font-medium font-arabic text-gray-700 mb-1 text-right"
+                className="block text-sm font-extrabold font-sans text-gray-700 mb-1 text-right"
               >
                 تاريخ الكتاب
               </label>
+
+                <ArabicDatePicker
+                              selected={formData.bookDate}
+                              onChange={(value) => handleDateChange('bookDate', value)}
+                              label="تأريخ الكتاب"
+                            />
            
 
-              <DatePicker
+              {/* <DatePicker
   onDateChange={handleChangeBookDate}
   initialDate={formData.bookDate ? parse(formData.bookDate, 'yyyy-MM-dd', new Date()) : new Date()}
-/>
+/> */}
             </motion.div>
 
             {/* Book Number */}
             <motion.div variants={inputVariants}>
               <label
                 htmlFor="bookNo"
-                className="block text-sm font-medium font-arabic text-gray-700 mb-1 text-right"
+                className="block text-sm font-extrabold font-sans text-gray-700 mb-1 text-right"
               >
                 رقم الكتاب
               </label>
@@ -493,27 +539,33 @@ const renderPDFs = useMemo(() => {
                 type="text"
                 value={formData.bookNo}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
+                className="w-full px-4 py-4 border h-12 border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
                 required
               />
             </motion.div>
 
             {/* Directory Name */}
-            <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-3">
+            <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-2">
               <label
                 htmlFor="directoryName"
-                className="block text-sm font-medium font-arabic text-gray-700 mb-1 text-right"
+                className="block text-sm font-extrabold font-sans text-gray-700 mb-1 text-right"
               >
                 اسم الدائرة
               </label>
-              <DirectoryNameInput formData={formData} setFormData={setFormData} />
+              {/* <DirectoryNameInput formData={formData} setFormData={setFormData} /> */}
+              
+                            <DirectoryNameCombobox
+                value={formData.directoryName}
+                onChange={(val) => setFormData((prev) => ({ ...prev, directoryName: val }))}
+                fetchUrl={`${API_BASE_URL}/api/bookFollowUp/getAllDirectoryNames`}
+              />
             </motion.div>
 
             {/* Incoming Number */}
             <motion.div variants={inputVariants}>
               <label
                 htmlFor="incomingNo"
-                className="block text-sm font-medium font-arabic text-gray-700 mb-1 text-right"
+                className="block text-sm font-extrabold font-sans text-gray-700 mb-1 text-right"
               >
                 رقم الوارد
               </label>
@@ -523,7 +575,7 @@ const renderPDFs = useMemo(() => {
                 type="text"
                 value={formData.incomingNo}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
+                className="w-full px-4 py-2 h-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
               />
             </motion.div>
 
@@ -531,47 +583,66 @@ const renderPDFs = useMemo(() => {
             <motion.div variants={inputVariants}>
               <label
                 htmlFor="incomingDate"
-                className="block text-sm font-medium font-arabic text-gray-700 mb-1 text-right"
+                className="block text-sm font-extrabold font-sans text-gray-700 mb-1 text-right"
               >
                 تاريخ الوارد
               </label>
-            <DatePicker
+
+     <ArabicDatePicker
+                selected={formData.incomingDate}
+                onChange={(value) => handleDateChange('incomingDate', value)}
+                label="تأريخ الوارد"
+              />
+
+            {/* <DatePicker
   onDateChange={handleChangeIncomingDate}
   initialDate={formData.incomingDate ? parse(formData.incomingDate, 'yyyy-MM-dd', new Date()) : new Date()}
-/>
+/> */}
             </motion.div>
 
             {/* Subject */}
-            <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-3">
+            <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-2">
               <label
                 htmlFor="subject"
-                className="block text-sm font-medium font-arabic text-gray-700 mb-1 text-right"
+                className="block text-sm font-extrabold font-sans text-gray-700 mb-1 text-right"
               >
                 الموضوع
               </label>
-              <SubjectInput formData={formData} setFormData={setFormData} />
+                           <SubjectAutoCompleteComboBox
+                value={formData.subject}
+                onChange={(val) => setFormData((prev) => ({ ...prev, subject: val }))}
+                fetchUrl={`${API_BASE_URL}/api/bookFollowUp/getSubjects`}
+              />
+              {/* <SubjectInput formData={formData} setFormData={setFormData} /> */}
             </motion.div>
 
             {/* Destination */}
-            <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-3">
+            <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-1">
               <label
                 htmlFor="destination"
-                className="block text-sm font-medium font-arabic text-gray-700 mb-1 text-right"
+                className="block text-sm font-extrabold font-sans text-gray-700 mb-1 text-right"
               >
                 جهة تحويل البريد
               </label>
-              <DestinationInput formData={formData} setFormData={setFormData} />
+               <DestinationAutoComplete
+                value={formData.destination}
+                onChange={(val) => setFormData((prev) => ({ ...prev, destination: val }))}
+                fetchUrl={`${API_BASE_URL}/api/bookFollowUp/getDestination`}
+              />
+              {/* <DestinationInput formData={formData} setFormData={setFormData} /> */}
             </motion.div>
 
             {/* Book Action */}
-            <motion.div variants={inputVariants}>
+            <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-2">
               <label
                 htmlFor="bookAction"
-                className="block text-sm font-medium font-arabic text-gray-700 mb-1 text-right"
+                className="block text-sm font-extrabold font-sans text-gray-700 mb-1 text-right"
               >
                 إجراء الكتاب
               </label>
-              <input
+< BookActionInput formData={formData} setFormData={setFormData}/>
+
+              {/* <input
                 id="bookAction"
                 name="bookAction"
                 type="text"
@@ -579,37 +650,38 @@ const renderPDFs = useMemo(() => {
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
                 required
-              />
+              /> */}
             </motion.div>
 
             {/* Book Status */}
-            <motion.div variants={inputVariants}>
-              <label
-                htmlFor="bookStatus"
-                className="block text-sm font-medium font-arabic text-gray-700 mb-1 text-right"
-              >
-                حالة الكتاب
-              </label>
-              <select
-                id="bookStatus"
-                name="bookStatus"
-                value={formData.bookStatus}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
-                required
-              >
-                <option value="">اختر الحالة</option>
-                <option value="منجز">منجز</option>
-                <option value="قيد الانجاز">قيد الانجاز</option>
-                <option value="مداولة">مداولة</option>
-              </select>
-            </motion.div>
+        <motion.div variants={inputVariants}>
+                      <label
+                        htmlFor="bookStatus"
+                        className="block text-sm font-extrabold font-san text-gray-700 mb-1 lg:text-right text-center"
+                      >
+                        حالة الكتاب
+                      </label>
+                      <select
+                        id="bookStatus"
+                        name="bookStatus"
+                        value={formData.bookStatus}
+                        onChange={handleChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg font-extrabold focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
+                        required
+                      >
+                        <option  value="">اختر حالة الكتاب</option>
+                        <option className='font-extrabold' value="منجز">منجز</option>
+                        <option className='font-extrabold' value="قيد الانجاز">قيد الانجاز</option>
+                        <option className='font-extrabold' value="مداولة">مداولة</option>
+                      </select>
+                    </motion.div>
+        
 
             {/* Notes */}
             <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-3">
               <label
                 htmlFor="notes"
-                className="block text-sm font-medium font-arabic text-gray-700 mb-1 text-right"
+                className="block text-sm font- font-extrabold font-sans text-gray-700 mb-1 text-right"
               >
                 ملاحظات
               </label>
@@ -618,7 +690,7 @@ const renderPDFs = useMemo(() => {
                 name="notes"
                 value={formData.notes}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all duration-200 font-arabic text-right resize-y"
+                className="w-full px-4  border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-300 focus:border-gray-300 transition-all duration-200 font-arabic text-right resize-y text-sm leading-6 placeholder:text-center placeholder:font-extrabold placeholder:text-gray-300 placeholder:italic"
                 rows={4}
               />
             </motion.div>
@@ -626,7 +698,7 @@ const renderPDFs = useMemo(() => {
 
           {/* Dropzone for PDF Upload */}
           <motion.div variants={inputVariants} className="mt-6">
-            <label className="block text-sm font-medium font-arabic text-gray-700 mb-1 text-right">
+            <label className="block text-sm font-extrabold font-sans text-gray-700 mb-1 text-right">
               تحميل ملف PDF جديد
             </label>
             <DropzoneComponent

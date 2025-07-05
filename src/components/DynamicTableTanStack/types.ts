@@ -28,6 +28,7 @@ export interface PDF {
   bookNo: string | null;
   currentDate: string | null;
   username: string | null;  // Added username
+  countPdf : string | null;
 }
 
 // Update TableData to include pdfFiles
@@ -73,11 +74,11 @@ export const orderHeaderMap: HeaderMap = {
 
 export interface PDFRecord {
   id: number;
-  bookID: number | null;
+  bookID?: string | null;
   bookNo: string | null;
-  countPdf: number | null;
+  countPdf?: string | null;
   pdf: string | null;
-  userID: number | null;
+  userID?: string | null;
   currentDate: string | null;
 }
 

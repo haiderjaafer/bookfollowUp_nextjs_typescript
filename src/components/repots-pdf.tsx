@@ -75,11 +75,18 @@ export default function PrintReportPage() {
   </div>
   {/* Center: Report Title */}
   <div className="text-center">
-    <h1 className="text-2xl font-serif font-bold text-gray-800">
-      تقرير الكتب
-      {bookType && ` - ${bookType}`}
-      {bookStatus && ` - ${bookStatus}`}
-    </h1>
+   <h1 className="text-2xl font-serif font-bold text-gray-800">
+  تقرير الكتب
+  {bookType && ` - ${bookType}`}
+  {bookStatus && bookStatus !== "منجز" && ` - ${bookStatus}`}
+  {bookStatus === "منجز" && (
+    <>
+      {' - '}
+      <strong className="text-black font-extrabold">المنجزة</strong>
+    </>
+  )}
+</h1>
+
   </div>
 
   {/* left: Logo */}

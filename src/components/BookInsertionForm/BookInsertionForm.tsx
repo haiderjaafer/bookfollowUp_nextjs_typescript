@@ -388,7 +388,7 @@ export default function BookInsertionForm() {
                 value={formData.incomingNo}
                 onChange={handleChange}
                 placeholder='رقم الوارد'
-                className="w-full px-4 py-2 h-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
+                className="w-full px-4 py-2 h-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-sans text-right"
               />
             </motion.div>
 
@@ -497,15 +497,16 @@ export default function BookInsertionForm() {
               >
                 ملاحظات
               </label>
-              <textarea
-                id="notes"
-                name="notes"
-                value={formData.notes}
-                onChange={handleChange}
-                placeholder='الملاحظات '
-                className="w-full px-4 py-2 border placeholder:text-center  placeholder:font-extrabold placeholder:text-gray-300 placeholder:italic border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all duration-200 font-arabic text-right resize-y"
-                rows={4}
-              />
+            <textarea 
+  id="notes"
+  name="notes"
+  value={formData.notes}
+  onChange={handleChange}
+  placeholder="الملاحظات"
+  className="w-full px-4 py-[1.75rem] border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-300 focus:border-gray-300 transition-all duration-200 font-arabic text-right resize-y text-sm leading-6 placeholder:text-center placeholder:font-extrabold placeholder:text-gray-300 placeholder:italic"
+  rows={4}
+/>
+
             </motion.div>
           </div>
 
