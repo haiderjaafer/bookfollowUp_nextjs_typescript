@@ -1,174 +1,105 @@
-// components/Navbar.tsx
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-import { Menu, X } from "lucide-react";
-import { Button } from "./ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
-import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
-import { Logout } from "./logout";
-import Image from 'next/image';
-import RotatingLogo from "./RotatingLogo/RotatingLogo";
+import Link from 'next/link';
+import { useEffect, useRef, useState } from 'react';
+import { Menu, User, X } from 'lucide-react';
+import { Button } from './ui/button';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from './ui/sheet';
+import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Logout } from './logout';
+import RotatingLogo from './RotatingLogo/RotatingLogo';
+import UserDropdown from './UserDropdownMenu';
 
 export type NavItem = {
   title: string;
   href?: string;
-  target?: string; // Add target property
+  target?: string;
   children?: NavItem[];
   description?: string;
 };
 
+interface UserData {
+  userID: string;
+  username: string;
+  permission: string;
+}
+
+interface NavbarProps {
+  userData?: UserData | null;
+}
+
 const NAV_ITEMS: NavItem[] = [
   {
-    title: "الإضافة",
+    title: 'الإضافة',
     children: [
       {
-        title: "إضافة كتاب",
-        href: "/addBooks/",
-        description: "إضافة كتاب جديد إلى النظام",
-      },
-      // {
-      //   title: "إضافة ارتباط",
-      //   href: "/add/user",
-      //   description: "إضافة مستخدم جديد إلى النظام",
-      // },
-      // {
-      //   title: "إضافة فئة",
-      //   href: "/add/category",
-      //   description: "إضافة فئة جديدة للمنتجات",
-      // },
-    ],
-  },
-  {
-    title: "البحث",
-    children: [
-      // {
-      //   title: "رقم طلبية",
-      //   href: "/search/orders",
-      //   description: "البحث عن طريق رقم الطلبية",
-      // },
-      // {
-      //   title: "اسم المادة",
-      //   href: "/search/materialName",
-      //   description: "البحث عن طريق اسم المادة",
-      // },
-      // {
-      //   title: "بحث متقدم",
-      //   href: "/dynmicTableWithPagination/",
-      //   description: "خيارات البحث المتقدم مع فلاتر متعددة",
-      // },
-      {
-        title: "بحث",
-        href: "/searchPanel",
-        description: "خيارات البحث المتقدم مع فلاتر متعددة",
+        title: 'إضافة كتاب',
+        href: '/addBooks/',
+        description: 'إضافة كتاب جديد إلى النظام',
       },
     ],
   },
   {
-    title: "التقارير",
+    title: 'البحث',
     children: [
-          {
-        title: "تقرير الكتب",
-        href: "/report_all",
-        //target: "_blank",
-        description: "تقرير الكتب المنجزة وقيد الانجاز",
+      {
+        title: 'بحث',
+        href: '/searchPanel',
+        description: 'خيارات البحث المتقدم مع فلاتر متعددة',
       },
-      // {
-      //   title: "تقرير الكتب",
-      //   href: "/print/report",
-      //   target: "_blank", // Open in new tab
-      //   description: "تقرير كل الكتب",
-      // },
-  
-      // {
-      //   title: "الفروع",
-      //   href: "/structure/branches",
-      //   description: "فروع الشركة والمخازن",
-      // },
+    ],
+  },
+  {
+    title: 'التقارير',
+    children: [
+      {
+        title: 'تقرير الكتب',
+        href: '/report_all',
+        description: 'تقرير الكتب المنجزة وقيد الانجاز',
+      },
     ],
   },
 ];
 
-export function Navbar() {
+export function Navbar({ userData }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
 
-  // Animation variants for Framer Motion
   const menuVariants = {
     hidden: { opacity: 0, y: -10 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.3, ease: "easeOut" },
-    },
-    exit: {
-      opacity: 0,
-      y: -10,
-      transition: { duration: 0.2, ease: "easeIn" },
-    },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: 'easeOut' } },
+    exit: { opacity: 0, y: -10, transition: { duration: 0.2, ease: 'easeIn' } },
   };
 
   const submenuVariants = {
     hidden: { opacity: 0, scale: 0.95 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      transition: { duration: 0.3, ease: "easeOut" },
-    },
-    exit: {
-      opacity: 0,
-      scale: 0.95,
-      transition: { duration: 0.2, ease: "easeIn" },
-    },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.3, ease: 'easeOut' } },
+    exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2, ease: 'easeIn' } },
   };
 
-
-   const headerRef = useRef<HTMLElement>(null);
-  const spanRef = useRef<HTMLSpanElement>(null);
-  const spanRefCompanyName = useRef<HTMLSpanElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
-      const isScrolled = window.scrollY > 100;
-
-      if (headerRef.current) {
-         headerRef.current.style.background = isScrolled ? "#99a1af" : "#99a1af";
-        //headerRef.current.style.background = isScrolled ? "#99a1af" : "transparent";
-       // headerRef.current.style.padding = isScrolled ? "20px 0" : "60px 0";
-      }
-
-      if (spanRef.current) {
-        if (isScrolled) {
-          spanRef.current.className =
-            "text-black text-lg bg-clip-text font-extrabold   font-extrabold animate-pulse";
-        } else {
-          spanRef.current.className =
-            " text-lg bg-clip-text font-extrabold text-black animate-pulse";
-        }
-      }
-
-
-          if (spanRefCompanyName.current) {
-        if (isScrolled) {
-          spanRefCompanyName.current.className =
-            "text-black text-lg bg-clip-text font-extrabold animate-pulse";
-        } else {
-          spanRefCompanyName.current.className =
-            " font-bold text-lg bg-clip-text  text-black font-extrabold animate-pulse";
-        }
-      }
+      setIsScrolled(window.scrollY > 100);
     };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  console.log('Navbar - userData:', userData);
+  console.log('Navbar - activeSubmenu:', activeSubmenu);
+  console.log('Navbar - isScrolled:', isScrolled);
 
   return (
     <header
-     ref={headerRef}
-      className="sticky top-0 z-50 w-full border-b bg-gray-400 shadow-sm transition-all duration-200"
+      ref={headerRef}
+      className={cn(
+        'sticky top-0 z-50 w-full border-b shadow-sm transition-all duration-200',
+        isScrolled ? 'bg-[#99a1af]' : 'bg-gray-400'
+      )}
       dir="rtl"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex h-16 items-center justify-between">
@@ -181,16 +112,17 @@ export function Navbar() {
                 size="icon"
                 className="hover:bg-sky-100/50 transition-colors duration-300"
               >
-                <motion.div
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
+                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                   {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
                 </motion.div>
                 <span className="sr-only">تبديل القائمة</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="text-right bg-background/95">
+              <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+              <SheetDescription className="sr-only">
+                Make changes to your profile here. Click save when you're done.
+              </SheetDescription>
               <motion.div
                 className="flex flex-col space-y-4 pt-6"
                 initial="hidden"
@@ -206,13 +138,11 @@ export function Navbar() {
                           whileHover={{ x: 5 }}
                           transition={{ duration: 0.2 }}
                           onClick={() =>
-                            setActiveSubmenu(
-                              activeSubmenu === item.title ? null : item.title
-                            )
+                            setActiveSubmenu(activeSubmenu === item.title ? null : item.title)
                           }
                           className={cn(
-                            "flex items-center justify-between font-medium font-arabic py-2 text-base",
-                            "hover:text-sky-600 hover:bg-sky-50 rounded-md px-3 transition-all duration-300"
+                            'flex items-center justify-between font-medium font-arabic py-2 text-base',
+                            'hover:text-sky-600 hover:bg-sky-50 rounded-md px-3 transition-all duration-300'
                           )}
                         >
                           {item.title}
@@ -235,11 +165,11 @@ export function Navbar() {
                               {item.children.map((child) => (
                                 <Link
                                   key={child.title}
-                                  href={child.href || "#"}
-                                  target={child.target || "_self"} // Use target property
+                                  href={child.href || '#'}
+                                  target={child.target || '_self'}
                                   className={cn(
-                                    "text-sm py-1.5 block font-arabic text-right",
-                                    "hover:text-sky-600 hover:bg-sky-50 rounded-md px-3 transition-all duration-300"
+                                    'text-sm py-1.5 block font-arabic text-right',
+                                    'hover:text-sky-600 hover:bg-sky-50 rounded-md px-3 transition-all duration-300'
                                   )}
                                   onClick={() => setIsOpen(false)}
                                 >
@@ -263,18 +193,15 @@ export function Navbar() {
                       </>
                     ) : (
                       <Link
-                        href={item.href || "#"}
-                        target={item.target || "_self"} // Use target property
+                        href={item.href || '#'}
+                        target={item.target || '_self'}
                         className={cn(
-                          "font-medium font-arabic py-2 text-base",
-                          "hover:text-sky-600 hover:bg-sky-50 rounded-md px-3 transition-all duration-300"
+                          'font-medium font-arabic py-2 text-base',
+                          'hover:text-sky-600 hover:bg-sky-50 rounded-md px-3 transition-all duration-300'
                         )}
                         onClick={() => setIsOpen(false)}
                       >
-                        <motion.div
-                          whileHover={{ x: 5 }}
-                          transition={{ duration: 0.2 }}
-                        >
+                        <motion.div whileHover={{ x: 5 }} transition={{ duration: 0.2 }}>
                           {item.title}
                         </motion.div>
                       </Link>
@@ -286,24 +213,23 @@ export function Navbar() {
           </Sheet>
         </div>
 
-       <Link
-  href="/"
-  className="hidden md:flex gap-1.5 items-center mx-4 font-sans focus:outline-none focus:ring-0"
->
-  <RotatingLogo />
-
-  <motion.span
-    className="inline-block font-extrabold text-lg bg-clip-text border-none text-black"
-    whileHover={{ scale: 1.05 }}
-    transition={{ duration: 0.2 }}
-    ref={spanRefCompanyName}
-  >
-    شركة مصافي الوسط
-  </motion.span>
-</Link>
-
-       
-        
+        {/* Logo and Company Name */}
+        <Link
+          href="/"
+          className="hidden md:flex gap-1.5 items-center mx-4 font-sans focus:outline-none focus:ring-0"
+        >
+          <RotatingLogo />
+          <motion.span
+            className={cn(
+              'inline-block text-lg bg-clip-text text-black animate-pulse',
+              isScrolled ? 'font-extrabold text-white' : 'font-extrabold '
+            )}
+            whileHover={{ scale: 1.05 }}
+            transition={{ duration: 0.2 }}
+          >
+            شركة مصافي الوسط
+          </motion.span>
+        </Link>
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex flex-1 justify-center items-center gap-2">
@@ -316,15 +242,12 @@ export function Navbar() {
             >
               {item.children ? (
                 <>
-                  <motion.div
-                    whileHover={{ y: -2 }}
-                    transition={{ duration: 0.2 }}
-                  >
+                  <motion.div whileHover={{ y: -2 }} transition={{ duration: 0.2 }}>
                     <Button
                       variant="ghost"
                       className={cn(
-                        "font-arabic text-base font-semibold px-4 py-2",
-                        "hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-all duration-300"
+                        'font-arabic text-base font-semibold px-4 py-2',
+                        'hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-all duration-300'
                       )}
                     >
                       {item.title}
@@ -341,8 +264,8 @@ export function Navbar() {
                     {activeSubmenu === item.title && (
                       <motion.div
                         className={cn(
-                          "absolute right-0 mt-2 w-64 rounded-xl bg-popover shadow-xl border border-sky-100/50",
-                          "backdrop-blur-sm"
+                          'absolute right-0 mt-2 w-64 rounded-xl bg-popover shadow-xl border border-sky-100/50',
+                          'backdrop-blur-sm'
                         )}
                         initial="hidden"
                         animate="visible"
@@ -353,11 +276,11 @@ export function Navbar() {
                           {item.children.map((child) => (
                             <Link
                               key={child.title}
-                              href={child.href || "#"}
-                              target={child.target || "_self"} // Use target property
+                              href={child.href || '#'}
+                              target={child.target || '_self'}
                               className={cn(
-                                "text-sm block px-4 py-2 font-arabic text-right",
-                                "hover:text-sky-600 hover:bg-sky-50 rounded-md transition-all duration-300"
+                                'text-sm block px-4 py-2 font-arabic text-right',
+                                'hover:text-sky-600 hover:bg-sky-50 rounded-md transition-all duration-300'
                               )}
                             >
                               <motion.div
@@ -381,17 +304,14 @@ export function Navbar() {
                 </>
               ) : (
                 <Link
-                  href={item.href || "#"}
-                  target={item.target || "_self"} // Use target property
+                  href={item.href || '#'}
+                  target={item.target || '_self'}
                   className={cn(
-                    "font-arabic text-base font-semibold px-4 py-2",
-                    "hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-all duration-300"
+                    'font-arabic text-base font-semibold px-4 py-2',
+                    'hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-all duration-300'
                   )}
                 >
-                  <motion.div
-                    whileHover={{ y: -2 }}
-                    transition={{ duration: 0.2 }}
-                  >
+                  <motion.div whileHover={{ y: -2 }} transition={{ duration: 0.2 }}>
                     {item.title}
                   </motion.div>
                 </Link>
@@ -400,19 +320,43 @@ export function Navbar() {
           ))}
         </nav>
 
-        {/* System Name - Hidden on mobile, visible on md and above */}
-        <Link href="/" className="hidden md:flex items-center mx-4 font-arabic">
-          <motion.div
-            className="flex items-center"
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 0.2 }}
-          >
-            <span ref={spanRef} className="inline-block font-bold  text-lg bg-clip-text text-black animate-pulse">
+        {/* System Name */}
+        <Link href="/" className="hidden md:flex  items-center mx-4 font-arabic">
+          <motion.div className="flex items-center " whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
+            <span
+              className={cn(
+                'inline-block text-lg bg-clip-text text-black animate-pulse',
+                isScrolled ? 'font-extrabold text-white' : 'font-bold'
+              )}
+            >
               نظام متابعة الكتب الالكتروني
             </span>
           </motion.div>
         </Link>
-        <Logout/>
+
+        
+        {/* <div className="hidden md:flex items-center gap-4">
+          {userData ? (
+            <div className="flex items-center gap-2 bg-sky-50 px-3 py-1.5 rounded-lg">
+              <User className="h-4 w-4 text-sky-600" />
+              <div className="text-right flex items-center gap-2">
+                <p className="font-semibold text-sm text-black">{userData.username}</p>
+                <Logout />
+              </div>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className="px-4 py-2 rounded flex items-center cursor-pointer text-black"
+            >
+              <User className="h-5 w-5 mr-1" />
+              تسجيل الدخول
+            </Link>
+          )}
+        </div> */}
+
+        {userData ? <UserDropdown userData={userData} /> : null }
+
       </div>
     </header>
   );

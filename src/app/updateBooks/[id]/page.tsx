@@ -1,4 +1,6 @@
 import UpdateBooksFollowUpByBookID from "@/components/UpdateBooksFollowUpByBookID/UpdateBooksFollowUpByBookID";
+import { verifyTokenForPage } from "@/utiles/verifyToken";
+import { cookies } from "next/headers";
 
 
 interface PageProps {
@@ -10,11 +12,22 @@ interface PageProps {
 const UpdateBooksFollowUpByBookIDPage = async ({ params }: PageProps) => {
   const { id } = await params;
 
+   const cookieStore = await cookies();
+      const token = cookieStore.get("jwt_cookies_auth_token")?.value || '';
+      const payload = verifyTokenForPage(token);
+
+      
+    
+      if (!payload) {
+        // optional: redirect or render error 
+        return <div>Unauthorized</div>; // here maybe redirect into error page
+      }
+
 
 
   return (
     <div>
-      <UpdateBooksFollowUpByBookID bookId={id} />
+      <UpdateBooksFollowUpByBookID bookId={id} payload={payload} />
     </div>
   );
 };

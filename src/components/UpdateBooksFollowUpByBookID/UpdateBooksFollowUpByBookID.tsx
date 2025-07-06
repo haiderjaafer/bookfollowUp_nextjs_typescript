@@ -30,6 +30,7 @@ import ArabicDatePicker from '../ArabicDatePicker';
 import BookActionInput from '../BookInsertionForm/bookActionDialogInput/bookActionInput';
 import SubjectAutoCompleteComboBox from '../BookInsertionForm/SubjectAutoComplete';
 import DestinationAutoComplete from '../BookInsertionForm/DestinationAutoComplete';
+import { JWTPayload } from '@/utiles/verifyToken';
 
 // Define the response type based on the FastAPI model
 interface PDFResponse {
@@ -84,17 +85,35 @@ const cardVariants = {
   visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } },
 };
 
+
+
 interface UpdateBooksFollowUpByBookIDProps {
   bookId: string;
+  payload: JWTPayload;
 }
 
 
+export default function UpdateBooksFollowUpByBookID({ bookId, payload }: UpdateBooksFollowUpByBookIDProps) {
 
-export default function UpdateBooksFollowUpByBookID({ bookId }: UpdateBooksFollowUpByBookIDProps) {
+console.log("UpdateBooksFollowUpByBookID CLIENT",payload);
+
+   // Safe conversion with fallback
+  const userID = payload.id?.toString() || '';
+  const username = payload.username || '';
+  const permission = payload.permission || '';
+
+ 
+
+  // Additional validation in client component
+  if (!userID) {
+    return <div>Error: Invalid user data...{userID}</div>;
+  }
+
 
   // Memoize API base URL
   const API_BASE_URL = useMemo(() => process.env.NEXT_PUBLIC_API_BASE_URL || '', []);
 
+  
 
   console.log("bookID"+ bookId);
   const router = useRouter();
@@ -111,7 +130,7 @@ export default function UpdateBooksFollowUpByBookID({ bookId }: UpdateBooksFollo
     bookAction: '',
     bookStatus: '',
     notes: '',
-    userID: '1', // Adjust based on auth context
+    userID: userID, // Adjust based on auth context
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -270,6 +289,8 @@ const fetchBookData = useCallback(async () => {
       e.preventDefault();
       setIsSubmitting(true);
 
+      console.log("form data client",formData);
+
       // Validate required fields
       const requiredFields = [
         'bookNo',
@@ -298,6 +319,14 @@ const fetchBookData = useCallback(async () => {
       if (selectedFile) {
         formDataToSend.append('file', selectedFile);
       }
+
+       if (formData.userID) {
+        formDataToSend.append('userID', userID);
+      }
+
+      console.log("formDataToSend",formDataToSend);
+
+
 
       try {
         const response = await axios.patch(

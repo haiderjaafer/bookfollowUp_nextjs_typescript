@@ -257,19 +257,38 @@ export default function DynamicTable<T extends BookFollowUpData>({
             onClick={async () => {
               setIsLoadingPdfs(true);
               try {
+               
+
+          
+
                 const response = await axios.get(
-                  `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/pdf/${row.original.bookNo}`
-                );
-                const pdfs = response.data;
-                if (pdfs.length === 0) {
-                  toast.info('لا توجد ملفات PDF لهذا السجل');
-                } else {
-                  setSelectedPdfs(pdfs);
-                  setPdfDialogOpen(true);
-                }
-              } catch (error) {
-                console.error('Error fetching PDFs:', error);
-                toast.error('فشل تحميل ملفات PDF');
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/pdf/${row.original.bookNo}`,
+            {
+              headers: { 'Content-Type': 'application/json' },
+              withCredentials: true,
+            }
+          );
+          const pdfs = response.data;
+          if (pdfs.length === 0) {
+            toast.info('لا توجد ملفات PDF لهذا السجل');
+          } else {
+            setSelectedPdfs(pdfs);
+            setPdfDialogOpen(true);
+          }
+        } catch (error: any) {
+          console.error('Error fetching PDFs:', error);
+          console.log('Error status:', error.response?.status);
+          console.log('Error detail:', error.response?.data?.detail);
+          if (error.response?.status === 404) {
+            toast.info('لا توجد ملفات PDF لهذا السجل');
+          } 
+          
+          else {
+            toast.error(error.response?.data?.detail || 'فشل تحميل ملفات PDF');
+          }
+
+
+
               } finally {
                 setIsLoadingPdfs(false);
               }
@@ -488,7 +507,7 @@ export default function DynamicTable<T extends BookFollowUpData>({
           </DialogContent>
         </Dialog>
         {/* PDF Dialog */}
-        <Dialog open={pdfDialogOpen} onOpenChange={setPdfDialogOpen}>
+        <Dialog open={pdfDialogOpen} onOpenChange={setPdfDialogOpen} >
           <DialogContent className="sm:max-w-[600px] p-6 bg-gray-50" dir="rtl">
             <DialogHeader>
               <DialogTitle className="text-2xl font-bold text-gray-800 text-center">
@@ -722,7 +741,7 @@ onClick={() => {
                           }
                         } catch (error) {
                           console.error('Error fetching PDFs:', error);
-                          toast.error('فشل تحميل ملفات PDF');
+                          toast.error(`فشل تحميل ملفات PDF...`);
                         } finally {
                           setIsLoadingPdfs(false);
                         }

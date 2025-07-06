@@ -1,12 +1,13 @@
 import { Tajawal } from "next/font/google";
 import type { Metadata } from "next";
 import "./globals.css";
-import { Navbar } from "@/components/Navbar";
+
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import FooterComponent from "@/components/FooterComponent";
 import ClientLayout from "./ClientLayout";
 import { Providers } from "./providers";
+import LayoutWrapper from "./LayoutWrapper";
 
 // const tajawal = Tajawal({
 //   subsets: ["arabic"],
@@ -31,12 +32,12 @@ export default function RootLayout({
     {/* <Navbar /> */}
     
     <main className="flex-grow">
-       <ClientLayout><Providers>{children}</Providers></ClientLayout>
+       <LayoutWrapper><Providers>{children}</Providers></LayoutWrapper>
     </main>
 
     {/* <FooterComponent /> */}
 
-    <ToastContainer
+    {/* <ToastContainer
       position="top-right"
       autoClose={5000}
       hideProgressBar={false}
@@ -47,7 +48,7 @@ export default function RootLayout({
       draggable
       pauseOnHover
       theme="light"
-    />
+    /> */}
   </body>
 </html>
 

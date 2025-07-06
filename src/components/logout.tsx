@@ -1,53 +1,47 @@
-// components/Navbar.tsx
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import axios from "axios";
-import { toast } from "react-toastify";
-import { LogOut } from "lucide-react";
+import { useRouter } from 'next/navigation';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import { LogOut } from 'lucide-react';
 
 export const Logout = () => {
   const router = useRouter();
 
   const handleLogout = async () => {
     try {
-      await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/logout`, {},
-        
-     { withCredentials: true,
-      headers: { 'Content-Type': 'application/json' }, 
-    
-    });
-   
-      toast.success("تم تسجيل الخروج بنجاح");
-      router.push("/login");
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/logout`,
+        {},
+        {
+          withCredentials: true,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+      toast.success('تم تسجيل الخروج بنجاح');
+      router.push('/login');
       router.refresh();
     } catch (error: any) {
-      toast.error(error?.response?.data?.detail || "فشل تسجيل الخروج");
+      toast.error(error?.response?.data?.detail || 'فشل تسجيل الخروج');
+      console.error('Logout error:', error);
     }
   };
 
   return (
    
-      
-    <div className="relative group inline-block">
-  <button
-    onClick={handleLogout}
-    className="px-4 py-2 rounded flex items-center cursor-pointer"
-  >
-    <LogOut color="black" className="h-5 w-5" />
-  </button>
-
-  {/* Tooltip Below */}
-  <div
-    className="absolute top-full mt-2 left-1/2 -translate-x-1/2
-               whitespace-nowrap bg-gray-800 text-white text-xs
-               rounded px-2 py-1 opacity-0 group-hover:opacity-100
-               transition-opacity duration-300 z-10 font-bold"
-  >
-    تسجيل الخروج
-  </div>
-</div>
+    <button
+  onClick={handleLogout}
+  className="px-3 py-2 w-full flex items-center justify-between rounded hover:bg-sky-100 transition-colors duration-200"
+>
+  <LogOut color="skyblue" className="h-4 w-4" />
+  <span className="text-sm font-extrabold text-black">تسجيل الخروج</span>
+</button>
 
    
   );
 };
+
+
+//flex: Makes the button a flex container.
+// justify-between: Distributes space between the icon and the text.
+//w-full: Ensures enough width for spacing. You can control the width if needed 

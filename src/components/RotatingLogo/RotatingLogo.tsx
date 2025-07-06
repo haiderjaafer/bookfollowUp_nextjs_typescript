@@ -1,5 +1,7 @@
+'use client';
+
 import Image from 'next/image';
-import styles from './logo.module.css'; // Import as styles (not a plain CSS file)
+import styles from './logo.module.css';
 
 export default function RotatingLogo() {
   return (
@@ -8,8 +10,8 @@ export default function RotatingLogo() {
       alt="Logo"
       width={35}
       height={35}
-      className={styles['rotate-infinite']} //  Apply from imported styles
+      style={{ width: 'auto', height: 'auto' }} // Maintain aspect ratio
+      className={styles['rotate-infinite']}
     />
   );
 }
-

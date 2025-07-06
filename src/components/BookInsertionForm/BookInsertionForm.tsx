@@ -20,6 +20,8 @@ import ArabicDatePicker from '../ArabicDatePicker';
 import DestinationAutoComplete from './DestinationAutoComplete';
 
 import BookActionInput from './bookActionDialogInput/bookActionInput';
+import { JWTPayload } from '@/utiles/verifyToken';
+
 
 
 // Define animation variants for Framer Motion
@@ -41,7 +43,25 @@ const inputVariants = {
   },
 };
 
-export default function BookInsertionForm() {
+
+interface BookInsertionFormProps {
+  payload: JWTPayload;
+}
+
+export default function BookInsertionForm({ payload }: BookInsertionFormProps)  {
+
+
+  // Safe conversion with fallback
+  const userID = payload.id?.toString() || '';
+  const username = payload.username || '';
+  const permission = payload.permission || '';
+
+  // Additional validation in client component
+  if (!userID) {
+    return <div>Error: Invalid user data...{userID}</div>;
+  }
+
+
 
   
 // Memoize API base URL
@@ -64,7 +84,7 @@ export default function BookInsertionForm() {
     bookAction: '',
     bookStatus: '',
     notes: '',
-    userID: '1', // Default userID (adjust based on auth context if needed)
+    userID: userID, // Convert number to string, // Default userID (adjust based on auth context if needed)
   });
   // State for submission status
   const [isSubmitting, setIsSubmitting] = useState(false);
