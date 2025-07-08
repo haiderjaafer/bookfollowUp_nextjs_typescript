@@ -183,46 +183,46 @@ const fetchBookData = useCallback(async () => {
     fetchBookData();
   }, [fetchBookData]);
 
-  // Check if book exists (for uniqueness validation during update)
-  const checkBookExists = useCallback(
-    async (bookType: string, bookNo: string, bookDate: string) => {
-      if (!bookType || !bookNo || !bookDate) return;
-      try {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/checkBookNoExistsForDebounce`,
-          { params: { bookType, bookNo, bookDate, excludeBookId: bookId } }
-        );
-        setBookExists(response.data.exists);
-        if (response.data.exists) {
-          toast.warning('رقم الكتاب موجود بالفعل لهذا العام');
-        }
-      } catch (error) {
-        console.error('Error checking book existence:', error);
-        setBookExists(false);
-      }
-    },
-    [bookId]
-  );
+  // // Check if book exists (for uniqueness validation during update)
+  // const checkBookExists = useCallback(
+  //   async (bookType: string, bookNo: string, bookDate: string) => {
+  //     if (!bookType || !bookNo || !bookDate) return;
+  //     try {
+  //       const response = await axios.get(
+  //         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/checkBookNoExistsForDebounce`,
+  //         { params: { bookType, bookNo, bookDate, excludeBookId: bookId } }
+  //       );
+  //       setBookExists(response.data.exists);
+  //       if (response.data.exists) {
+  //         toast.warning('رقم الكتاب موجود بالفعل لهذا العام');
+  //       }
+  //     } catch (error) {
+  //       console.error('Error checking book existence:', error);
+  //       setBookExists(false);
+  //     }
+  //   },
+  //   [bookId]
+  // );
 
-  const debouncedCheckBookExists = useCallback(
-    debounce(checkBookExists, 500),
-    [checkBookExists]
-  );
+  // const debouncedCheckBookExists = useCallback(
+  //   debounce(checkBookExists, 500),
+  //   [checkBookExists]
+  // );
 
-  useEffect(() => {
-    if (formData.bookNo && formData.bookType && formData.bookDate) {
-      debouncedCheckBookExists(
-        formData.bookType,
-        formData.bookNo,
-        formData.bookDate
-      );
-    } else {
-      setBookExists(null);
-    }
-    return () => {
-      debouncedCheckBookExists.clear();
-    };
-  }, [formData.bookNo, formData.bookType, formData.bookDate, debouncedCheckBookExists]);
+  // useEffect(() => {
+  //   if (formData.bookNo && formData.bookType && formData.bookDate) {
+  //     debouncedCheckBookExists(
+  //       formData.bookType,
+  //       formData.bookNo,
+  //       formData.bookDate
+  //     );
+  //   } else {
+  //     setBookExists(null);
+  //   }
+  //   return () => {
+  //     debouncedCheckBookExists.clear();
+  //   };
+  // }, [formData.bookNo, formData.bookType, formData.bookDate, debouncedCheckBookExists]);
 
   // Handle text input and select changes
   const handleChange = useCallback(

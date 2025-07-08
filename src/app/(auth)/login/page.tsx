@@ -43,6 +43,9 @@ const ResponsiveLogin: React.FC<ResponsiveLoginProps> = () => {
 
         // Axios automatically parses JSON response into response.data
         console.log('Login response:', response.data);
+        // if(response.status == 400){
+        //   toast.error("404 returned");
+        // }
 
         // Axios handles 2xx responses as success, non-2xx as errors (caught in the catch block)
         toast.success("تم تسجيل الدخول بنجاح");

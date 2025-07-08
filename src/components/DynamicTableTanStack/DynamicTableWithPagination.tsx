@@ -213,9 +213,20 @@ export default function DynamicTable<T extends BookFollowUpData>({
           columnDef.size = 200;
         } else if (['bookNo', 'bookDate', 'bookStatus', 'incomingDate'].includes(key)) {
           columnDef.size = 100;
-        } else if (key === 'username' || key === 'countOfLateBooks') {
+        } 
+        else if (key === 'username' || key === 'countOfLateBooks') {
           columnDef.size = 150;
-        } else {
+        } 
+
+        else if (key === 'currentDate' ) {
+          columnDef.size = 130;
+        }
+        
+         else if (key === 'bookType' ) {
+          columnDef.size = 70;
+        }
+
+        else {
           columnDef.size = 120;
         }
 

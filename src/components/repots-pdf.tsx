@@ -124,8 +124,8 @@ export default function PrintReportPage() {
       <th className="border border-gray-400 p-2 text-lg font-extrabold min-w-[112px]">تاريخ الوارد</th>
       <th className="border border-gray-400 p-2 text-lg font-extrabold min-w-[150px]">الموضوع</th>
       <th className="border border-gray-400 p-2 text-lg font-extrabold">الجهة</th>
-      <th className="border border-gray-400 p-2 text-lg font-extrabold min-w-[96px]">الإجراء</th>
-      <th className="border border-gray-400 p-2 text-lg font-extrabold">الملاحظات</th>
+      <th className="border border-gray-400 p-2 text-lg font-extrabold min-w-[80px]">الإجراء</th>
+      <th className="border border-gray-400 p-2 text-lg font-extrabold min-w-[150px]">الملاحظات</th>
     </tr>
   </thead>
   <tbody>
@@ -138,8 +138,10 @@ export default function PrintReportPage() {
         <td className="border border-gray-400 textlg font-serif font-bold   p-2 min-w-[112px]">{item.incomingDate}</td>
         <td className="border border-gray-400 textlg font-serif font-bold   p-2 min-w-[150px] break-words">{item.subject}</td>
         <td className="border border-gray-400 textlg font-serif font-bold   p-2">{item.destination}</td>
-        <td className="border border-gray-400 textlg font-serif font-bold   p-2 min-w-[96px]">{item.bookAction}</td>
-        <td className="border border-gray-400 textlg font-serif font-bold   p-2 break-words">{item.notes}</td>
+        <td className="border border-gray-400 textlg font-serif font-bold   p-2 min-w-[80px]">{item.bookAction}</td>
+        <td className="border border-gray-400 text-lg font-serif font-bold p-2 break-words whitespace-pre-wrap align-top min-w-[100px] max-w-[110px] print:break-words print:whitespace-pre-wrap print:align-top">
+          {item.notes}
+        </td>
       </tr>
     ))}
   </tbody>

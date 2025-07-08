@@ -173,14 +173,14 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps)  
   const handleFilesAccepted = useCallback((files: File[]) => {
     if (files.length > 0) {
       setSelectedFile(files[0]);
-      toast.info(`File ${files[0].name} selected`);
+      toast.info(`تم اختيار الملف${files[0].name}`);
     }
   }, []);
 
   // Handle file removal from DropzoneComponent
   const handleFileRemoved = useCallback((fileName: string) => {
     setSelectedFile(null);
-    toast.info(`File ${fileName} removed`);
+    toast.info(`تم مسح الملف ${fileName}`);
   }, []);
 
   // Handle form submission to FastAPI endpoint
@@ -254,7 +254,7 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps)  
             bookAction: '',
             bookStatus: '',
             notes: '',
-            userID: '1',
+            userID: '',
           });
           setSelectedFile(null);
           setBookExists(null); // Reset existence state
@@ -263,7 +263,7 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps)  
         }
       } catch (error) {
         console.error('Error submitting form:', error);
-        toast.error('فشل في إرسال النموذج. يرجى المحاولة مرة أخرى');
+        toast.error('فشل في إرسال البيانات. يرجى المحاولة مرة أخرى');
       } finally {
         setIsSubmitting(false);
       }

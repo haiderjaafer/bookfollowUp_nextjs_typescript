@@ -34,7 +34,7 @@ export default function UserDropdown({ userData }: Props) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="flex items-center gap-2 text-black">
+        <Button variant="ghost" className="flex items-center gap-2 text-black cursor-pointer">
           <User className="w-4 h-4 text-black" />
           {/* <span className="text-sm font-semibold">{userData.username}</span> */}
         </Button>
