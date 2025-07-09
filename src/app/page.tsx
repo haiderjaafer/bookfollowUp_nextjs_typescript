@@ -112,6 +112,53 @@ const Home = () => {
     // CHANGED: Added flexbox layout for full-screen height and sticky table
     <div className="flex flex-col min-h-screen bg-gray-50 font-serif" dir="rtl">
       {/* CHANGED: Header section with title */}
+
+      <section className="min-h-[20vh] bg-gray-200 flex justify-center items-start flex-wrap gap-1 py-4">
+  <article className="bg-red-400 w-full sm:w-60 h-24 rounded-md text-center font-extrabold p-2 flex flex-col justify-between">
+  <div className="text-sm">نوع الكتاب</div>
+  <hr className="mx-10 border-t-4 rounded-full border-white" />
+  <div className="flex justify-around text-xs sm:text-sm mt-1">
+    <div className="flex flex-col items-center">
+      <span>خارجي</span>
+      <span className="text-white">30</span>
+    </div>
+    <div className="flex flex-col items-center">
+      <span>داخلي</span>
+      <span className="text-white">10</span>
+    </div>
+    <div className="flex flex-col items-center">
+      <span>فاكس</span>
+      <span className="text-white">5</span>
+    </div>
+  </div>
+</article>
+
+   <article className="bg-red-400 w-full sm:w-60 h-24 rounded-md text-center font-extrabold p-2 flex flex-col justify-between">
+  <div className="text-sm">الاجراء</div>
+  <hr className="mx-10 border-t-4 rounded-full border-white" />
+  <div className="flex justify-around text-xs sm:text-sm mt-1">
+    <div className="flex flex-col items-center">
+      <span>منجز</span>
+      <span className="text-white">30</span>
+    </div>
+    <div className="flex flex-col items-center">
+      <span>قيد الانجاز</span>
+      <span className="text-white">10</span>
+    </div>
+    <div className="flex flex-col items-center">
+      <span>مداولة</span>
+      <span className="text-white">5</span>
+    </div>
+  </div>
+</article>
+  <article className="bg-red-400 w-full sm:w-60 h-20 rounded-md text-center font-extrabold">
+     المستخدم <hr className='mx-10 border-t-4 rounded-full'/> <strong>30</strong>
+  </article>
+ 
+</section>
+
+
+
       <header className="p-4">
         <h1 className="text-3xl font-bold text-right text-gray-800">
           الكتب المتأخرة

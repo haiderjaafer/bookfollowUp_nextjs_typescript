@@ -219,7 +219,7 @@ export default function DynamicTable<T extends BookFollowUpData>({
         } 
 
         else if (key === 'currentDate' ) {
-          columnDef.size = 130;
+          columnDef.size = 150;
         }
         
          else if (key === 'bookType' ) {
