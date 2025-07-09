@@ -114,8 +114,8 @@ const Home = () => {
       {/* CHANGED: Header section with title */}
 
       <section className="min-h-[20vh] bg-gray-200 flex justify-center items-start flex-wrap gap-1 py-4">
-  <article className="bg-red-400 w-full sm:w-60 h-24 rounded-md text-center font-extrabold p-2 flex flex-col justify-between">
-  <div className="text-sm">نوع الكتاب</div>
+  <article className="bg-red-400 w-full sm:w-60 h-24 rounded-md text-center font-extrabold p-2 flex flex-col justify-between hover:bg-red-300">
+  <div className="text-base">نوع الكتاب</div>
   <hr className="mx-10 border-t-4 rounded-full border-white" />
   <div className="flex justify-around text-xs sm:text-sm mt-1">
     <div className="flex flex-col items-center">
@@ -133,8 +133,8 @@ const Home = () => {
   </div>
 </article>
 
-   <article className="bg-red-400 w-full sm:w-60 h-24 rounded-md text-center font-extrabold p-2 flex flex-col justify-between">
-  <div className="text-sm">الاجراء</div>
+   <article className="bg-red-400 w-full sm:w-60 h-24 rounded-md text-center font-extrabold p-2 flex flex-col justify-between hover:bg-red-300">
+  <div className="text-base">الاجراء</div>
   <hr className="mx-10 border-t-4 rounded-full border-white" />
   <div className="flex justify-around text-xs sm:text-sm mt-1">
     <div className="flex flex-col items-center">
@@ -151,7 +151,7 @@ const Home = () => {
     </div>
   </div>
 </article>
-  <article className="bg-red-400 w-full sm:w-60 h-20 rounded-md text-center font-extrabold">
+  <article className="bg-red-400 w-full sm:w-60 h-20 rounded-md text-center font-extrabold text-base hover:bg-red-300">
      المستخدم <hr className='mx-10 border-t-4 rounded-full'/> <strong>30</strong>
   </article>
  
