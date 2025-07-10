@@ -36,6 +36,21 @@ interface LateBooksResponse {
   limit: number;
   totalPages: number;
 }
+interface BookTypeCounts {
+  External: number;
+  Internal: number;
+  Fax: number;
+}
+
+interface BookStatusCounts {
+  Accomplished: number;
+  Pending: number;
+  Deliberation: number;
+}
+interface UserBookCount {
+  username: string;
+  bookCount: number;
+}
 
 const Home = () => {
   const [data, setData] = useState<LateBooksResponse | null>(null);
@@ -44,6 +59,68 @@ const Home = () => {
   const [loading, setLoading] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const maxRetries = 2;
+
+
+
+
+  const [bookTypeCounts, setBookTypeCounts] = useState<BookTypeCounts>({ External: 0, Internal: 0, Fax: 0 });
+  const [bookStatusCounts, setBookStatusCounts] = useState<BookStatusCounts>({
+    Accomplished: 0,
+    Pending: 0,
+    Deliberation: 0,
+  });
+  const [userBookCounts, setUserBookCounts] = useState<UserBookCount[]>([]);
+  const [loadingCountBooksStatistics, setLoadingCountBooksStatistics] = useState(true);
+
+
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        setLoadingCountBooksStatistics(true);
+
+        // Fetch book type counts
+        const typeResponse = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/counts/book-type`,
+          { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
+        );
+        setBookTypeCounts(typeResponse.data);
+        console.log('Book type counts:', typeResponse.data);
+
+        // Fetch book status counts
+        const statusResponse = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/counts/book-status`,
+          { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
+        );
+        setBookStatusCounts(statusResponse.data);
+        console.log('Book status counts:', statusResponse.data);
+
+        // Fetch user book counts
+        const userResponse = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/counts/user-books`,
+          { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
+        );
+        setUserBookCounts(userResponse.data);
+        console.log('User book counts:', userResponse.data);
+
+        toast.success('Books statistics loaded successfully');
+      } catch (error: any) {
+        console.error('Error fetching counts:', error);
+        console.log('Error status:', error.response?.status);
+        console.log('Error detail:', error.response?.data?.detail);
+        toast.error(error.response?.data?.detail || 'Failed to load books statistics');
+      } finally {
+        setLoadingCountBooksStatistics(false);
+      }
+    };
+
+    fetchCounts();
+  }, []);
+
+
+
+
+
 
   const fetchLateBooks = useCallback(
     async (page: number, limit: number, retry: number = 0) => {
@@ -107,55 +184,89 @@ const Home = () => {
     setLimit(newLimit);
     setPage(1);
   }, []);
+  
 
   return (
     // CHANGED: Added flexbox layout for full-screen height and sticky table
     <div className="flex flex-col min-h-screen bg-gray-50 font-serif" dir="rtl">
       {/* CHANGED: Header section with title */}
 
-      <section className="min-h-[20vh] bg-gray-200 flex justify-center items-start flex-wrap gap-1 py-4">
-  <article className="bg-red-400 w-full sm:w-60 h-24 rounded-md text-center font-extrabold p-2 flex flex-col justify-between hover:bg-red-300">
+
+
+
+       
+
+    
+
+       <section className="min-h-[20vh] bg-gray-200 flex justify-center items-start flex-wrap gap-1 py-4">
+ 
+
+ <article className="transition-all duration-300 ease-in-out group-hover:opacity-40 hover:!opacity-100 
+  bg-red-400 w-full sm:w-60 h-24 rounded-md text-center font-extrabold p-2 
+  flex flex-col justify-between hover:bg-red-300">
   <div className="text-base">نوع الكتاب</div>
   <hr className="mx-10 border-t-4 rounded-full border-white" />
   <div className="flex justify-around text-xs sm:text-sm mt-1">
     <div className="flex flex-col items-center">
       <span>خارجي</span>
-      <span className="text-white">30</span>
+      <span className="text-white">{loadingCountBooksStatistics ? '...' : bookTypeCounts.External}</span>
     </div>
     <div className="flex flex-col items-center">
       <span>داخلي</span>
-      <span className="text-white">10</span>
+      <span className="text-white">{loadingCountBooksStatistics ? '...' : bookTypeCounts.Internal}</span>
     </div>
     <div className="flex flex-col items-center">
       <span>فاكس</span>
-      <span className="text-white">5</span>
+      <span className="text-white">{loadingCountBooksStatistics ? '...' : bookTypeCounts.Fax}</span>
     </div>
   </div>
 </article>
 
-   <article className="bg-red-400 w-full sm:w-60 h-24 rounded-md text-center font-extrabold p-2 flex flex-col justify-between hover:bg-red-300">
-  <div className="text-base">الاجراء</div>
+<article className="transition-all duration-300 ease-in-out group-hover:opacity-40 hover:!opacity-100 
+  bg-red-400 w-full sm:w-60 h-24 rounded-md text-center font-extrabold p-2 
+  flex flex-col justify-between hover:bg-red-300">
+  <div className="text-base">حالة الكتب</div>
   <hr className="mx-10 border-t-4 rounded-full border-white" />
   <div className="flex justify-around text-xs sm:text-sm mt-1">
     <div className="flex flex-col items-center">
-      <span>منجز</span>
-      <span className="text-white">30</span>
+      <span>الكتب المنجزة</span>
+      <span className="text-white">{loadingCountBooksStatistics ? '...' : bookStatusCounts.Accomplished}</span>
     </div>
     <div className="flex flex-col items-center">
-      <span>قيد الانجاز</span>
-      <span className="text-white">10</span>
+      <span>كتب قيد الانجاز</span>
+      <span className="text-white">{loadingCountBooksStatistics ? '...' : bookStatusCounts.Pending}</span>
     </div>
     <div className="flex flex-col items-center">
       <span>مداولة</span>
-      <span className="text-white">5</span>
+      <span className="text-white">{loadingCountBooksStatistics ? '...' : bookStatusCounts.Deliberation}</span>
     </div>
   </div>
 </article>
-  <article className="bg-red-400 w-full sm:w-60 h-20 rounded-md text-center font-extrabold text-base hover:bg-red-300">
-     المستخدم <hr className='mx-10 border-t-4 rounded-full'/> <strong>30</strong>
-  </article>
+
  
-</section>
+ <article className="transition-all duration-300 ease-in-out group-hover:opacity-40 hover:!opacity-100 
+  bg-red-400 w-full sm:w-60 h-24 rounded-md text-center font-extrabold text-base 
+  hover:bg-red-300 p-2 flex flex-col justify-between">
+  <div>المستخدم</div>
+  <hr className="mx-10 border-t-4 rounded-full border-white" />
+  <div className="flex justify-around text-xs sm:text-sm mt-1">
+    {loadingCountBooksStatistics ? (
+      <span>...</span>
+    ) : userBookCounts.length > 0 ? (
+      userBookCounts.slice(0, 3).map((user, index) => (
+        <div key={index} className="flex flex-col items-center">
+          <span>{user.username}</span>
+          <span className="text-white">{user.bookCount}</span>
+        </div>
+      ))
+    ) : (
+      <span>لا يوجد بيانات</span>
+    )}
+  </div>
+</article>
+
+ 
+</section> 
 
 
 

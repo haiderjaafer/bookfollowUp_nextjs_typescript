@@ -1,5 +1,6 @@
 'use client';
 
+import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
 function FooterComponent() {
@@ -28,6 +29,18 @@ function FooterComponent() {
     };
   }, []);
 
+    const slideFromBottom = {
+    hidden: { y: 100, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        duration: 1,
+        ease: "easeOut"
+      }
+    }
+  };
+
   return (
     <footer
       ref={footerRef}
@@ -38,7 +51,10 @@ function FooterComponent() {
           : "bg-transparent" // background when not near
       }`}
     >
+      
       <div className="container mx-auto px-4 py-3 flex flex-col sm:flex-row items-center justify-center text-center sm:text-start">
+
+        
         <p className="text-sm sm:text-base font-extrabold">
           جميع الحقوق محفوظة &copy; قسم تقنية المعلومات
         </p>
@@ -46,7 +62,11 @@ function FooterComponent() {
         <p className="text-xs sm:text-sm mt-2 sm:mt-0 font-extrabold">
           شعبة الشبكات والانظمة البرمجية
         </p>
+
+      
       </div>
+   
+
     </footer>
   );
 }
