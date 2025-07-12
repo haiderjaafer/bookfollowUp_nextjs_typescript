@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -11,7 +11,7 @@ import SubjectInput from '../subject/subjectInput';
 import DestinationInput from '../destination/destinationInput';
 import { BookInsertionType } from '../../../bookInsertionType';
 import { toast } from 'react-toastify';
-import DropzoneComponent from '../ReactDropZoneComponont';
+import DropzoneComponent, { DropzoneComponentRef } from '../ReactDropZoneComponont';
 import axios from 'axios';
 import debounce from 'debounce'; // Import debounce
 import DirectoryNameCombobox from './DirectoryNameComboboxAutoComplete';
@@ -71,6 +71,11 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps)  
 
   // State for the selected PDF file from DropzoneComponent
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+
+  const [suppressFileToast, setSuppressFileToast] = useState(false);
+
+
   // State for form fields
   const [formData, setFormData] = useState<BookInsertionType>({
     bookType: '',
@@ -178,10 +183,10 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps)  
   }, []);
 
   // Handle file removal from DropzoneComponent
-  const handleFileRemoved = useCallback((fileName: string) => {
-    setSelectedFile(null);
-    toast.info(`تم مسح الملف ${fileName}`);
-  }, []);
+const handleFileRemoved = useCallback((fileName: string) => {
+  setSelectedFile(null);
+  toast.info(`تم مسح الملف ${fileName}`);
+}, []);
 
   // Handle form submission to FastAPI endpoint
   const handleSubmit = useCallback(
@@ -201,13 +206,35 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps)  
         'bookStatus',
         'userID',
       ];
-      for (const field of requiredFields) {
-        if (!formData[field as keyof BookInsertionType]) {
-          toast.error(`يرجى ملء حقل ${field}`);
-          setIsSubmitting(false);
-          return;
-        }
-      }
+     
+
+      const fieldLabels: Record<keyof BookInsertionType, string> = {
+        bookNo: 'رقم الكتاب',
+        bookType: 'نوع الكتاب',
+        bookDate: 'تاريخ الكتاب',
+        directoryName: 'اسم الدائرة',
+        subject: 'الموضوع',
+        destination: 'جهة تحويل البريد',
+        bookAction: 'الإجراء',
+        bookStatus: 'حالة الكتاب',
+        userID: 'المستخدم',
+        incomingNo: 'رقم الوارد',
+        notes: 'الملاحظات',
+        incomingDate: 'تأريخ الوارد'
+      };
+
+for (const field of requiredFields) {
+  if (!formData[field as keyof BookInsertionType]) {
+    const label = fieldLabels[field as keyof BookInsertionType] || field;
+    toast.error(`يرجى ملء حقل ${label}`);
+    setIsSubmitting(false);
+    return;
+  }
+}
+
+
+
+
 
       // Validate file
       if (!selectedFile) {
@@ -256,6 +283,10 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps)  
             notes: '',
             userID: '',
           });
+
+     dropzoneRef.current?.reset(true); // will call reset function that existed in DropzoneComponent child  Silent reset — no toast shown
+
+
           setSelectedFile(null);
           setBookExists(null); // Reset existence state
         } else {
@@ -281,6 +312,14 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps)  
   },
   []
 );
+
+const dropzoneRef = useRef<DropzoneComponentRef>(null); // useRef: This hook creates a mutable ref object.
+
+//Type Annotation: DropzoneComponentRef is a type that describes the shape of the ref. This typically includes methods (like reset) that you want to expose from the DropzoneComponent
+
+
+
+
   
 
   // JSX remains unchanged, but ensure bookNo input uses handleChange
@@ -536,8 +575,10 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps)  
               تحميل ملف PDF
             </label>
             <DropzoneComponent
+              ref={dropzoneRef}     // In this line, you pass the dropzoneRef from the parent component to the DropzoneComponent as a ref prop
               onFilesAccepted={handleFilesAccepted}
               onFileRemoved={handleFileRemoved}
+              
             />
           </motion.div>
 

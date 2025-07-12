@@ -246,16 +246,16 @@ const Home = () => {
  
  <article className="transition-all duration-300 ease-in-out group-hover:opacity-40 hover:!opacity-100 
   bg-red-400 w-full sm:w-60 h-24 rounded-md text-center font-extrabold text-base 
-  hover:bg-red-300 p-2 flex flex-col justify-between">
+  hover:bg-red-300 p-2 flex flex-col justify-between ">
   <div>المستخدم</div>
   <hr className="mx-10 border-t-4 rounded-full border-white" />
-  <div className="flex justify-around text-xs sm:text-sm mt-1">
+  <div className="flex justify-around text-xs sm:text-sm mt-1 ">
     {loadingCountBooksStatistics ? (
       <span>...</span>
     ) : userBookCounts.length > 0 ? (
       userBookCounts.slice(0, 3).map((user, index) => (
-        <div key={index} className="flex flex-col items-center">
-          <span>{user.username}</span>
+        <div key={index} className="flex flex-col items-center ">
+          <span >{user.username}</span>
           <span className="text-white">{user.bookCount}</span>
         </div>
       ))
