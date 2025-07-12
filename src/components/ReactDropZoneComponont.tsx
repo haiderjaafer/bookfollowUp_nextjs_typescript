@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, {
@@ -8,9 +9,10 @@ import React, {
   forwardRef,
 } from 'react';
 import { useDropzone, DropzoneOptions } from 'react-dropzone';
-import { FileText, Trash2, Paperclip } from 'lucide-react';
+import { FileText, Trash2, Paperclip, Book } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import axios from 'axios';
 
 interface PreviewFile {
   file?: File;
@@ -96,8 +98,54 @@ const DropzoneComponent = forwardRef<DropzoneComponentRef, DropzoneComponentProp
       onFileRemoved(fileName);
     };
 
+
+
+// 🆕 Function to fetch and preview book.pdf from backend
+const fetchBookPdf = async () => {
+  try {
+    const response = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/files/book`,
+      {
+        responseType: 'blob',
+        withCredentials: true,
+      }
+    );
+
+    console.log("pdf book",response.data);
+    const previewUrl = URL.createObjectURL(response.data) + `#${Date.now()}`;
+    const file: PreviewFile = {
+      name: 'book.pdf',
+      preview: previewUrl,
+    };
+    revokePreviousUrls(files); // remove existing file preview
+    setFiles([file]); // replace with book.pdf
+  } catch (error: any) {
+    console.error('❌ Failed to load book.pdf:', error);
+    // optional toast error message if needed
+  }
+};
+
+
     return (
       <div className="flex items-center justify-between bg-gray-300 rounded-lg w-full flex-col sm:flex-row gap-2">
+
+<section className='flex flex-col items-center'>
+
+
+{/* 🆕 Button OUTSIDE getRootProps to avoid opening dialog */}
+  <div className="flex justify-center items-center w-full h-16 mb-1 cursor-pointer bg-red-300 rounded-lg border-2 border-dashed m-1">
+    <button
+      onClick={fetchBookPdf}
+      type="button"
+      title="تحميل ملف book.pdf"
+      className="bg-sky-500 text-white w-full h-full flex items-center cursor-pointer justify-center   hover:bg-sky-600 transition-colors"
+    >
+  <strong>سحب ملف</strong>
+      {/* <Book className="w-5 h-5" />  */}
+    </button>
+  </div>
+
+
         {/* Dropzone Area */}
         <div
           {...getRootProps({
@@ -110,7 +158,7 @@ const DropzoneComponent = forwardRef<DropzoneComponentRef, DropzoneComponentProp
           })}
         >
           <input {...getInputProps()} />
-          <div className="flex flex-col items-center h-[150px] justify-center text-center">
+          <div className="flex flex-col items-center h-[100px] justify-center text-center">
             <Paperclip className="w-8 h-8 text-gray-500" />
             <p className="text-sky-500 font-serif font-extrabold text-sm mt-2">
               {isDragActive ? 'اسقط الملف هنا...' : 'اختار الملف | سحب وإفلات'}
@@ -119,8 +167,13 @@ const DropzoneComponent = forwardRef<DropzoneComponentRef, DropzoneComponentProp
               فقط ملفات PDF (بحد أقصى 10 ميجابايت)
             </p>
           </div>
+
+        
+
         </div>
 
+
+</section>
         {/* Preview */}
         {files.map((file) => (
           <div
