@@ -13,18 +13,15 @@ import { BookInsertionType } from '../../../bookInsertionType';
 import { toast } from 'react-toastify';
 import DropzoneComponent, { DropzoneComponentRef } from '../ReactDropZoneComponont';
 import axios from 'axios';
-import debounce from 'debounce'; // Import debounce
+import debounce from 'debounce';
 import DirectoryNameCombobox from './DirectoryNameComboboxAutoComplete';
 import SubjectAutoCompleteComboBox from './SubjectAutoComplete';
 import ArabicDatePicker from '../ArabicDatePicker';
 import DestinationAutoComplete from './DestinationAutoComplete';
-
 import BookActionInput from './bookActionDialogInput/bookActionInput';
 import { JWTPayload } from '@/utiles/verifyToken';
 
-
-
-// Define animation variants for Framer Motion
+// Animation variants
 const formVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
@@ -43,66 +40,52 @@ const inputVariants = {
   },
 };
 
-
 interface BookInsertionFormProps {
   payload: JWTPayload;
 }
 
-export default function BookInsertionForm({ payload }: BookInsertionFormProps)  {
-
-
-  // Safe conversion with fallback
+export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
+  // Validate user data
   const userID = payload.id?.toString() || '';
   const username = payload.username || '';
   const permission = payload.permission || '';
 
-  // Additional validation in client component
   if (!userID) {
     return <div>Error: Invalid user data...{userID}</div>;
   }
 
-
-
-  
-// Memoize API base URL
   const API_BASE_URL = useMemo(() => process.env.NEXT_PUBLIC_API_BASE_URL || '', []);
-
-
-
-  // State for the selected PDF file from DropzoneComponent
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
-
-  const [suppressFileToast, setSuppressFileToast] = useState(false);
-
 
   // State for form fields
   const [formData, setFormData] = useState<BookInsertionType>({
     bookType: '',
     bookNo: '',
-    bookDate: format(new Date(), 'yyyy-MM-dd'), // Default to current date
+    bookDate: format(new Date(), 'yyyy-MM-dd'),
     directoryName: '',
     incomingNo: '',
-    incomingDate: format(new Date(), 'yyyy-MM-dd'), // Default to current date
+    incomingDate: format(new Date(), 'yyyy-MM-dd'),
     subject: '',
     destination: '',
     bookAction: '',
     bookStatus: '',
     notes: '',
-    userID: userID, // Convert number to string, // Default userID (adjust based on auth context if needed)
+    userID: userID,
   });
-  // State for submission status
+
+  // State for selected file
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // State for book existence validation
   const [bookExists, setBookExists] = useState<boolean | null>(null);
 
-  // Function to check if book exists (will be debounced)
+  const dropzoneRef = useRef<DropzoneComponentRef>(null);
+
+  // Check if book exists
   const checkBookExists = useCallback(
     async (bookType: string, bookNo: string, bookDate: string) => {
-      if (!bookType || !bookNo || !bookDate) return; // Skip if any field is empty
+      if (!bookType || !bookNo || !bookDate) return;
       try {
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/checkBookNoExistsForDebounce`,
+          `${API_BASE_URL}/api/bookFollowUp/checkBookNoExistsForDebounce`,
           { params: { bookType, bookNo, bookDate } }
         );
         setBookExists(response.data.exists);
@@ -111,30 +94,23 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps)  
         }
       } catch (error) {
         console.error('Error checking book existence:', error);
-        setBookExists(false); // Assume non-existent on error to avoid blocking user
+        setBookExists(false);
       }
     },
-    []
+    [API_BASE_URL]
   );
 
-  // Create debounced version of checkBookExists (500ms delay)
   const debouncedCheckBookExists = useCallback(
     debounce(checkBookExists, 500),
     [checkBookExists]
   );
 
-  // Monitor bookNo, bookType, and bookDate changes to trigger debounced check
   useEffect(() => {
     if (formData.bookNo && formData.bookType && formData.bookDate) {
-      debouncedCheckBookExists(
-        formData.bookType,
-        formData.bookNo,
-        formData.bookDate
-      );
+      debouncedCheckBookExists(formData.bookType, formData.bookNo, formData.bookDate);
     } else {
-      setBookExists(null); // Reset existence state if fields are incomplete
+      setBookExists(null);
     }
-    // Cleanup debounce on unmount
     return () => {
       debouncedCheckBookExists.clear();
     };
@@ -142,11 +118,7 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps)  
 
   // Handle text input and select changes
   const handleChange = useCallback(
-    (
-      e: React.ChangeEvent<
-        HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-      >
-    ) => {
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
       const { name, value } = e.target;
       setFormData((prev) => ({
         ...prev,
@@ -156,46 +128,61 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps)  
     []
   );
 
-  // Handle bookDate selection
-  const handleChangeBookDate = useCallback((date: Date) => {
-    const formattedDate = format(date, 'yyyy-MM-dd');
-    setFormData((prev) => ({
-      ...prev,
-      bookDate: formattedDate,
-    }));
-  }, []);
+  // Handle date changes
+  const handleDateChange = useCallback(
+    (key: 'bookDate' | 'incomingDate', value: string) => {
+      if (value && !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        toast.error('يرجى إدخال التاريخ بصيغة YYYY-MM-DD');
+        return;
+      }
+      setFormData((prev) => ({ ...prev, [key]: value }));
+    },
+    []
+  );
 
-  // Handle incomingDate selection
-  const handleChangeIncomingDate = useCallback((date: Date) => {
-    const formattedDate = format(date, 'yyyy-MM-dd');
-    setFormData((prev) => ({
-      ...prev,
-      incomingDate: formattedDate,
-    }));
-  }, []);
-
-  // Handle file acceptance from DropzoneComponent
+  // Handle file acceptance
   const handleFilesAccepted = useCallback((files: File[]) => {
     if (files.length > 0) {
-      setSelectedFile(files[0]);
-      toast.info(`تم اختيار الملف${files[0].name}`);
+      const file = files[0];
+      // Validate file type and size
+      if (file.type !== 'application/pdf') {
+        toast.error('يرجى تحميل ملف PDF صالح');
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error('حجم الملف يتجاوز 10 ميجابايت');
+        return;
+      }
+      setSelectedFile(file);
+      toast.info(`تم اختيار الملف ${file.name}`);
     }
   }, []);
 
-  // Handle file removal from DropzoneComponent
-const handleFileRemoved = useCallback((fileName: string) => {
-  setSelectedFile(null);
-  toast.info(`تم مسح الملف ${fileName}`);
-}, []);
+  // Handle file removal
+  const handleFileRemoved = useCallback((fileName: string) => {
+    setSelectedFile(null);
+    toast.info(`تم إزالة الملف ${fileName}`);
+  }, []);
 
-  // Handle form submission to FastAPI endpoint
+  // Handle book PDF loading result
+  const handleBookPdfLoaded = useCallback((success: boolean, file?: File) => {
+    console.log(`📄 Book PDF loaded: ${success ? 'SUCCESS' : 'FAILED'}`);
+    if (success && file) {
+      setSelectedFile(file);
+      toast.info('تم تحميل ملف book.pdf بنجاح');
+    } else {
+      setSelectedFile(null);
+    }
+  }, []);
+
+  // Handle form submission
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
       setIsSubmitting(true);
 
       // Validate required fields
-      const requiredFields = [
+      const requiredFields: (keyof BookInsertionType)[] = [
         'bookNo',
         'bookType',
         'bookDate',
@@ -206,7 +193,6 @@ const handleFileRemoved = useCallback((fileName: string) => {
         'bookStatus',
         'userID',
       ];
-     
 
       const fieldLabels: Record<keyof BookInsertionType, string> = {
         bookNo: 'رقم الكتاب',
@@ -220,21 +206,17 @@ const handleFileRemoved = useCallback((fileName: string) => {
         userID: 'المستخدم',
         incomingNo: 'رقم الوارد',
         notes: 'الملاحظات',
-        incomingDate: 'تأريخ الوارد'
+        incomingDate: 'تاريخ الوارد',
       };
 
-for (const field of requiredFields) {
-  if (!formData[field as keyof BookInsertionType]) {
-    const label = fieldLabels[field as keyof BookInsertionType] || field;
-    toast.error(`يرجى ملء حقل ${label}`);
-    setIsSubmitting(false);
-    return;
-  }
-}
-
-
-
-
+      for (const field of requiredFields) {
+        if (!formData[field]) {
+          const label = fieldLabels[field] || field;
+          toast.error(`يرجى ملء حقل ${label}`);
+          setIsSubmitting(false);
+          return;
+        }
+      }
 
       // Validate file
       if (!selectedFile) {
@@ -243,13 +225,7 @@ for (const field of requiredFields) {
         return;
       }
 
-      // Optional: Warn if book exists before submitting
-      // if (bookExists) {
-      //   toast.warning('تحذير: رقم الكتاب موجود بالفعل. هل تريد المتابعة؟');
-      //   // Proceed with submission despite warning
-      // }
-
-      // Create FormData object for multipart/form-data submission
+      // Create FormData for submission
       const formDataToSend = new FormData();
       Object.entries(formData).forEach(([key, value]) => {
         formDataToSend.append(key, value);
@@ -258,7 +234,7 @@ for (const field of requiredFields) {
 
       try {
         const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp`,
+          `${API_BASE_URL}/api/bookFollowUp`,
           formDataToSend,
           {
             headers: {
@@ -281,14 +257,11 @@ for (const field of requiredFields) {
             bookAction: '',
             bookStatus: '',
             notes: '',
-            userID: '',
+            userID: userID,
           });
-
-     dropzoneRef.current?.reset(true); // will call reset function that existed in DropzoneComponent child  Silent reset — no toast shown
-
-
           setSelectedFile(null);
-          setBookExists(null); // Reset existence state
+          dropzoneRef.current?.reset(true); // Silent reset
+          setBookExists(null);
         } else {
           throw new Error('Failed to add book');
         }
@@ -299,30 +272,9 @@ for (const field of requiredFields) {
         setIsSubmitting(false);
       }
     },
-    [formData, selectedFile, bookExists]
+    [formData, selectedFile, bookExists, userID, API_BASE_URL]
   );
 
- const handleDateChange = useCallback(
-  (key: "bookDate" | "incomingDate", value: string) => {
-    if (value && !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-      toast.error("يرجى إدخال التاريخ بصيغة YYYY-MM-DD");
-      return;
-    }
-    setFormData((prev) => ({ ...prev, [key]: value }));
-  },
-  []
-);
-
-const dropzoneRef = useRef<DropzoneComponentRef>(null); // useRef: This hook creates a mutable ref object.
-
-//Type Annotation: DropzoneComponentRef is a type that describes the shape of the ref. This typically includes methods (like reset) that you want to expose from the DropzoneComponent
-
-
-
-
-  
-
-  // JSX remains unchanged, but ensure bookNo input uses handleChange
   return (
     <motion.div
       className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-sky-50/50 py-4 sm:py-6 md:py-8 lg:py-12"
@@ -334,13 +286,13 @@ const dropzoneRef = useRef<DropzoneComponentRef>(null); // useRef: This hook cre
         <h1 className="text-2xl sm:text-3xl md:text-3xl lg:text-3xl font-bold font-arabic text-center text-sky-600 mb-6 sm:mb-8">
           إضافة كتاب جديد
         </h1>
-        <form  onSubmit={handleSubmit} className="space-y-6 sm:space-y-8" noValidate >
+        <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8" noValidate>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 align-middle">
             {/* Book Type */}
             <motion.div variants={inputVariants}>
               <label
                 htmlFor="bookType"
-                className="block text-sm  font-san font-extrabold text-gray-700 mb-1 lg:text-right text-center "
+                className="block text-sm font-extrabold text-gray-700 mb-1 lg:text-right text-center"
               >
                 نوع الكتاب
               </label>
@@ -349,25 +301,24 @@ const dropzoneRef = useRef<DropzoneComponentRef>(null); // useRef: This hook cre
                 name="bookType"
                 value={formData.bookType}
                 onChange={handleChange}
-                className="w-full h-12 px-4 py-2 border border-gray-300 font-extrabold rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
+                className="w-full h-12 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
                 required
               >
-                <option className='font-extrabold' value="">اختر نوع الكتاب</option>
-                <option className='font-extrabold' value="خارجي">خارجي</option>
-                <option className='font-extrabold' value="داخلي">داخلي</option>
-                <option className='font-extrabold' value="فاكس">فاكس</option>
+                <option value="">اختر نوع الكتاب</option>
+                <option value="خارجي">خارجي</option>
+                <option value="داخلي">داخلي</option>
+                <option value="فاكس">فاكس</option>
               </select>
             </motion.div>
 
-             {/* Book Date */}
-            <motion.div variants={inputVariants} className="text-center ">
+            {/* Book Date */}
+            <motion.div variants={inputVariants} className="text-center">
               <label
                 htmlFor="bookDate"
-                className="block text-sm  font-sans font-extrabold text-gray-700 mb-1  lg:text-center text-center "
+                className="block text-sm font-extrabold text-gray-700 mb-1 lg:text-center text-center"
               >
                 تاريخ الكتاب
               </label>
-              {/* <DatePicker onDateChange={handleChangeBookDate} /> */}
               <ArabicDatePicker
                 selected={formData.bookDate}
                 onChange={(value) => handleDateChange('bookDate', value)}
@@ -375,12 +326,11 @@ const dropzoneRef = useRef<DropzoneComponentRef>(null); // useRef: This hook cre
               />
             </motion.div>
 
-
             {/* Book Number */}
             <motion.div variants={inputVariants}>
               <label
                 htmlFor="bookNo"
-                className="block text-sm  font-san font-extrabold text-gray-700 mb-1 lg:text-right text-center"
+                className="block text-sm font-extrabold text-gray-700 mb-1 lg:text-right text-center"
               >
                 رقم الكتاب
               </label>
@@ -390,53 +340,29 @@ const dropzoneRef = useRef<DropzoneComponentRef>(null); // useRef: This hook cre
                 type="text"
                 value={formData.bookNo}
                 onChange={handleChange}
-                placeholder='رقم الكتاب'
+                placeholder="رقم الكتاب"
                 className="w-full h-12 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
                 required
               />
             </motion.div>
 
-           
             {/* Directory Name */}
             <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-2">
-
-<div className="flex flex-col">
-                       <label className="font-extrabold text-gray-700 lg:text-right text-center">اسم الدائرة</label>
-
-              <DirectoryNameCombobox
-  value={formData.directoryName}
-  onChange={(val) => setFormData((prev) => ({ ...prev, directoryName: val }))}
-  fetchUrl={`${API_BASE_URL}/api/bookFollowUp/getAllDirectoryNames`}
-/>
-
-             
-          </div>    
-              {/* <div className="flex flex-col">
-                       <label className="font-extrabold text-gray-700">اسم الدائرة</label>
-                       <DirectoryNameCombobox
-  value={formData.directoryName}
-  onChange={(val) => setFormData((prev) => ({ ...prev, directoryName: val }))}
-  fetchUrl={`${API_BASE_URL}/api/bookFollowUp/getAllDirectoryNames`}
-/>
-
-                     </div> */}
-             
-             
-             
-              {/* <label
-                htmlFor="directoryName"
-                className="block text-sm font-medium font-arabic text-gray-700 mb-1 text-right"
-              >
+              <label className="block text-sm font-extrabold text-gray-700 mb-1 lg:text-right text-center">
                 اسم الدائرة
               </label>
-              <DirectoryNameInput formData={formData} setFormData={setFormData} /> */}
+              <DirectoryNameCombobox
+                value={formData.directoryName}
+                onChange={(val) => setFormData((prev) => ({ ...prev, directoryName: val }))}
+                fetchUrl={`${API_BASE_URL}/api/bookFollowUp/getAllDirectoryNames`}
+              />
             </motion.div>
 
             {/* Incoming Number */}
             <motion.div variants={inputVariants}>
               <label
                 htmlFor="incomingNo"
-                className="block text-sm font-extrabold font-san  text-gray-700 mb-1 lg:text-right text-center"
+                className="block text-sm font-extrabold text-gray-700 mb-1 lg:text-right text-center"
               >
                 رقم الوارد
               </label>
@@ -446,22 +372,20 @@ const dropzoneRef = useRef<DropzoneComponentRef>(null); // useRef: This hook cre
                 type="text"
                 value={formData.incomingNo}
                 onChange={handleChange}
-                placeholder='رقم الوارد'
-                className="w-full px-4 py-2 h-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-sans text-right"
+                placeholder="رقم الوارد"
+                className="w-full h-12 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
               />
             </motion.div>
 
             {/* Incoming Date */}
-            <motion.div variants={inputVariants} className='text-center'>
+            <motion.div variants={inputVariants} className="text-center">
               <label
                 htmlFor="incomingDate"
-                className="block text-sm font-extrabold  font-arabic text-gray-700 mb-1 lg:text-center   text-center"
+                className="block text-sm font-extrabold text-gray-700 mb-1 lg:text-center text-center"
               >
                 تاريخ الوارد
               </label>
-              {/* <DatePicker onDateChange={handleChangeIncomingDate} /> */}
-
-                  <ArabicDatePicker
+              <ArabicDatePicker
                 selected={formData.incomingDate}
                 onChange={(value) => handleDateChange('incomingDate', value)}
                 label="تأريخ الوارد"
@@ -472,64 +396,48 @@ const dropzoneRef = useRef<DropzoneComponentRef>(null); // useRef: This hook cre
             <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-2">
               <label
                 htmlFor="subject"
-                className="block text-sm font-extrabold font-san text-gray-700 mb-1 lg:text-right text-center"
+                className="block text-sm font-extrabold text-gray-700 mb-1 lg:text-right text-center"
               >
                 الموضوع
               </label>
-
-             <SubjectAutoCompleteComboBox
-  value={formData.subject}
-  onChange={(val) => setFormData((prev) => ({ ...prev, subject: val }))}
-  fetchUrl={`${API_BASE_URL}/api/bookFollowUp/getSubjects`}
-/>
-
-              {/* <SubjectInput formData={formData} setFormData={setFormData} /> */}
+              <SubjectAutoCompleteComboBox
+                value={formData.subject}
+                onChange={(val) => setFormData((prev) => ({ ...prev, subject: val }))}
+                fetchUrl={`${API_BASE_URL}/api/bookFollowUp/getSubjects`}
+              />
             </motion.div>
 
             {/* Destination */}
             <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-3">
               <label
                 htmlFor="destination"
-                className="block text-sm font-extrabold font-san text-gray-700 mb-1 lg:text-right text-center"
+                className="block text-sm font-extrabold text-gray-700 mb-1 lg:text-right text-center"
               >
                 جهة تحويل البريد
               </label>
-
-                           <DestinationAutoComplete
-  value={formData.destination}
-  onChange={(val) => setFormData((prev) => ({ ...prev, destination: val }))}
-  fetchUrl={`${API_BASE_URL}/api/bookFollowUp/getDestination`}
-/>
-              {/* <DestinationInput formData={formData} setFormData={setFormData} /> */}
-
+              <DestinationAutoComplete
+                value={formData.destination}
+                onChange={(val) => setFormData((prev) => ({ ...prev, destination: val }))}
+                fetchUrl={`${API_BASE_URL}/api/bookFollowUp/getDestination`}
+              />
             </motion.div>
 
             {/* Book Action */}
             <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-2">
               <label
                 htmlFor="bookAction"
-                className="block text-sm font-extrabold font-san text-gray-700 mb-1 lg:text-right text-center"
+                className="block text-sm font-extrabold text-gray-700 mb-1 lg:text-right text-center"
               >
                 إجراء الكتاب
               </label>
-< BookActionInput formData={formData} setFormData={setFormData}/>
-
-              {/* <input
-                id="bookAction"
-                name="bookAction"
-                type="text"
-                value={formData.bookAction}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
-                required
-              /> */}
+              <BookActionInput formData={formData} setFormData={setFormData} />
             </motion.div>
 
             {/* Book Status */}
             <motion.div variants={inputVariants}>
               <label
                 htmlFor="bookStatus"
-                className="block text-sm font-extrabold font-san text-gray-700 mb-1 lg:text-right text-center"
+                className="block text-sm font-extrabold text-gray-700 mb-1 lg:text-right text-center"
               >
                 حالة الكتاب
               </label>
@@ -538,13 +446,13 @@ const dropzoneRef = useRef<DropzoneComponentRef>(null); // useRef: This hook cre
                 name="bookStatus"
                 value={formData.bookStatus}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg font-extrabold focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
+                className="w-full h-12 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
                 required
               >
-                <option  value="">اختر حالة الكتاب</option>
-                <option className='font-extrabold' value="منجز">منجز</option>
-                <option className='font-extrabold' value="قيد الانجاز">قيد الانجاز</option>
-                <option className='font-extrabold' value="مداولة">مداولة</option>
+                <option value="">اختر حالة الكتاب</option>
+                <option value="منجز">منجز</option>
+                <option value="قيد الانجاز">قيد الانجاز</option>
+                <option value="مداولة">مداولة</option>
               </select>
             </motion.div>
 
@@ -552,33 +460,32 @@ const dropzoneRef = useRef<DropzoneComponentRef>(null); // useRef: This hook cre
             <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-3">
               <label
                 htmlFor="notes"
-                className="block text-sm font-extrabold font-san text-gray-700 mb-1 lg:text-right text-center"
+                className="block text-sm font-extrabold text-gray-700 mb-1 lg:text-right text-center"
               >
                 ملاحظات
               </label>
-            <textarea 
-  id="notes"
-  name="notes"
-  value={formData.notes}
-  onChange={handleChange}
-  placeholder="الملاحظات"
-  className="w-full px-4 py-[1.75rem] border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-300 focus:border-gray-300 transition-all duration-200 font-arabic text-right resize-y text-sm leading-6 placeholder:text-center placeholder:font-extrabold placeholder:text-gray-300 placeholder:italic"
-  rows={4}
-/>
-
+              <textarea
+                id="notes"
+                name="notes"
+                value={formData.notes}
+                onChange={handleChange}
+                placeholder="الملاحظات"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right resize-y"
+                rows={4}
+              />
             </motion.div>
           </div>
 
           {/* Dropzone for PDF Upload */}
           <motion.div variants={inputVariants} className="mt-6">
-            <label className="block text-sm font-medium font-arabic text-gray-700 mb-1 text-right">
+            <label className="block text-sm font-extrabold text-gray-700 mb-1 text-right">
               تحميل ملف PDF
             </label>
             <DropzoneComponent
-              ref={dropzoneRef}     // In this line, you pass the dropzoneRef from the parent component to the DropzoneComponent as a ref prop
+              ref={dropzoneRef}
               onFilesAccepted={handleFilesAccepted}
               onFileRemoved={handleFileRemoved}
-              
+              onBookPdfLoaded={handleBookPdfLoaded}
             />
           </motion.div>
 
