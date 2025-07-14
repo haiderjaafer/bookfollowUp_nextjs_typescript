@@ -103,7 +103,7 @@ const Home = () => {
         setUserBookCounts(userResponse.data);
         console.log('User book counts:', userResponse.data);
 
-        toast.success('Books statistics loaded successfully');
+       // toast.success('Books statistics loaded successfully');
       } catch (error: any) {
         console.error('Error fetching counts:', error);
         console.log('Error status:', error.response?.status);

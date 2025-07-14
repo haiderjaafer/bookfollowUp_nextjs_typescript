@@ -7,6 +7,7 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
   AlertDialogAction,
+  AlertDialogDescription,
 } from "@/components/ui/alert-dialog";
 import { PDFRecord } from "./types";
 import { toast } from "react-toastify";
@@ -48,11 +49,15 @@ export function AlertDialogDelete({ open, onOpenChange, pdf, setPdfs }: AlertDia
   return (
  
  <AlertDialog open={open} onOpenChange={onOpenChange}>
-  <AlertDialogContent className="text-right rtl">
+  <AlertDialogContent className="text-right rtl" aria-describedby="deleteDialog">
     <AlertDialogHeader className="text-right">
       <AlertDialogTitle className="text-right font-bold text-lg">
         هل أنت متأكد من الحذف؟
       </AlertDialogTitle>
+      <AlertDialogDescription className="sr-only">
+            This action cannot be undone. This will permanently delete your
+            account and remove your data from our servers.
+          </AlertDialogDescription>
     </AlertDialogHeader>
 
     <div className="text-lg font-extrabold text-gray-600">

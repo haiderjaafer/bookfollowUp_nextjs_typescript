@@ -492,7 +492,7 @@ export default function DynamicTable<T extends BookFollowUpData>({
         {renderPagination()}
         {/* Edit Dialog */}
         <Dialog open={editDialogOpen} onOpenChange={setEditDialog}>
-          <DialogContent className="sm:max-w-[600px]" dir="rtl">
+          <DialogContent className="sm:max-w-[600px]" dir="rtl" aria-describedby="renderPagination">
             <DialogHeader>
               <DialogTitle className="text-xl font-bold">تعديل الكتاب</DialogTitle>
             </DialogHeader>
@@ -519,7 +519,7 @@ export default function DynamicTable<T extends BookFollowUpData>({
         </Dialog>
         {/* PDF Dialog */}
         <Dialog open={pdfDialogOpen} onOpenChange={setPdfDialogOpen} >
-          <DialogContent className="sm:max-w-[600px] p-6 bg-gray-50" dir="rtl">
+          <DialogContent className="sm:max-w-[600px] p-6 bg-gray-50" dir="rtl" aria-describedby="PDF_Dialog">
             <DialogHeader>
               <DialogTitle className="text-2xl font-bold text-gray-800 text-center">
                 ملفات PDF المرتبطة
@@ -771,7 +771,7 @@ onClick={() => {
       )}
       {renderPagination()}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialog}>
-        <DialogContent className="sm:max-w-[600px]" dir="rtl">
+        <DialogContent className="sm:max-w-[600px]" dir="rtl" aria-describedby='bookUpdate'>
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">تعديل الكتاب</DialogTitle>
           </DialogHeader>
@@ -797,7 +797,7 @@ onClick={() => {
         </DialogContent>
       </Dialog>
       <Dialog open={pdfDialogOpen} onOpenChange={setPdfDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] p-6 bg-gray-50" dir="rtl">
+        <DialogContent className="sm:max-w-[600px] p-6 bg-gray-50" dir="rtl" aria-describedby='attachments_books'>
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-gray-800 text-center">
               ملفات PDF المرتبطة

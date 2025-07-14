@@ -233,21 +233,23 @@ const DropzoneComponent = forwardRef<DropzoneComponentRef, DropzoneComponentProp
               className="absolute inset-0 w-full h-full border-0"
               title={`معاينة ${file.name}`}
             />
-            {file.isFromBackend && (
+            {/* {file.isFromBackend && (
               <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold">
                 من الخادم
               </div>
-            )}
+            )} */}
             <div className="absolute inset-0 z-10 flex items-center justify-end pointer-events-none">
               <div className="flex flex-col gap-4 bg-transparent p-3 rounded-xl shadow-lg pointer-events-auto">
                 <Popover>
                   <PopoverTrigger asChild>
                     <button
                       type="button"
-                      className="bg-sky-500 text-white w-6 h-6 flex items-center justify-center rounded-full hover:bg-sky-600 transition-colors"
+                      className="bg-sky-500 text-white w-6 h-6 flex items-center justify-center rounded-full hover:bg-sky-600 transition-colors cursor-pointer"
                       aria-label="عرض ملف PDF"
+                      title="عرض الملف "
+                  
                     >
-                      <FileText className="w-4 h-4" />
+                      <FileText className="w-4 h-4 hover:scale-110 transition duration-300" />
                     </button>
                   </PopoverTrigger>
                   <PopoverContent
@@ -266,11 +268,11 @@ const DropzoneComponent = forwardRef<DropzoneComponentRef, DropzoneComponentProp
                 <button
                   type="button"
                   onClick={() => window.open(file.preview, '_blank')}
-                  className="bg-purple-500 text-white w-6 h-6 flex items-center justify-center rounded-full hover:bg-purple-600 transition-colors"
+                  className="bg-purple-500 text-white w-6 h-6 flex items-center justify-center rounded-full hover:bg-purple-600 transition-colors cursor-pointer"
                   aria-label="فتح PDF في نافذة جديدة"
                   title="فتح PDF في نافذة جديدة"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 hover:scale-110 transition duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -280,14 +282,15 @@ const DropzoneComponent = forwardRef<DropzoneComponentRef, DropzoneComponentProp
                   </svg>
                 </button>
                 <Trash2
-                  className="w-6 h-6 text-red-600 cursor-pointer hover:scale-110 transition"
+                  className="w-6 h-6 text-red-600 cursor-pointer hover:scale-110 transition duration-300"
                   onClick={() => removeFile(file.name)}
+                  
                 />
               </div>
             </div>
-            <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-xs">
+            {/* <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-xs">
               {file.name} {file.size && `(${(file.size / 1024 / 1024).toFixed(1)} MB)`}
-            </div>
+            </div> */}
           </div>
         ))}
       </div>

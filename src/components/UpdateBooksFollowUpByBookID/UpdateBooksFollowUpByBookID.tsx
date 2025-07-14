@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -11,7 +11,7 @@ import SubjectInput from '../subject/subjectInput';
 import DestinationInput from '../destination/destinationInput';
 import { BookInsertionType } from '../../../bookInsertionType';
 import { toast } from 'react-toastify';
-import DropzoneComponent from '../ReactDropZoneComponont';
+import DropzoneComponent, { DropzoneComponentRef } from '../ReactDropZoneComponont';
 import axios from 'axios';
 import debounce from 'debounce';
 import { useRouter } from 'next/navigation';
@@ -138,6 +138,8 @@ console.log("UpdateBooksFollowUpByBookID CLIENT",payload);
   const [pdfFiles, setPdfFiles] = useState<PDFResponse[]>([]);
   // NEW: State for dialog visibility
   const [pdfDialogOpen, setPdfDialogOpen] = useState(false);
+
+  const dropzoneRef = useRef<DropzoneComponentRef>(null);
 
  // CHANGED: Updated fetchBookData to ensure bookDate is parsed correctly
 const fetchBookData = useCallback(async () => {
@@ -269,18 +271,39 @@ const fetchBookData = useCallback(async () => {
     }));
   }, []);
 
-  // Handle file acceptance from DropzoneComponent
+  // Handle file acceptance
   const handleFilesAccepted = useCallback((files: File[]) => {
     if (files.length > 0) {
-      setSelectedFile(files[0]);
-      toast.info(`File ${files[0].name} selected`);
+      const file = files[0];
+      // Validate file type and size
+      if (file.type !== 'application/pdf') {
+        toast.error('يرجى تحميل ملف PDF صالح');
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error('حجم الملف يتجاوز 10 ميجابايت');
+        return;
+      }
+      setSelectedFile(file);
+      toast.info(`تم اختيار الملف ${file.name}`);
     }
   }, []);
 
-  // Handle file removal from DropzoneComponent
+  // Handle file removal
   const handleFileRemoved = useCallback((fileName: string) => {
     setSelectedFile(null);
-    toast.info(`File ${fileName} removed`);
+    toast.info(`تم إزالة الملف ${fileName}`);
+  }, []);
+
+  // Handle book PDF loading result
+  const handleBookPdfLoaded = useCallback((success: boolean, file?: File) => {
+    console.log(`📄 Book PDF loaded: ${success ? 'SUCCESS' : 'FAILED'}`);
+    if (success && file) {
+      setSelectedFile(file);
+      toast.info('تم تحميل ملف book.pdf بنجاح');
+    } else {
+      setSelectedFile(null);
+    }
   }, []);
 
   // Handle form submission to update the book
@@ -292,7 +315,7 @@ const fetchBookData = useCallback(async () => {
       console.log("form data client",formData);
 
       // Validate required fields
-      const requiredFields = [
+      const requiredFields: (keyof BookInsertionType)[] = [
         'bookNo',
         'bookType',
         'bookDate',
@@ -303,9 +326,26 @@ const fetchBookData = useCallback(async () => {
         'bookStatus',
         'userID',
       ];
+
+      const fieldLabels: Record<keyof BookInsertionType, string> = {
+        bookNo: 'رقم الكتاب',
+        bookType: 'نوع الكتاب',
+        bookDate: 'تاريخ الكتاب',
+        directoryName: 'اسم الدائرة',
+        subject: 'الموضوع',
+        destination: 'جهة تحويل البريد',
+        bookAction: 'الإجراء',
+        bookStatus: 'حالة الكتاب',
+        userID: 'المستخدم',
+        incomingNo: 'رقم الوارد',
+        notes: 'الملاحظات',
+        incomingDate: 'تاريخ الوارد',
+      };
+
       for (const field of requiredFields) {
-        if (!formData[field as keyof BookInsertionType]) {
-          toast.error(`يرجى ملء حقل ${field}`);
+        if (!formData[field]) {
+          const label = fieldLabels[field] || field;
+          toast.error(`يرجى ملء حقل ${label}`);
           setIsSubmitting(false);
           return;
         }
@@ -335,11 +375,27 @@ const fetchBookData = useCallback(async () => {
         
         );
 
-        if (response.status === 200) {
-          toast.success('تم تحديث الكتاب بنجاح!');
-         // router.push('/'); // Redirect to the main page or table
+         if (response.status === 200) {
+          toast.success('تم حفظ الكتاب وملف PDF بنجاح!');
+          setFormData({
+            bookType: '',
+            bookNo: '',
+            bookDate: format(new Date(), 'yyyy-MM-dd'),
+            directoryName: '',
+            incomingNo: '',
+            incomingDate: format(new Date(), 'yyyy-MM-dd'),
+            subject: '',
+            destination: '',
+            bookAction: '',
+            bookStatus: '',
+            notes: '',
+            userID: userID,
+          });
+          setSelectedFile(null);
+          dropzoneRef.current?.reset(true); // Silent reset
+          setBookExists(null);
         } else {
-          throw new Error('Failed to update book');
+          throw new Error('Failed to add book');
         }
       } catch (error) {
         console.error('Error updating book:', error);
@@ -381,6 +437,7 @@ const renderPDFs = useMemo(() => {
   }
 
   
+
 
   return (
     <motion.div variants={inputVariants} className="mt-6">
@@ -730,9 +787,11 @@ const renderPDFs = useMemo(() => {
             <label className="block text-sm font-extrabold font-sans text-gray-700 mb-1 text-right">
               تحميل ملف PDF جديد
             </label>
-            <DropzoneComponent
+             <DropzoneComponent
+              ref={dropzoneRef}
               onFilesAccepted={handleFilesAccepted}
               onFileRemoved={handleFileRemoved}
+              onBookPdfLoaded={handleBookPdfLoaded}
             />
           </motion.div>
 
