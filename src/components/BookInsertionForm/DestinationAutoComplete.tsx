@@ -31,10 +31,10 @@ export default function DestinationAutoComplete({
 }: DestinationAutoCompleteProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [subject, setSubject] = useState<string[]>([]);
+  const [destination, setDestination] = useState<string[]>([]);
 
-  const filtered = subject.filter((subject) =>
-    subject.toLowerCase().includes(query.toLowerCase())
+  const filtered = destination.filter((destination) =>
+    destination.toLowerCase().includes(query.toLowerCase())
   );
 
   useEffect(() => {
@@ -43,7 +43,7 @@ export default function DestinationAutoComplete({
         const res = await fetch(fetchUrl);
         const data = await res.json();
         if (Array.isArray(data)) {
-          setSubject(data);
+          setDestination(data);
         }
       } catch (err) {
         console.error('Failed to load destination', err);
