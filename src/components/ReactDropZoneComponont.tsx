@@ -42,19 +42,54 @@ const DropzoneComponent = forwardRef<DropzoneComponentRef, DropzoneComponentProp
     }, []);
 
     // Error handling helper
-    const getErrorMessage = useCallback((error: unknown): string => {
+    
+
+    const getErrorMessage = useCallback(async (error: unknown): Promise<string> => {
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError;
-        if (axiosError.response?.status === 404) {
-          return 'ملف book.pdf غير موجود';
-        } else if (axiosError.response?.status === 400) {
-          return 'ملف book.pdf فارغ';
-        } else if (axiosError.response?.status === 500) {
-          return 'خطأ في الخادم';
-        } else if (axiosError.code === 'NETWORK_ERROR') {
-          return 'خطأ في الاتصال بالخادم';
+        try {
+          let detail = 'No additional details provided';
+
+
+        
+          
+          // Handle Blob response (when responseType is 'blob')
+          if (axiosError.response?.data instanceof Blob) {
+            const text = await axiosError.response.data.text();
+            const json = JSON.parse(text);
+            detail = json.detail || detail;
+          } else if (axiosError.response?.data) {
+            // Handle JSON response directly
+            detail = (axiosError.response.data as any).detail || detail;
+          }
+
+         // console.error('............ error detail:', detail);   will got detail from backend 
+
+          // Log minimal error info for debugging (optional)
+          console.log('Axios error:', {
+            status: axiosError.response?.status,
+            statusText: axiosError.response?.statusText,
+          });
+
+          // Customize user-facing message based on status code
+          if (axiosError.response?.status === 404) {
+            return `${detail}`;
+          } else if (axiosError.response?.status === 400) {
+            return `${detail}. يرجى التأكد من أن الملف صالح.`;
+          } else if (axiosError.response?.status === 500) {
+            return `خطأ في الخادم: ${detail}. يرجى التواصل مع الدعم الفني.`;
+          } else if (axiosError.code === 'ERR_NETWORK') {
+            return 'خطأ في الاتصال بالخادم. يرجى التحقق من الشبكة.';
+          }
+
+          return `خطأ غير متوقع: ${detail}`;
+        } catch (parseError) {
+          console.error('Failed to parse error response:', parseError);
+          return 'فشل في تحليل استجابة الخطأ من الخادم';
         }
       }
+
+      console.error('Non-Axios error:', error);
       return 'حدث خطأ غير متوقع';
     }, []);
 
@@ -65,7 +100,7 @@ const DropzoneComponent = forwardRef<DropzoneComponentRef, DropzoneComponentProp
       setFiles([]);
 
       try {
-        console.log('🔍 Fetching book.pdf...');
+        console.log('🔍 Fetching book.pdf from:', `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/files/book`);
         const response = await axios.get(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/files/book`,
           {
@@ -102,19 +137,21 @@ const DropzoneComponent = forwardRef<DropzoneComponentRef, DropzoneComponentProp
         };
 
         setFiles([previewFile]);
-        onFilesAccepted([file]); // Pass File object to parent
+        onFilesAccepted([file]);
         onBookPdfLoaded?.(true, file);
+        toast.success('تم تحميل ملف book.pdf بنجاح');
         console.log('📄 PDF file loaded:', previewFile);
       } catch (error: unknown) {
-        console.error('❌ Failed to load book.pdf:', error);
+        console.log('❌ Failed to load book.pdf:', error); // Reduced verbosity
         setFiles([]);
-        const errorMessage = getErrorMessage(error);
-        toast.error(errorMessage);
+        const errorMessage = await getErrorMessage(error);
+        toast.error(errorMessage); // Show error detail in toast only
         onBookPdfLoaded?.(false);
       } finally {
         setIsLoadingBookPdf(false);
       }
-    }, [onFilesAccepted, onBookPdfLoaded, revokePreviousUrls]);
+    }, [onFilesAccepted, onBookPdfLoaded, revokePreviousUrls, getErrorMessage]);
+
 
     // Expose methods to parent
     useImperativeHandle(ref, () => ({
