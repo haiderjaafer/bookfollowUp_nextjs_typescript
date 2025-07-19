@@ -39,7 +39,7 @@ export interface BookFollowUpData extends TableData {
   bookDate: string | null;
   directoryName: string | null;
   incomingNo: string | null;
-  c: string | null;
+  departmentID: string | null;
   subject: string | null;
   destination: string | null;
   bookAction: string | null;
@@ -58,6 +58,7 @@ export const orderHeaderMap: HeaderMap = {
   bookNo: "رقم الكتاب",
   bookDate: "تأريخ الكتاب",
   directoryName: "اسم الدائرة",
+  departmentID:"القسم",
   incomingNo: "رقم الوارد",
   incomingDate: "تأريخ الوارد",
   subject: "الموضوع",

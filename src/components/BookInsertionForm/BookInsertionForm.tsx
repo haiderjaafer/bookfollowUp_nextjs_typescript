@@ -20,6 +20,9 @@ import ArabicDatePicker from '../ArabicDatePicker';
 import DestinationAutoComplete from './DestinationAutoComplete';
 import BookActionInput from './bookActionDialogInput/bookActionInput';
 import { JWTPayload } from '@/utiles/verifyToken';
+import CommitteeSelect from '../CommitteeSelect';
+import DepartmentSelect from '../DepartmentSelect';
+import { QueryKey, useQueryClient } from '@tanstack/react-query';
 
 // Animation variants
 const formVariants = {
@@ -56,12 +59,17 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
 
   const API_BASE_URL = useMemo(() => process.env.NEXT_PUBLIC_API_BASE_URL || '', []);
 
+  const [selectedCommittee, setSelectedCommittee] = useState<number | undefined>(undefined);
+  const [selectedDepartment, setSelectedDepartment] = useState<number | undefined>(undefined);
+
   // State for form fields
   const [formData, setFormData] = useState<BookInsertionType>({
     bookType: '',
     bookNo: '',
     bookDate: format(new Date(), 'yyyy-MM-dd'),
     directoryName: '',
+    selectedCommittee: undefined,
+    selectedDepartment: undefined,
     incomingNo: '',
     incomingDate: format(new Date(), 'yyyy-MM-dd'),
     subject: '',
@@ -76,6 +84,42 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookExists, setBookExists] = useState<boolean | null>(null);
+
+  const queryClient = useQueryClient();
+
+   // Reset department when committee changes
+   // Handle committee change
+  const handleCommitteeChange = useCallback(
+    (coID: number | undefined) => {
+      console.log('Committee changed:', coID);
+      setSelectedCommittee(coID);
+      setSelectedDepartment(undefined); // Reset department
+      setFormData((prev) => ({
+        ...prev,
+        selectedCommittee: coID,
+        selectedDepartment: undefined, // Reset in formData
+      }));
+      if (coID) {
+        queryClient.invalidateQueries({ queryKey: ['departments', coID] as QueryKey });
+      }
+    },
+    [queryClient]
+  );
+ // Handle department change
+  const handleDepartmentChange = useCallback(
+    (deID: number | undefined) => {
+      console.log('Department changed:', deID);
+      setSelectedDepartment(deID);
+      setFormData((prev) => ({
+        ...prev,
+        selectedDepartment: deID, // Update formData
+      }));
+    },
+    []
+  );
+  
+
+
 
   const dropzoneRef = useRef<DropzoneComponentRef>(null);
 
@@ -192,6 +236,7 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
         'bookAction',
         'bookStatus',
         'userID',
+        'selectedDepartment'
       ];
 
       const fieldLabels: Record<keyof BookInsertionType, string> = {
@@ -207,6 +252,8 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
         incomingNo: 'رقم الوارد',
         notes: 'الملاحظات',
         incomingDate: 'تاريخ الوارد',
+        selectedCommittee: 'اللجنة',
+        selectedDepartment: 'القسم',
       };
 
       for (const field of requiredFields) {
@@ -232,6 +279,10 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
       });
       formDataToSend.append('file', selectedFile);
 
+      console.log( "formDataToSend",formDataToSend);
+
+      console.log( "formData,,,,,,,,", formData);
+
       try {
         const response = await axios.post(
           `${API_BASE_URL}/api/bookFollowUp`,
@@ -250,6 +301,8 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
             bookNo: '',
             bookDate: format(new Date(), 'yyyy-MM-dd'),
             directoryName: '',
+            selectedCommittee: undefined,
+            selectedDepartment: undefined, 
             incomingNo: '',
             incomingDate: format(new Date(), 'yyyy-MM-dd'),
             subject: '',
@@ -488,6 +541,26 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
               onBookPdfLoaded={handleBookPdfLoaded}
             />
           </motion.div>
+
+          <div className="max-w-md mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Form</h1>
+         <CommitteeSelect
+        value={selectedCommittee}
+        onChange={handleCommitteeChange}
+        className="w-full"
+      />
+      <DepartmentSelect
+        coID={selectedCommittee}
+        value={selectedDepartment}
+        onChange={handleDepartmentChange}
+        className="w-full"
+      />
+      <p>
+        Selected Committee ID: {selectedCommittee ?? 'None'} --- Selected Department ID: {selectedDepartment ?? 'None'}
+      </p>
+    </div>
+
+    
 
           {/* Submit Button */}
           <motion.div

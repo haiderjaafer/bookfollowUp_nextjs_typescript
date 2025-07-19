@@ -1,0 +1,72 @@
+'use client';
+
+import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import { useEffect } from 'react';
+import { Committee } from './BookInsertionForm/types_com_dep';
+
+
+interface CommitteeSelectProps {
+  value: number | undefined;
+  onChange: (coID: number | undefined) => void;
+  className?: string;
+}
+
+const CommitteeSelect: React.FC<CommitteeSelectProps> = ({ value, onChange, className }) => {
+  const { data: committees, isLoading, error } = useQuery<Committee[], Error>({
+    queryKey: ['committees'],
+    queryFn: async () => {
+      try {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/committees`, {
+          withCredentials: true,
+        });
+        console.log('Committees fetched:', response.data);
+        return response.data;
+      } catch (err) {
+        const error = err as any;
+        const errorMessage = error.response?.data?.detail || 'فشل في جلب اللجان';
+        toast.info(errorMessage);
+        throw new Error(errorMessage);
+      }
+    },
+  });
+
+  useEffect(() => {
+    if (error) {
+      console.log('Error fetching committees:', error.message);
+    }
+  }, [error]);
+
+  return (
+    <div className="w-full">
+      <select
+        value={value !== undefined ? value : ''}
+        onChange={(e) => onChange(e.target.value ? Number(e.target.value) : undefined)}
+        disabled={isLoading}
+        className={`
+          w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500
+          ${isLoading ? 'bg-gray-200 cursor-not-allowed' : 'bg-white'}
+          ${error ? 'border-red-500' : 'border-gray-300'}
+          ${className}
+        `}
+      >
+        <option value="" disabled>
+          {isLoading ? 'جارٍ التحميل...' : 'اختر لجنة'}
+        </option>
+        {committees?.map((committee) => (
+          <option key={committee.coID} value={committee.coID}>
+            {committee.Com || 'بدون اسم'}
+          </option>
+        ))}
+      </select>
+      {error && (
+        <p className="mt-1 text-sm text-red-600">
+          خطأ: {error.message}
+        </p>
+      )}
+    </div>
+  );
+};
+
+export default CommitteeSelect;

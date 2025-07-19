@@ -14,4 +14,7 @@ export interface BookInsertionType {
     bookStatus: string,
     notes: string,
     userID: string ,
+    selectedCommittee: number | undefined; // Add for committee selection
+  selectedDepartment: number | undefined; // Add for department selection
+
 }
