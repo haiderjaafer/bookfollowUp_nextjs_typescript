@@ -59,17 +59,18 @@ const DepartmentSelect: React.FC<DepartmentSelectProps> = ({ coID, value, onChan
 
         disabled={isLoading || isFetching || !coID || !departments?.length}
         className={`
-          w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500
+          w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-extrabold
           ${isLoading || isFetching || !coID || !departments?.length ? 'bg-gray-200 cursor-not-allowed' : 'bg-white'}
           ${isError ? 'border-red-500' : 'border-gray-300'}
           ${className}
         `}
       >
-        <option value="" disabled>
+        <option value="" disabled className='text-lg font-extrabold'>
           {isLoading || isFetching ? 'جارٍ التحميل...' : !coID ? 'اختر لجنة أولاً' : !departments?.length ? 'لا توجد أقسام' : 'اختر قسم'}
         </option>
         {departments?.map((department, index) => (
           <option
+             className='text-lg font-extrabold'
             key={department.deID ?? `index-${index}`}
             value={department.deID != null && !isNaN(department.deID) ? department.deID.toString() : ''}
           >

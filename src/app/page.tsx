@@ -306,7 +306,7 @@ const Home = () => {
     <DynamicTable
       data={data.data}
       headerMap={orderHeaderMap}
-      excludeFields={['userID', 'pdfFiles']}
+      excludeFields={['userID', 'pdfFiles','deID']}
       pagination={{
         page: data.page,
         limit: data.limit,

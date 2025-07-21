@@ -45,17 +45,17 @@ const CommitteeSelect: React.FC<CommitteeSelectProps> = ({ value, onChange, clas
         onChange={(e) => onChange(e.target.value ? Number(e.target.value) : undefined)}
         disabled={isLoading}
         className={`
-          w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500
-          ${isLoading ? 'bg-gray-200 cursor-not-allowed' : 'bg-white'}
+          w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-extrabold
+          ${isLoading ? 'bg-gray-200 cursor-not-allowed ' : 'bg-white'}
           ${error ? 'border-red-500' : 'border-gray-300'}
           ${className}
         `}
       >
-        <option value="" disabled>
+        <option className='text-lg font-extrabold' value="" disabled>
           {isLoading ? 'جارٍ التحميل...' : 'اختر لجنة'}
         </option>
         {committees?.map((committee) => (
-          <option key={committee.coID} value={committee.coID}>
+          <option  className='text-lg font-extrabold' key={committee.coID} value={committee.coID}>
             {committee.Com || 'بدون اسم'}
           </option>
         ))}

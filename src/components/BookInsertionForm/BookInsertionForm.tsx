@@ -60,7 +60,7 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
   const API_BASE_URL = useMemo(() => process.env.NEXT_PUBLIC_API_BASE_URL || '', []);
 
   const [selectedCommittee, setSelectedCommittee] = useState<number | undefined>(undefined);
-  const [selectedDepartment, setSelectedDepartment] = useState<number | undefined>(undefined);
+  const [deID, setSelectedDepartment] = useState<number | undefined>(undefined);
 
   // State for form fields
   const [formData, setFormData] = useState<BookInsertionType>({
@@ -69,11 +69,11 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
     bookDate: format(new Date(), 'yyyy-MM-dd'),
     directoryName: '',
     selectedCommittee: undefined,
-    selectedDepartment: undefined,
+    deID: undefined,
     incomingNo: '',
     incomingDate: format(new Date(), 'yyyy-MM-dd'),
     subject: '',
-    destination: '',
+    // destination: '',
     bookAction: '',
     bookStatus: '',
     notes: '',
@@ -112,7 +112,7 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
       setSelectedDepartment(deID);
       setFormData((prev) => ({
         ...prev,
-        selectedDepartment: deID, // Update formData
+        deID: deID, // Update formData
       }));
     },
     []
@@ -213,7 +213,7 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
     console.log(`📄 Book PDF loaded: ${success ? 'SUCCESS' : 'FAILED'}`);
     if (success && file) {
       setSelectedFile(file);
-      toast.info('تم تحميل ملف book.pdf بنجاح');
+     // toast.info('تم تحميل ملف book.pdf بنجاح');
     } else {
       setSelectedFile(null);
     }
@@ -232,11 +232,11 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
         'bookDate',
         'directoryName',
         'subject',
-        'destination',
+        // 'destination',
         'bookAction',
         'bookStatus',
         'userID',
-        'selectedDepartment'
+        'deID'
       ];
 
       const fieldLabels: Record<keyof BookInsertionType, string> = {
@@ -245,7 +245,7 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
         bookDate: 'تاريخ الكتاب',
         directoryName: 'اسم الدائرة',
         subject: 'الموضوع',
-        destination: 'جهة تحويل البريد',
+        // destination: 'جهة تحويل البريد',
         bookAction: 'الإجراء',
         bookStatus: 'حالة الكتاب',
         userID: 'المستخدم',
@@ -253,7 +253,7 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
         notes: 'الملاحظات',
         incomingDate: 'تاريخ الوارد',
         selectedCommittee: 'اللجنة',
-        selectedDepartment: 'القسم',
+        deID: 'القسم',
       };
 
       for (const field of requiredFields) {
@@ -302,11 +302,11 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
             bookDate: format(new Date(), 'yyyy-MM-dd'),
             directoryName: '',
             selectedCommittee: undefined,
-            selectedDepartment: undefined, 
+            deID: undefined, 
             incomingNo: '',
             incomingDate: format(new Date(), 'yyyy-MM-dd'),
             subject: '',
-            destination: '',
+            // destination: '',
             bookAction: '',
             bookStatus: '',
             notes: '',
@@ -354,13 +354,13 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
                 name="bookType"
                 value={formData.bookType}
                 onChange={handleChange}
-                className="w-full h-12 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
+                className="w-full h-12 px-4 py-2 border text-sm font-extrabold border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right "
                 required
               >
-                <option value="">اختر نوع الكتاب</option>
-                <option value="خارجي">خارجي</option>
-                <option value="داخلي">داخلي</option>
-                <option value="فاكس">فاكس</option>
+                <option className='text-sm font-extrabold' value="">اختر نوع الكتاب</option>
+                <option className='text-sm font-extrabold' value="خارجي">خارجي</option>
+                <option className='text-sm font-extrabold' value="داخلي">داخلي</option>
+                <option className='text-sm font-extrabold' value="فاكس">فاكس</option>
               </select>
             </motion.div>
 
@@ -460,8 +460,39 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
               />
             </motion.div>
 
-            {/* Destination */}
-            <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-3">
+
+                <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-1">
+              <label
+                htmlFor="destination"
+                className="block text-sm font-extrabold text-gray-700 mb-1 lg:text-right text-center"
+              >
+                  الهيأة
+              </label>
+                  <CommitteeSelect
+        value={selectedCommittee}
+        onChange={handleCommitteeChange}
+        className="w-full"
+      />
+            </motion.div>
+
+
+                    <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-1">
+              <label
+                htmlFor="destination"
+                className="block text-sm font-extrabold text-gray-700 mb-1 lg:text-right text-center"
+              >
+                  القسم
+              </label>
+      <DepartmentSelect
+        coID={selectedCommittee}
+        value={deID}
+        onChange={handleDepartmentChange}
+        className="w-full"
+      />
+            </motion.div>
+
+            
+            {/* <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-3">
               <label
                 htmlFor="destination"
                 className="block text-sm font-extrabold text-gray-700 mb-1 lg:text-right text-center"
@@ -473,7 +504,7 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
                 onChange={(val) => setFormData((prev) => ({ ...prev, destination: val }))}
                 fetchUrl={`${API_BASE_URL}/api/bookFollowUp/getDestination`}
               />
-            </motion.div>
+            </motion.div> */}
 
             {/* Book Action */}
             <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-2">
@@ -499,13 +530,13 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
                 name="bookStatus"
                 value={formData.bookStatus}
                 onChange={handleChange}
-                className="w-full h-12 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
+                className="w-full h-12 px-4 py-2 border text-sm font-extrabold border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
                 required
               >
-                <option value="">اختر حالة الكتاب</option>
-                <option value="منجز">منجز</option>
-                <option value="قيد الانجاز">قيد الانجاز</option>
-                <option value="مداولة">مداولة</option>
+                <option className='text-sm font-extrabold' value="">اختر حالة الكتاب</option>
+                <option className='text-sm font-extrabold' value="منجز">منجز</option>
+                <option className='text-sm font-extrabold' value="قيد الانجاز">قيد الانجاز</option>
+                <option className='text-sm font-extrabold' value="مداولة">مداولة</option>
               </select>
             </motion.div>
 
@@ -543,20 +574,9 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
           </motion.div>
 
           <div className="max-w-md mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Form</h1>
-         <CommitteeSelect
-        value={selectedCommittee}
-        onChange={handleCommitteeChange}
-        className="w-full"
-      />
-      <DepartmentSelect
-        coID={selectedCommittee}
-        value={selectedDepartment}
-        onChange={handleDepartmentChange}
-        className="w-full"
-      />
+  
       <p>
-        Selected Committee ID: {selectedCommittee ?? 'None'} --- Selected Department ID: {selectedDepartment ?? 'None'}
+        Selected Committee ID: {selectedCommittee ?? 'None'} --- Selected Department ID: {deID ?? 'None'}
       </p>
     </div>
 

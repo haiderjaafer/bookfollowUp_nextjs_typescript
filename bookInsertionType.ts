@@ -9,12 +9,12 @@ export interface BookInsertionType {
     incomingNo: string,
     incomingDate: string,
     subject: string,
-    destination: string,
+    // destination: string,
     bookAction: string,
     bookStatus: string,
     notes: string,
     userID: string ,
     selectedCommittee: number | undefined; // Add for committee selection
-  selectedDepartment: number | undefined; // Add for department selection
+    deID: number | undefined; // Add for department selection
 
 }

@@ -274,7 +274,7 @@ const SearchPanel = () => {
           <DynamicTable
             data={data?.data || []}
             headerMap={orderHeaderMap}
-            excludeFields={['checkOrderLink', 'userID','countOfLateBooks','pdfFiles']}
+            excludeFields={['checkOrderLink', 'userID','countOfLateBooks','pdfFiles','deID']}
             pagination={{
               page: data?.page || 1,
               limit: data?.limit || 10,

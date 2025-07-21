@@ -139,7 +139,7 @@ const DropzoneComponent = forwardRef<DropzoneComponentRef, DropzoneComponentProp
         setFiles([previewFile]);
         onFilesAccepted([file]);
         onBookPdfLoaded?.(true, file);
-        toast.success('تم تحميل ملف book.pdf بنجاح');
+        //toast.success('تم تحميل ملف book.pdf بنجاح');
         console.log('📄 PDF file loaded:', previewFile);
       } catch (error: unknown) {
         console.log('❌ Failed to load book.pdf:', error); // Reduced verbosity
