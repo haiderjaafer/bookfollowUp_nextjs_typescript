@@ -41,6 +41,7 @@ const CommitteeSelect: React.FC<CommitteeSelectProps> = ({ value, onChange, clas
   return (
     <div className="w-full">
       <select
+      
         value={value !== undefined ? value : ''}
         onChange={(e) => onChange(e.target.value ? Number(e.target.value) : undefined)}
         disabled={isLoading}
@@ -52,7 +53,7 @@ const CommitteeSelect: React.FC<CommitteeSelectProps> = ({ value, onChange, clas
         `}
       >
         <option className='text-lg font-extrabold' value="" disabled>
-          {isLoading ? 'جارٍ التحميل...' : 'اختر لجنة'}
+          {isLoading ? 'جارٍ التحميل...' : 'اختر لجنة'}  
         </option>
         {committees?.map((committee) => (
           <option  className='text-lg font-extrabold' key={committee.coID} value={committee.coID}>

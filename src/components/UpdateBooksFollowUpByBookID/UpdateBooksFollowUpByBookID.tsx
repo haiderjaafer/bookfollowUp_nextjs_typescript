@@ -31,6 +31,9 @@ import BookActionInput from '../BookInsertionForm/bookActionDialogInput/bookActi
 import SubjectAutoCompleteComboBox from '../BookInsertionForm/SubjectAutoComplete';
 import DestinationAutoComplete from '../BookInsertionForm/DestinationAutoComplete';
 import { JWTPayload } from '@/utiles/verifyToken';
+import CommitteeSelect from '../CommitteeSelect';
+import DepartmentSelect from '../DepartmentSelect';
+import { QueryKey, useQueryClient } from '@tanstack/react-query';
 
 // Define the response type based on the FastAPI model
 interface PDFResponse {
@@ -55,9 +58,13 @@ interface BookFollowUpResponse {
   bookStatus: string | null;
   notes: string | null;
   currentDate: string | null;
-  userID: number | null;
+  userID: string | null; // Changed to string to match BookFollowUpTable.userID
   username: string | null;
   countOfPDFs: number | null;
+  selectedCommittee: number | undefined;
+  deID: number | undefined;
+  Com: string | null; // Added for committee name
+  departmentName: string | null; // Added for department name
   pdfFiles: PDFResponse[];
 }
 
@@ -113,7 +120,51 @@ console.log("UpdateBooksFollowUpByBookID CLIENT",payload);
   // Memoize API base URL
   const API_BASE_URL = useMemo(() => process.env.NEXT_PUBLIC_API_BASE_URL || '', []);
 
+  const [selectedCommittee, setSelectedCommittee] = useState<number | undefined>(undefined);
+  const [deID, setSelectedDepartment] = useState<number | undefined>(undefined);
+
+
+  const [comName, setComName] = useState<string | null>(null); // State for Com
+  const [departmentName, setDepartmentName] = useState<string | null>(null); // State for departmentName
+
+
+  const queryClient = useQueryClient();
+
+   // Reset department when committee changes
+   // Handle committee change
+  const handleCommitteeChange = useCallback(
+    (coID: number | undefined) => {
+      console.log('Committee changed:', coID);
+      setSelectedCommittee(coID);
+      setSelectedDepartment(undefined); // Reset department
+      setFormData((prev) => ({
+        ...prev,
+        selectedCommittee: coID,
+        selectedDepartment: undefined, // Reset in formData
+      }));
+      if (coID) {
+        queryClient.invalidateQueries({ queryKey: ['departments', coID] as QueryKey });
+      }
+    },
+    [queryClient]
+  );
+ // Handle department change
+  const handleDepartmentChange = useCallback(
+    (deID: number | undefined) => {
+      console.log('Department changed:', deID);
+      setSelectedDepartment(deID);
+      setFormData((prev) => ({
+        ...prev,
+        deID: deID, // Update formData
+      }));
+    },
+    []
+  );
   
+
+
+
+
 
   console.log("bookID"+ bookId);
   const router = useRouter();
@@ -126,7 +177,9 @@ console.log("UpdateBooksFollowUpByBookID CLIENT",payload);
     incomingNo: '',
     incomingDate: format(new Date(), 'yyyy-MM-dd'),
     subject: '',
-    destination: '',
+    // destination: '',
+    selectedCommittee: undefined,
+    deID: undefined,
     bookAction: '',
     bookStatus: '',
     notes: '',
@@ -150,6 +203,10 @@ const fetchBookData = useCallback(async () => {
     );
     const book = response.data;
 
+    console.log("book departmentName ..." , book.departmentName);
+
+    console.log("book Com ..." , book.Com);
+
     // CHANGED: Parse bookDate and incomingDate to ensure valid Date objects
     const parsedBookDate = book.bookDate
       ? parse(book.bookDate, 'yyyy-MM-dd', new Date())
@@ -166,12 +223,22 @@ const fetchBookData = useCallback(async () => {
       incomingNo: book.incomingNo || '',
       incomingDate: book.incomingDate || format(new Date(), 'yyyy-MM-dd'),
       subject: book.subject || '',
-      destination: book.destination || '',
+      // destination: book.destination || '',
+      selectedCommittee: book.selectedCommittee,
+      deID: book.deID,
       bookAction: book.bookAction || '',
       bookStatus: book.bookStatus || '',
       notes: book.notes || '',
       userID: book.userID?.toString() || '1',
     });
+
+    setSelectedCommittee(book.selectedCommittee);
+      setSelectedDepartment(book.deID);
+
+      setComName(book.Com); // Set Com
+      setDepartmentName(book.departmentName);
+
+
     setPdfFiles(book.pdfFiles || []);
     setIsLoading(false);
   } catch (error) {
@@ -321,10 +388,11 @@ const fetchBookData = useCallback(async () => {
         'bookDate',
         'directoryName',
         'subject',
-        'destination',
+        // 'destination',
         'bookAction',
         'bookStatus',
         'userID',
+        'deID'
       ];
 
       const fieldLabels: Record<keyof BookInsertionType, string> = {
@@ -333,13 +401,15 @@ const fetchBookData = useCallback(async () => {
         bookDate: 'تاريخ الكتاب',
         directoryName: 'اسم الدائرة',
         subject: 'الموضوع',
-        destination: 'جهة تحويل البريد',
+        // destination: 'جهة تحويل البريد',
         bookAction: 'الإجراء',
         bookStatus: 'حالة الكتاب',
         userID: 'المستخدم',
         incomingNo: 'رقم الوارد',
         notes: 'الملاحظات',
         incomingDate: 'تاريخ الوارد',
+        selectedCommittee: 'اللجنة',
+        deID: 'القسم',
       };
 
       for (const field of requiredFields) {
@@ -385,7 +455,9 @@ const fetchBookData = useCallback(async () => {
             incomingNo: '',
             incomingDate: format(new Date(), 'yyyy-MM-dd'),
             subject: '',
-            destination: '',
+            // destination: '',
+            selectedCommittee: undefined,
+            deID: undefined, 
             bookAction: '',
             bookStatus: '',
             notes: '',
@@ -702,8 +774,40 @@ const renderPDFs = useMemo(() => {
               {/* <SubjectInput formData={formData} setFormData={setFormData} /> */}
             </motion.div>
 
-            {/* Destination */}
-            <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-1">
+               <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-1">
+              <label
+                htmlFor="destination"
+                className="block text-sm font-extrabold text-gray-700 mb-1 lg:text-right text-center"
+              >
+                  الهيأة
+              </label>
+                  <CommitteeSelect
+        value={selectedCommittee}
+        onChange={handleCommitteeChange}
+        className="w-full"
+        
+      />
+            </motion.div>
+
+
+                    <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-1">
+              <label
+                htmlFor="destination"
+                className="block text-sm font-extrabold text-gray-700 mb-1 lg:text-right text-center"
+              >
+                  القسم
+              </label>
+      <DepartmentSelect
+        coID={selectedCommittee}
+        value={deID}
+        onChange={handleDepartmentChange}
+        className="w-full"
+      />
+            </motion.div>
+
+
+            
+            {/* <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-1">
               <label
                 htmlFor="destination"
                 className="block text-sm font-extrabold font-sans text-gray-700 mb-1 text-right"
@@ -715,8 +819,8 @@ const renderPDFs = useMemo(() => {
                 onChange={(val) => setFormData((prev) => ({ ...prev, destination: val }))}
                 fetchUrl={`${API_BASE_URL}/api/bookFollowUp/getDestination`}
               />
-              {/* <DestinationInput formData={formData} setFormData={setFormData} /> */}
-            </motion.div>
+              
+            </motion.div> */}
 
             {/* Book Action */}
             <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-2">
@@ -812,6 +916,15 @@ const renderPDFs = useMemo(() => {
               {isSubmitting ? 'جاري التحديث...' : 'تحديث الكتاب'}
             </Button>
           </motion.div>
+
+          <select >       <option value="ZZZZZZ">{'MMMMMM'}</option>
+                <option value="خارجي">A</option>
+                <option value="داخلي">B</option>
+                <option value="فاكس">C</option></select>
+
+           <p>
+      {departmentName ?? 'None'} : department name   ------  {comName ?? 'None'}  : Selected Committee 
+      </p>
         </form>
       </div>
     </motion.div>

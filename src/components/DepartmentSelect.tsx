@@ -66,7 +66,7 @@ const DepartmentSelect: React.FC<DepartmentSelectProps> = ({ coID, value, onChan
         `}
       >
         <option value="" disabled className='text-lg font-extrabold'>
-          {isLoading || isFetching ? 'جارٍ التحميل...' : !coID ? 'اختر لجنة أولاً' : !departments?.length ? 'لا توجد أقسام' : 'اختر قسم'}
+          {isLoading || isFetching ? 'جارٍ التحميل...' : !coID ? 'اختر الهيأة أولاً' : !departments?.length ? 'لا توجد أقسام' : 'اختر قسم'}
         </option>
         {departments?.map((department, index) => (
           <option
