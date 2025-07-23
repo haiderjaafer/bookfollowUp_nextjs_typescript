@@ -18,11 +18,11 @@
     margin: 1mm;
   }
 
-  body {
+  /* body {
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
     counter-reset: page;
-  }
+  } */
 
   .table thead {
     display: table-header-group;

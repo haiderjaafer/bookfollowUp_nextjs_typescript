@@ -1,11 +1,11 @@
-import { Tajawal } from "next/font/google";
+// import { Tajawal } from "next/font/google";
 import type { Metadata } from "next";
 import "./globals.css";
 
-import { ToastContainer } from 'react-toastify';
+// import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import FooterComponent from "@/components/FooterComponent";
-import ClientLayout from "./ClientLayout";
+// import FooterComponent from "@/components/FooterComponent";
+// import ClientLayout from "./ClientLayout";
 import { Providers } from "./providers";
 import LayoutWrapper from "./LayoutWrapper";
 

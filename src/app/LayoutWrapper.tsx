@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { verifyTokenForPage } from "@/utiles/verifyToken";
 import ClientLayout from "./ClientLayout";
-import { redirect } from "next/navigation";
+// import { redirect } from "next/navigation";
 
 interface LayoutWrapperProps {
   children: React.ReactNode;

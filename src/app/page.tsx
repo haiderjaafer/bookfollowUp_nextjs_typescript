@@ -57,7 +57,7 @@ const Home = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [loading, setLoading] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
+  //const [retryCount, setRetryCount] = useState(0);
   const maxRetries = 2;
 
 
@@ -104,19 +104,27 @@ const Home = () => {
         console.log('User book counts:', userResponse.data);
 
        // toast.success('Books statistics loaded successfully');
-      } catch (error: any) {
-        console.error('Error fetching counts:', error);
-        console.log('Error status:', error.response?.status);
-        console.log('Error detail:', error.response?.data?.detail);
-        toast.error(error.response?.data?.detail || 'Failed to load books statistics');
-      } finally {
-        setLoadingCountBooksStatistics(false);
+      }catch (err: unknown) {  // Use 'err' instead of 'error' to avoid naming conflicts
+      console.error('Error fetching counts:', err);
+      
+      // Type guard to check if it's an AxiosError
+      if (err instanceof AxiosError) {
+        console.log('Error status:', err.response?.status);
+        console.log('Error detail:', err.response?.data?.detail);
+        toast.error(err.response?.data?.detail || 'Failed to load books statistics');
+      } else {
+        // Handle non-Axios errors
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load books statistics';
+        console.log('Non-Axios error:', errorMessage);
+        toast.error(errorMessage);
       }
-    };
+    } finally {
+      setLoadingCountBooksStatistics(false);
+    }
+  };
 
-    fetchCounts();
-  }, []);
-
+  fetchCounts();
+}, []);
 
 
 
@@ -131,7 +139,7 @@ const Home = () => {
           { params: { page, limit } }
         );
         setData(response.data);
-        setRetryCount(0);
+       // setRetryCount(0);
         if (response.data.data.length > 0) {
           toast.warn(`يوجد ${response.data.total} كتاب متأخر!`, {
             position: 'top-right',
@@ -149,7 +157,7 @@ const Home = () => {
         console.error('Error fetching late books:', error);
         if (retry < maxRetries && error instanceof AxiosError && error.response?.status === 500) {
           setTimeout(() => fetchLateBooks(page, limit, retry + 1), 1000 * (retry + 1));
-          setRetryCount(retry + 1);
+          //setRetryCount(retry + 1);
           return;
         }
         toast.error('فشل تحميل الكتب المتأخرة', {
@@ -170,6 +178,8 @@ const Home = () => {
     }, 300),
     [fetchLateBooks]
   );
+
+  
 
   useEffect(() => {
     debouncedFetch(page, limit);

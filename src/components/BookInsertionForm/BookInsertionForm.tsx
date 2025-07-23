@@ -469,10 +469,10 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
                   الهيأة
               </label>
                   <CommitteeSelect
-        value={selectedCommittee}
-        onChange={handleCommitteeChange}
-        className="w-full"
-      />
+                value={selectedCommittee}
+                onChange={handleCommitteeChange}
+                className="w-full"
+                comName={null}      />
             </motion.div>
 
 
@@ -484,11 +484,11 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
                   القسم
               </label>
       <DepartmentSelect
-        coID={selectedCommittee}
-        value={deID}
-        onChange={handleDepartmentChange}
-        className="w-full"
-      />
+                coID={selectedCommittee}
+                value={deID}
+                onChange={handleDepartmentChange}
+                className="w-full" 
+                departmentName={null}      />
             </motion.div>
 
             

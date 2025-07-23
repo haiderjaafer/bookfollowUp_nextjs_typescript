@@ -2,28 +2,23 @@ import UpdateBooksFollowUpByBookID from "@/components/UpdateBooksFollowUpByBookI
 import { verifyTokenForPage } from "@/utiles/verifyToken";
 import { cookies } from "next/headers";
 
-
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 const UpdateBooksFollowUpByBookIDPage = async ({ params }: PageProps) => {
-  const { id } = await params;
+  const { id } = await params; // Now await the params Promise
 
-   const cookieStore = await cookies();
-      const token = cookieStore.get("jwt_cookies_auth_token")?.value || '';
-      const payload = verifyTokenForPage(token);
+  const cookieStore = await cookies();
+  const token = cookieStore.get("jwt_cookies_auth_token")?.value || '';
+  const payload = verifyTokenForPage(token);
 
-      
-    
-      if (!payload) {
-        // optional: redirect or render error 
-        return <div>Unauthorized</div>; // here maybe redirect into error page
-      }
-
-
+  if (!payload) {
+    // Optional: redirect or render error
+    return <div>Unauthorized</div>; // Consider redirecting to an error page
+  }
 
   return (
     <div>

@@ -781,12 +781,12 @@ const renderPDFs = useMemo(() => {
               >
                   الهيأة
               </label>
-                  <CommitteeSelect
-        value={selectedCommittee}
-        onChange={handleCommitteeChange}
-        className="w-full"
-        
-      />
+     <CommitteeSelect
+                value={selectedCommittee}
+                onChange={handleCommitteeChange}
+                comName={comName} // Pass comName to CommitteeSelect
+                className="w-full"
+              />
             </motion.div>
 
 
@@ -802,6 +802,7 @@ const renderPDFs = useMemo(() => {
         value={deID}
         onChange={handleDepartmentChange}
         className="w-full"
+        departmentName={departmentName}
       />
             </motion.div>
 

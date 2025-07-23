@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import ButtonSpinner from "../../../components/ButtonSpinner";
 
-interface ResponsiveLoginProps {}
+ interface ResponsiveLoginProps {}
 
 const ResponsiveLogin: React.FC<ResponsiveLoginProps> = () => {
   const [username, setUsername] = useState("");
