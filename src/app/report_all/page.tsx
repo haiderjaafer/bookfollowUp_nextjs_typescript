@@ -1,9 +1,7 @@
 "use client";
 import ArabicDatePicker from "@/components/ArabicDatePicker";
-import { useRouter } from "next/navigation";
 import { useState, useCallback } from "react";
 import { toast } from "react-toastify";
-
 
 interface BookData {
   bookStatus: string;
@@ -22,7 +20,6 @@ const BOOK_STATUS_OPTIONS = [
 ];
 
 export default function SenderPage() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [showStatusOptions, setShowStatusOptions] = useState(false);
   const [formData, setFormData] = useState<BookData>({
@@ -46,48 +43,61 @@ export default function SenderPage() {
   }, []);
 
   const handleCheckChange = useCallback((checked: boolean) => {
-  setFormData((prev) => ({
-    ...prev,
-    check: checked.toString(),
-    ...(checked ? {} : { startDate: "", endDate: "" }), // clear dates if unchecked
-  }));
-}, []);
+    setFormData((prev) => ({
+      ...prev,
+      check: checked.toString(),
+      ...(checked ? {} : { startDate: "", endDate: "" }), // clear dates if unchecked
+    }));
+  }, []);
 
-
- const handleDateChange = useCallback(
-  (key: "startDate" | "endDate", value: string) => {
+  // FIXED: Create separate stable handlers for each date field
+  const handleStartDateChange = useCallback((value: string) => {
     if (value && !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
       toast.error("يرجى إدخال التاريخ بصيغة YYYY-MM-DD");
       return;
     }
-    setFormData((prev) => ({ ...prev, [key]: value }));
-  },
-  []
-);
+    setFormData((prev) => {
+      if (prev.startDate === value) {
+        return prev; // Prevent unnecessary updates
+      }
+      return { ...prev, startDate: value };
+    });
+  }, []);
 
+  const handleEndDateChange = useCallback((value: string) => {
+    if (value && !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      toast.error("يرجى إدخال التاريخ بصيغة YYYY-MM-DD");
+      return;
+    }
+    setFormData((prev) => {
+      if (prev.endDate === value) {
+        return prev; // Prevent unnecessary updates
+      }
+      return { ...prev, endDate: value };
+    });
+  }, []);
 
- const buildQueryString = useCallback((data: BookData): string => {
-  const params = new URLSearchParams();
+  const buildQueryString = useCallback((data: BookData): string => {
+    const params = new URLSearchParams();
 
-  if (data.bookStatus.trim()) {
-    params.append('bookStatus', data.bookStatus);
-  }
-
-  if (data.check === "true") {
-    params.append("check", "true");
-
-    if (data.startDate.trim()) {
-      params.append("startDate", data.startDate);
+    if (data.bookStatus.trim()) {
+      params.append('bookStatus', data.bookStatus);
     }
 
-    if (data.endDate.trim()) {
-      params.append("endDate", data.endDate);
+    if (data.check === "true") {
+      params.append("check", "true");
+
+      if (data.startDate.trim()) {
+        params.append("startDate", data.startDate);
+      }
+
+      if (data.endDate.trim()) {
+        params.append("endDate", data.endDate);
+      }
     }
-  }
 
-  return params.toString();
-}, []);
-
+    return params.toString();
+  }, []);
 
   const openPrintReport = useCallback(() => {
     try {
@@ -139,21 +149,18 @@ export default function SenderPage() {
     setFormData({ bookStatus: "", check: "false", startDate: "", endDate: "" });
   };
 
+  function formatArabicDate(dateStr: string): string {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
 
-function formatArabicDate(dateStr: string): string {
-  if (!dateStr) return '';
-  const date = new Date(dateStr);
-
-  return new Intl.DateTimeFormat('ar-EG-u-nu-latn', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  })
-    .format(date)
-    .replace(/\//g, '-');
-}
-
-
+    return new Intl.DateTimeFormat('ar-EG-u-nu-latn', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    })
+      .format(date)
+      .replace(/\//g, '-');
+  }
 
   return (
     <div className="container mx-auto p-6 max-w-2xl">
@@ -213,21 +220,15 @@ function formatArabicDate(dateStr: string): string {
               </label>
               {formData.check === "true" && (
                 <div className="flex gap-4 mt-2">
-              
+                  <ArabicDatePicker
+                    selected={formData.startDate}
+                    onChange={handleStartDateChange}
+                  />
 
-<ArabicDatePicker
-  selected={formData.startDate}
-  onChange={(value) => handleDateChange('startDate', value)}
-  label="من"
-/>
-
-<ArabicDatePicker
-  selected={formData.endDate}
-  onChange={(value) => handleDateChange('endDate', value)}
-  label="الى"
-/>
-
-             
+                  <ArabicDatePicker
+                    selected={formData.endDate}
+                    onChange={handleEndDateChange}
+                  />
                 </div>
               )}
             </div>
@@ -265,38 +266,34 @@ function formatArabicDate(dateStr: string): string {
           </button>
         </div>
 
-{formData.bookStatus && (
-  <div className="mt-6 p-4 bg-gray-50 rounded-md text-sm text-gray-700">
-    <p>
-      <strong>حالة الكتاب:</strong>{' '}
-      <span className="font-bold">{formData.bookStatus}</span>
-    </p>
+        {formData.bookStatus && (
+          <div className="mt-6 p-4 bg-gray-50 rounded-md text-sm text-gray-700">
+            <p>
+              <strong>حالة الكتاب:</strong>{' '}
+              <span className="font-bold">{formData.bookStatus}</span>
+            </p>
 
-    {formData.check === "true" && formData.startDate && formData.endDate && (
-      <>
-        <p>
-          <strong>من:</strong>{' '}
-          <span className="font-bold">{formatArabicDate(formData.startDate)}</span>
-        </p>
-        <p>
-          <strong>إلى:</strong>{' '}
-          <span className="font-bold">{formatArabicDate(formData.endDate)}</span>
-        </p>
-      </>
-    )}
+            {formData.check === "true" && formData.startDate && formData.endDate && (
+              <>
+                <p>
+                  <strong>من:</strong>{' '}
+                  <span className="font-bold">{formatArabicDate(formData.startDate)}</span>
+                </p>
+                <p>
+                  <strong>إلى:</strong>{' '}
+                  <span className="font-bold">{formatArabicDate(formData.endDate)}</span>
+                </p>
+              </>
+            )}
 
-    {formData.check === "false" && (
-      <p>
-        <strong>نطاق التاريخ:</strong>{' '}
-        <span className="font-bold">بدون تاريخ</span>
-      </p>
-    )}
-  </div>
-)}
-
-
-
-
+            {formData.check === "false" && (
+              <p>
+                <strong>نطاق التاريخ:</strong>{' '}
+                <span className="font-bold">بدون تاريخ</span>
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -42,25 +42,21 @@ const DropzoneComponent = forwardRef<DropzoneComponentRef, DropzoneComponentProp
     }, []);
 
     // Error handling helper
-    
-
     const getErrorMessage = useCallback(async (error: unknown): Promise<string> => {
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError;
         try {
           let detail = 'No additional details provided';
 
-
-        
-          
           // Handle Blob response (when responseType is 'blob')
           if (axiosError.response?.data instanceof Blob) {
             const text = await axiosError.response.data.text();
             const json = JSON.parse(text);
             detail = json.detail || detail;
           } else if (axiosError.response?.data) {
-            // Handle JSON response directly
-            detail = (axiosError.response.data as any).detail || detail;
+            // Handle JSON response directly - fix for the 'any' error
+            const responseData = axiosError.response.data as { detail?: string };
+            detail = responseData.detail || detail;
           }
 
          // console.error('............ error detail:', detail);   will got detail from backend 
@@ -150,8 +146,7 @@ const DropzoneComponent = forwardRef<DropzoneComponentRef, DropzoneComponentProp
       } finally {
         setIsLoadingBookPdf(false);
       }
-    }, [onFilesAccepted, onBookPdfLoaded, revokePreviousUrls, getErrorMessage]);
-
+    }, [files, onFilesAccepted, onBookPdfLoaded, revokePreviousUrls, getErrorMessage]); // Added 'files' dependency
 
     // Expose methods to parent
     useImperativeHandle(ref, () => ({
@@ -210,7 +205,6 @@ const DropzoneComponent = forwardRef<DropzoneComponentRef, DropzoneComponentProp
       },
       [files, onFileRemoved, revokePreviousUrls]
     );
-
     return (
       <div className="flex items-center justify-between bg-gray-300 rounded-lg w-full flex-col sm:flex-row gap-2">
         <section className="flex flex-col items-center">

@@ -11,7 +11,7 @@ import {
   HeaderContext, // Added for explicit typing
 } from '@tanstack/react-table';
 import { useMediaQuery } from 'react-responsive';
-import { AccessorColumnDef, HeaderMap, BookFollowUpData, PDF, PDFRecord } from './types';
+import {  HeaderMap, BookFollowUpData, PDF, PDFRecord } from './types';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -33,7 +33,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { GrUpdate,GrDocumentPdf } from "react-icons/gr";
-import { FaRegFilePdf } from "react-icons/fa6";
+
 import { AlertDialogDelete } from './AlertDialogDelete';
 
 
@@ -69,7 +69,9 @@ export default function DynamicTable<T extends BookFollowUpData>({
 
 
   const [pdfs, setPdfs] = useState<PDFRecord[]>([]);
-  const [loading, setLoading] = useState(true);
+
+  console.log("pdf",pdfs);
+  
 
   const [selectedPdf, setSelectedPdf] = useState<PDFRecord | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -97,7 +99,7 @@ export default function DynamicTable<T extends BookFollowUpData>({
       'directoryName',
       'subject',
       'bookAction',
-      'destination',
+      
     ].includes(key);
   }, []);
 
@@ -286,19 +288,23 @@ export default function DynamicTable<T extends BookFollowUpData>({
             setSelectedPdfs(pdfs);
             setPdfDialogOpen(true);
           }
-        } catch (error: any) {
-          console.error('Error fetching PDFs:', error);
-          console.log('Error status:', error.response?.status);
-          console.log('Error detail:', error.response?.data?.detail);
-          if (error.response?.status === 404) {
-            toast.info('لا توجد ملفات PDF لهذا السجل');
-          } 
-          
-          else {
-            toast.error(error.response?.data?.detail || 'فشل تحميل ملفات PDF');
-          }
-
-
+} catch (error: unknown) {
+  console.error('Error fetching PDFs:', error);
+  
+  // Type guard to check if error has the expected structure
+  if (error && typeof error === 'object' && 'response' in error) {
+    const axiosError = error as { response?: { status?: number; data?: { detail?: string } } };
+    console.log('Error status:', axiosError.response?.status);
+    console.log('Error detail:', axiosError.response?.data?.detail);
+    
+    if (axiosError.response?.status === 404) {
+      toast.info('لا توجد ملفات PDF لهذا السجل');
+    } else {
+      toast.error(axiosError.response?.data?.detail || 'فشل تحميل ملفات PDF');
+    }
+  } else {
+    toast.error('فشل تحميل ملفات PDF');
+  }
 
               } finally {
                 setIsLoadingPdfs(false);
@@ -344,7 +350,7 @@ export default function DynamicTable<T extends BookFollowUpData>({
 
     const maxVisibleButtons = 5;
     let startPage = Math.max(1, page - Math.floor(maxVisibleButtons / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisibleButtons - 1);
+    const endPage = Math.min(totalPages, startPage + maxVisibleButtons - 1);
 
     if (endPage - startPage + 1 < maxVisibleButtons) {
       startPage = Math.max(1, endPage - maxVisibleButtons + 1);

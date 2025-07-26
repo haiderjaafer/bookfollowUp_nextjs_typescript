@@ -2,12 +2,12 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import { Menu, User, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { Button } from './ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from './ui/sheet';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Logout } from './logout';
+
 import RotatingLogo from './RotatingLogo/RotatingLogo';
 import UserDropdown from './UserDropdownMenu';
 
@@ -121,7 +121,7 @@ export function Navbar({ userData }: NavbarProps) {
             <SheetContent side="right" className="text-right bg-background/95">
               <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
               <SheetDescription className="sr-only">
-                Make changes to your profile here. Click save when you're done.
+                Make changes to your profile here
               </SheetDescription>
               <motion.div
                 className="flex flex-col space-y-4 pt-6"
@@ -335,25 +335,7 @@ export function Navbar({ userData }: NavbarProps) {
         </Link>
 
         
-        {/* <div className="hidden md:flex items-center gap-4">
-          {userData ? (
-            <div className="flex items-center gap-2 bg-sky-50 px-3 py-1.5 rounded-lg">
-              <User className="h-4 w-4 text-sky-600" />
-              <div className="text-right flex items-center gap-2">
-                <p className="font-semibold text-sm text-black">{userData.username}</p>
-                <Logout />
-              </div>
-            </div>
-          ) : (
-            <Link
-              href="/login"
-              className="px-4 py-2 rounded flex items-center cursor-pointer text-black"
-            >
-              <User className="h-5 w-5 mr-1" />
-              تسجيل الدخول
-            </Link>
-          )}
-        </div> */}
+  
 
         {userData ? <UserDropdown userData={userData} /> : null }
 

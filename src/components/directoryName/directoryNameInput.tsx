@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { DirectoryNameDialog } from "./directoryNameDialog";
-import { BookInsertionType } from "../../../bookInsertionType";
+import { BookInsertionType } from "../../utiles/bookInsertionType";
 
 
 

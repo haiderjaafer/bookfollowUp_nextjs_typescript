@@ -1,11 +1,9 @@
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { useEffect } from "react";
+import { toast } from "react-toastify";
 
-
-import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
-import { useEffect } from 'react';
-import { toast } from 'react-toastify';
-
-
+// DepartmentSelect Component
 interface Department {
   deID: number;
   departmentName: string;
@@ -13,14 +11,20 @@ interface Department {
 
 interface DepartmentSelectProps {
   coID: number | undefined;
-  value: number | undefined;
+  value: number | undefined | null; // FIXED: Allow null from database
   onChange: (deID: number | undefined) => void;
   className?: string;
   departmentName: string | null;
 }
 
-const DepartmentSelect: React.FC<DepartmentSelectProps> = ({ coID, value, onChange, className,departmentName }) => {
-  console.log('DepartmentSelect - coID:', coID, 'value:', value);
+const DepartmentSelect: React.FC<DepartmentSelectProps> = ({ 
+  coID, 
+  value, 
+  onChange, 
+  className, 
+  departmentName 
+}) => {
+  console.log('DepartmentSelect - coID:', coID, 'value:', value, 'type:', typeof value);
 
   const { data: departments, isLoading, error, isFetching } = useQuery<Department[], Error>({
     queryKey: ['departments', coID],
@@ -37,7 +41,7 @@ const DepartmentSelect: React.FC<DepartmentSelectProps> = ({ coID, value, onChan
         console.log('Departments fetched:', response.data);
         return response.data;
       } catch (err) {
-        const error = err as any;
+        const error = err as { response?: { data?: { detail?: string }; status?: number } };
         const errorMessage = error.response?.data?.detail || 'فشل في جلب الأقسام';
         console.error('Fetch error:', errorMessage, 'Status:', error.response?.status);
         toast.error(errorMessage);
@@ -54,10 +58,23 @@ const DepartmentSelect: React.FC<DepartmentSelectProps> = ({ coID, value, onChan
     console.log('DepartmentSelect - isLoading:', isLoading, 'isFetching:', isFetching, 'departments:', departments, 'value:', value);
   }, [error, isLoading, isFetching, departments, value]);
 
+  // FIXED: Safe function to get select value
+  const getSelectValue = () => {
+    // Handle null, undefined, or any falsy values
+    if (value === null || value === undefined || typeof value !== 'number') {
+      return '';
+    }
+    // Additional check to ensure it's a valid number
+    if (isNaN(value)) {
+      return '';
+    }
+    return value.toString();
+  };
+
   return (
     <div className="w-full">
       <select
-        value={value !== undefined && !isNaN(value) ? value.toString() : ''}
+        value={getSelectValue()} // FIXED: Use safe function instead of inline logic
         onChange={(e) => onChange(e.target.value ? Number(e.target.value) : undefined)}
         disabled={isLoading || isFetching || !coID || !departments?.length || !!error}
         className={`
@@ -67,17 +84,16 @@ const DepartmentSelect: React.FC<DepartmentSelectProps> = ({ coID, value, onChan
           ${className}
         `}
       >
-        <option>
-          {departmentName ?? ""}
+        <option value="">
+          {departmentName ?? "اختر قسم"}
         </option>
         {/* <option value="" disabled>
-          
           {isLoading || isFetching ? 'جارٍ التحميل...' : !coID ? 'اختر الهيأة أولاً' : !departments?.length || error ? 'لا توجد أقسام' : 'اختر قسم'}
         </option> */}
         {departments?.map((department) => (
           <option
             key={department.deID}
-            value={department.deID.toString()}
+            value={department.deID.toString()} // This is safe since department.deID comes from API
           >
             {department.departmentName || 'بدون اسم'}
           </option>
@@ -93,12 +109,6 @@ const DepartmentSelect: React.FC<DepartmentSelectProps> = ({ coID, value, onChan
 };
 
 export default DepartmentSelect;
-
-
-
-
-
-
 
 
 

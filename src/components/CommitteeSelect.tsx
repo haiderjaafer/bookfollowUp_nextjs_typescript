@@ -5,7 +5,6 @@ import axios from 'axios';
 import { useEffect } from 'react';
 import { toast } from 'react-toastify';
 
-
 interface Committee {
   coID: number;
   Com: string;
@@ -29,7 +28,7 @@ const CommitteeSelect: React.FC<CommitteeSelectProps> = ({ value, onChange, comN
         console.log('Committees fetched:', response.data);
         return response.data;
       } catch (err) {
-        const error = err as any;
+        const error = err as { response?: { data?: { detail?: string } } };
         const errorMessage = error.response?.data?.detail || 'فشل في جلب اللجان';
         toast.error(errorMessage);
         throw new Error(errorMessage);
@@ -46,32 +45,48 @@ const CommitteeSelect: React.FC<CommitteeSelectProps> = ({ value, onChange, comN
 
   return (
     <div className="w-full">
-      <select
-        value={value !== undefined && !isNaN(value) ? value.toString() : ''}
-        onChange={(e) => onChange(e.target.value ? Number(e.target.value) : undefined)}
-        disabled={isLoading || !!error}
-        className={`
-          w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-arabic text-right
-          ${isLoading || error ? 'bg-gray-200 cursor-not-allowed' : 'bg-white'}
-          ${error ? 'border-red-500' : 'border-gray-300'}
-          ${className}
-        `}
-      >
-        <option className="text-lg font-extrabold" value="" disabled>
-          {isLoading ? 'جارٍ التحميل...' : `${comName ?? ''}`}
-        </option>
-        {committees?.map((committee) => (
-          <option key={committee.coID} value={committee.coID.toString()}>
-            {committee.Com || 'بدون اسم'}
-          </option>
-        ))}
-      </select>
-      {error && (
-        <p className="mt-1 text-sm text-red-600 font-arabic">
-          خطأ: {error.message}
-        </p>
-      )}
-    </div>
+  <select
+    value={value !== undefined && !isNaN(value) ? value.toString() : ''}
+    onChange={(e) => onChange(e.target.value ? Number(e.target.value) : undefined)}
+    disabled={isLoading || !!error}
+    className={`
+      w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-arabic text-right
+      ${isLoading || error ? 'bg-gray-200 cursor-not-allowed' : 'bg-white'}
+      ${error ? 'border-red-500' : 'border-gray-300'}
+      ${className}
+    `}
+  >
+    {/* Dynamic placeholder based on state */}
+    <option className="text-lg font-extrabold text-gray-500" value="" disabled>
+      {isLoading 
+        ? 'جارٍ التحميل...' 
+        : value && comName 
+          ? `الحالي: ${comName} - اختر للتغيير`
+          : 'اختر الهيأة'
+      }
+    </option>
+    
+    {/* Available committees */}
+    {committees?.map((committee) => (
+      <option key={committee.coID} value={committee.coID.toString()}>
+        {committee.Com || 'بدون اسم'}
+      </option>
+    ))}
+  </select>
+  
+  {/* Show current selection info below select */}
+  {value && comName && !isLoading && (
+    <p className="mt-1 text-sm text-blue-600 font-arabic">
+      المحدد حالياً: {comName}
+    </p>
+  )}
+  
+  {error && (
+    <p className="mt-1 text-sm text-red-600 font-arabic">
+      خطأ: {error.message}
+    </p>
+  )}
+</div>
   );
 };
 

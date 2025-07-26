@@ -102,7 +102,7 @@ const SearchPanel = () => {
 
   // Memoize query parameters based on active filters
   const queryParams = useMemo(() => {
-    const params: Record<string, any> = { page, limit };
+    const params: Record<string, string | number> = { page, limit };
     Object.entries(activeFilters).forEach(([key, value]) => {
       if (value) params[key] = value;
     });
@@ -159,6 +159,7 @@ const SearchPanel = () => {
     }
   }, []);
 
+  
   // Loading and error states
   if (error) {
     return <div className="text-red-500 text-center">Error loading data: {(error as Error).message}</div>;

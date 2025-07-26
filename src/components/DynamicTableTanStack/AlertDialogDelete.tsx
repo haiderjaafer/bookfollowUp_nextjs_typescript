@@ -1,6 +1,6 @@
 import {
   AlertDialog,
-  AlertDialogTrigger,
+  
   AlertDialogContent,
   AlertDialogHeader,
   AlertDialogTitle,
@@ -41,8 +41,9 @@ export function AlertDialogDelete({ open, onOpenChange, pdf, setPdfs }: AlertDia
       }
 
       onOpenChange(false); // Close dialog
-    } catch (error: any) {
-      toast.error(`فشل في حذف الملف: ${error.message}`);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'حدث خطأ غير متوقع';
+      toast.error(`فشل في حذف الملف: ${errorMessage}`);
     }
   };
 

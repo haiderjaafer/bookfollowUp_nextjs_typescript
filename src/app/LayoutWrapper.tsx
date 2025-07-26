@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { verifyTokenForPage } from "@/utiles/verifyToken";
 import ClientLayout from "./ClientLayout";
-// import { redirect } from "next/navigation";
+
 
 interface LayoutWrapperProps {
   children: React.ReactNode;
@@ -47,31 +47,3 @@ export default async function LayoutWrapper({ children }: LayoutWrapperProps) { 
 
 
 
-
-
-// // LayoutWrapper.tsx (Server Component)
-// import { cookies } from "next/headers";
-// import { verifyTokenForPage } from "@/utiles/verifyToken";
-// import ClientLayout from "./ClientLayout";
-
-// interface LayoutWrapperProps {
-//   children: React.ReactNode;
-// }
-
-// export default async function LayoutWrapper({ children }: LayoutWrapperProps) {
-//   const cookieStore = await cookies();
-//   const token = cookieStore.get("jwt_cookies_auth_token")?.value || '';
-//   const payload = verifyTokenForPage(token);
-
-//   const userData = payload ? {
-//     userID: payload.id?.toString() || '',
-//     username: payload.username || '',
-//     permission: payload.permission || ''
-//   } : null;
-
-//   return (
-//     <ClientLayout userData={userData}>
-//       {children}
-//     </ClientLayout>
-//   );
-// }

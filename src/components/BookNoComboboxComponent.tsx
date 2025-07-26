@@ -1,12 +1,3 @@
-// function SearchOrderNoPage() {
-//   return (
-//     <div className="flex justify-center items-center">SearchOrderNoPage</div>
-//   )
-// }
-// export default SearchOrderNoPage
-
-
-
 
 'use client'
 
@@ -42,11 +33,11 @@ export default function BookNoCombobox({
   const [open, setOpen] = useState(false)
   const [bookNo, setBookNo] = useState<string[]>([])
   const [query, setQuery] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+//  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     const fetchOrderNos = async () => {
-      setIsLoading(true)
+  //    setIsLoading(true)
       try {
         //const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/orders/getAll`)
         const res = await fetch(fetchUrl)
@@ -57,7 +48,7 @@ export default function BookNoCombobox({
         console.error('Failed to fetch orderNos:', err)
         setBookNo([])
       } finally {
-        setIsLoading(false)
+    //    setIsLoading(false)
       }
     }
 

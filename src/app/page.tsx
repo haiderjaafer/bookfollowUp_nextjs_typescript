@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import axios, { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
 import { debounce } from 'lodash';
@@ -10,13 +10,6 @@ import { BookFollowUpData, orderHeaderMap } from '@/components/DynamicTableTanSt
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card } from '@/components/ui/card';
 
-
-// CHANGED: Sample Footer component; replace with your actual footer
-// const Footer = () => (
-//   <footer className="bg-gray-800 text-white text-center py-4 text-sm font-arabic">
-//     © {new Date().getFullYear()} نظام متابعة الكتب. جميع الحقوق محفوظة.
-//   </footer>
-// );
 
 const DynamicTable = dynamic(() => import('@/components/DynamicTableTanStack/DynamicTableWithPagination'), {
   ssr: false,
@@ -36,6 +29,7 @@ interface LateBooksResponse {
   limit: number;
   totalPages: number;
 }
+
 interface BookTypeCounts {
   External: number;
   Internal: number;
@@ -47,6 +41,7 @@ interface BookStatusCounts {
   Pending: number;
   Deliberation: number;
 }
+
 interface UserBookCount {
   username: string;
   bookCount: number;
@@ -57,13 +52,13 @@ const Home = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [loading, setLoading] = useState(false);
-  //const [retryCount, setRetryCount] = useState(0);
   const maxRetries = 2;
 
-
-
-
-  const [bookTypeCounts, setBookTypeCounts] = useState<BookTypeCounts>({ External: 0, Internal: 0, Fax: 0 });
+  const [bookTypeCounts, setBookTypeCounts] = useState<BookTypeCounts>({ 
+    External: 0, 
+    Internal: 0, 
+    Fax: 0 
+  });
   const [bookStatusCounts, setBookStatusCounts] = useState<BookStatusCounts>({
     Accomplished: 0,
     Pending: 0,
@@ -72,8 +67,7 @@ const Home = () => {
   const [userBookCounts, setUserBookCounts] = useState<UserBookCount[]>([]);
   const [loadingCountBooksStatistics, setLoadingCountBooksStatistics] = useState(true);
 
-
-
+  // Fetch statistics counts
   useEffect(() => {
     const fetchCounts = async () => {
       try {
@@ -103,33 +97,29 @@ const Home = () => {
         setUserBookCounts(userResponse.data);
         console.log('User book counts:', userResponse.data);
 
-       // toast.success('Books statistics loaded successfully');
-      }catch (err: unknown) {  // Use 'err' instead of 'error' to avoid naming conflicts
-      console.error('Error fetching counts:', err);
-      
-      // Type guard to check if it's an AxiosError
-      if (err instanceof AxiosError) {
-        console.log('Error status:', err.response?.status);
-        console.log('Error detail:', err.response?.data?.detail);
-        toast.error(err.response?.data?.detail || 'Failed to load books statistics');
-      } else {
-        // Handle non-Axios errors
-        const errorMessage = err instanceof Error ? err.message : 'Failed to load books statistics';
-        console.log('Non-Axios error:', errorMessage);
-        toast.error(errorMessage);
+      } catch (err: unknown) {
+        console.error('Error fetching counts:', err);
+        
+        // Type guard to check if it's an AxiosError
+        if (err instanceof AxiosError) {
+          console.log('Error status:', err.response?.status);
+          console.log('Error detail:', err.response?.data?.detail);
+          toast.error(err.response?.data?.detail || 'Failed to load books statistics');
+        } else {
+          // Handle non-Axios errors
+          const errorMessage = err instanceof Error ? err.message : 'Failed to load books statistics';
+          console.log('Non-Axios error:', errorMessage);
+          toast.error(errorMessage);
+        }
+      } finally {
+        setLoadingCountBooksStatistics(false);
       }
-    } finally {
-      setLoadingCountBooksStatistics(false);
-    }
-  };
+    };
 
-  fetchCounts();
-}, []);
+    fetchCounts();
+  }, []);
 
-
-
-
-
+  // Fetch late books with retry logic
   const fetchLateBooks = useCallback(
     async (page: number, limit: number, retry: number = 0) => {
       setLoading(true);
@@ -139,7 +129,7 @@ const Home = () => {
           { params: { page, limit } }
         );
         setData(response.data);
-       // setRetryCount(0);
+        
         if (response.data.data.length > 0) {
           toast.warn(`يوجد ${response.data.total} كتاب متأخر!`, {
             position: 'top-right',
@@ -153,13 +143,16 @@ const Home = () => {
             autoClose: 2000,
           });
         }
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Error fetching late books:', error);
-        if (retry < maxRetries && error instanceof AxiosError && error.response?.status === 500) {
+        
+        if (error instanceof AxiosError && 
+            retry < maxRetries && 
+            error.response?.status === 500) {
           setTimeout(() => fetchLateBooks(page, limit, retry + 1), 1000 * (retry + 1));
-          //setRetryCount(retry + 1);
           return;
         }
+        
         toast.error('فشل تحميل الكتب المتأخرة', {
           position: 'top-right',
           className: 'font-arabic text-lg',
@@ -169,18 +162,18 @@ const Home = () => {
         setLoading(false);
       }
     },
-    []
+    [maxRetries]
   );
 
-  const debouncedFetch = useCallback(
-    debounce((page: number, limit: number) => {
+  // Create debounced fetch function using useMemo
+  const debouncedFetch = useMemo(
+    () => debounce((page: number, limit: number) => {
       fetchLateBooks(page, limit);
     }, 300),
     [fetchLateBooks]
   );
 
-  
-
+  // Effect to trigger debounced fetch when page or limit changes
   useEffect(() => {
     debouncedFetch(page, limit);
     return () => debouncedFetch.cancel();
@@ -194,8 +187,6 @@ const Home = () => {
     setLimit(newLimit);
     setPage(1);
   }, []);
-  
-
   return (
     // CHANGED: Added flexbox layout for full-screen height and sticky table
     <div className="flex flex-col min-h-screen bg-gray-50 font-serif" dir="rtl">

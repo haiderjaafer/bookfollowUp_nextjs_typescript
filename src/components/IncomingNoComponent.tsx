@@ -32,11 +32,11 @@ export default function IncomingNoCombobox({
   const [open, setOpen] = useState(false)
   const [incomingNo, setIncomingNo] = useState<string[]>([])
   const [query, setQuery] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  
 
   useEffect(() => {
     const fetchOrderNos = async () => {
-      setIsLoading(true)
+      
       try {
         //const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/orders/getAll`)
         const res = await fetch(fetchUrl)
@@ -47,7 +47,7 @@ export default function IncomingNoCombobox({
         console.error('Failed to fetch orderNos:', err)
         setIncomingNo([])
       } finally {
-        setIsLoading(false)
+      
       }
     }
 

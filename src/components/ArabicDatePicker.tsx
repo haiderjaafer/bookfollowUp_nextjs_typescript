@@ -1,8 +1,6 @@
-
-
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import { arSA } from 'date-fns/locale'; // Use arSA for Arabic day names
 import 'react-datepicker/dist/react-datepicker.css';
@@ -19,34 +17,76 @@ const iraqiArabicMonths = [
 interface ArabicDatePickerProps {
   selected: string;
   onChange: (date: string) => void;
-  label: string;
+  label?: string;
+  allowEmpty?: boolean; // New prop to control empty date behavior
 }
 
 export default function ArabicDatePicker({
   selected,
   onChange,
-  label ,
+  allowEmpty = true, // Default to allowing empty dates
 }: ArabicDatePickerProps) {
-  const [date, setDate] = useState<Date | null>(
-    selected ? new Date(selected) : null
-  );
+  const [date, setDate] = useState<Date | null>(null);
+  
+  // Use ref to store the onChange function to avoid dependency issues
+  const onChangeRef = useRef(onChange);
+  const previousValueRef = useRef<string>('');
+  const selectedRef = useRef<string>('');
 
-    useEffect(() => {
-    if (date) {
-      const formatted = format(date, 'yyyy-MM-dd');
-      onChange(formatted);
-    } else {
-      onChange(''); // Clear date
+  // Update the ref when onChange changes
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  // FIXED: Initialize and sync with selected prop, handling empty values properly
+  useEffect(() => {
+    if (selected !== selectedRef.current) {
+      selectedRef.current = selected;
+      
+      // Handle empty/null values based on allowEmpty prop
+      if (!selected || selected.trim() === '') {
+        setDate(null);
+      } else {
+        try {
+          const newDate = new Date(selected);
+          // Check if the date is valid
+          if (!isNaN(newDate.getTime())) {
+            setDate(newDate);
+          } else {
+            setDate(null);
+          }
+        } catch (error) {
+          console.warn('Invalid date format:', error);
+          console.warn('Invalid date format:', selected);
+          setDate(null);
+        }
+      }
+    }
+  }, [selected, allowEmpty]);
+
+  // Handle date changes and call onChange
+  useEffect(() => {
+    const newValue = date ? format(date, 'yyyy-MM-dd') : '';
+    
+    // Only call onChange if the value actually changed AND it's different from the selected prop
+    if (newValue !== previousValueRef.current && newValue !== selectedRef.current) {
+      previousValueRef.current = newValue;
+      selectedRef.current = newValue;
+      onChangeRef.current(newValue);
     }
   }, [date]);
 
+  // Memoized change handler to prevent unnecessary re-renders
+  const handleDateChange = useCallback((newDate: Date | null) => {
+    setDate(newDate);
+  }, []);
+
   return (
     <div className="mb-4" dir="rtl">
-      {/* <label className="block text-sm font-extrabold text-gray-700 mb-1 ">{label}</label> */}
-      <div className="relative ">
+      <div className="relative">
         <DatePicker
           selected={date}
-          onChange={(date) => setDate(date as Date)}
+          onChange={handleDateChange}
           locale="ar"
           dateFormat="yyyy-MM-dd"
           placeholderText="اختر التاريخ"
@@ -69,16 +109,7 @@ export default function ArabicDatePicker({
             </div>
           )}
         />
-
-        
       </div>
     </div>
   );
 }
-
-
-
-
-
-
-

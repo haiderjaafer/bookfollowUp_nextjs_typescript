@@ -10,10 +10,21 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { BookInsertionType } from "../../../bookInsertionType";
+import { BookInsertionType } from "../../utiles/bookInsertionType";
 
+interface DirectoryNameDialogProps {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  formData: BookInsertionType;
+  setFormData: React.Dispatch<React.SetStateAction<BookInsertionType>>;
+}
 
-export function DirectoryNameDialog({ open, setOpen, formData, setFormData }:any) {
+export function DirectoryNameDialog({ 
+  open, 
+  setOpen, 
+  formData, 
+  setFormData 
+}: DirectoryNameDialogProps) {
   const handleSave = () => {
     setOpen(false);
   };
@@ -27,16 +38,12 @@ export function DirectoryNameDialog({ open, setOpen, formData, setFormData }:any
         </DialogHeader>
         <Textarea
           value={formData.directoryName}
-    onChange={(e) =>
-  setFormData((prev: BookInsertionType) => ({
-    ...prev,
-    directoryName: e.target.value,
-  }))
-}
-
-
-
-          
+          onChange={(e) =>
+            setFormData((prev: BookInsertionType) => ({
+              ...prev,
+              directoryName: e.target.value,
+            }))
+          }
           rows={6}
           className="mt-2"
           placeholder="اكتب اسم المادة هنا..."

@@ -21,8 +21,14 @@ export const Logout = () => {
       toast.success('تم تسجيل الخروج بنجاح');
       router.push('/login');
       router.refresh();
-    } catch (error: any) {
-      toast.error(error?.response?.data?.detail || 'فشل تسجيل الخروج');
+    } catch (error) {
+      // Proper error handling without 'any'
+      if (axios.isAxiosError(error)) {
+        const errorMessage = error.response?.data?.detail || 'فشل تسجيل الخروج';
+        toast.error(errorMessage);
+      } else {
+        toast.error('فشل تسجيل الخروج');
+      }
       console.error('Logout error:', error);
     }
   };
@@ -44,4 +50,4 @@ export const Logout = () => {
 
 //flex: Makes the button a flex container.
 // justify-between: Distributes space between the icon and the text.
-//w-full: Ensures enough width for spacing. You can control the width if needed 
+//w-full: Ensures enough width for spacing. You can control the width if needed

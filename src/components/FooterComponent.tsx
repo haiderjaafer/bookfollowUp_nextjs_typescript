@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from "framer-motion";
+
 import { useEffect, useRef, useState } from "react";
 
 function FooterComponent() {
@@ -29,17 +29,7 @@ function FooterComponent() {
     };
   }, []);
 
-    const slideFromBottom = {
-    hidden: { y: 100, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        duration: 1,
-        ease: "easeOut"
-      }
-    }
-  };
+
 
   return (
     <footer

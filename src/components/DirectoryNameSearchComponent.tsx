@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { Check, ChevronsUpDown, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -36,27 +36,20 @@ export default function DirectoryNameCombobox({
   const [debouncedQuery, setDebouncedQuery] = useState(query)
 
   // Debounce logic
-  //setTimeout(function, milliseconds)  definition
-
+  // setTimeout(function, milliseconds) definition
   useEffect(() => {                       // useEffect will run whenever query variable changed 
     const handler = setTimeout(() => {    // The setTimeout() method calls a function after a number of milliseconds here 400 so 1 second = 1000 milliseconds.so The setTimeout() is executed only once
       setDebouncedQuery(query)
     }, 400)
 
-    //handler is the ID of the timeout allowing you to cancel it later 
+    // handler is the ID of the timeout allowing you to cancel it later 
 
-    return () => clearTimeout(handler)    //clearTimeout() method to prevent the function from starting or cleanUp function 
-  }, [query])   // each time the user types , query updates, triggering useEffect again . before the new effct runs, the cleanUp called clearing the previous tiemout
+    return () => clearTimeout(handler)    // clearTimeout() method to prevent the function from starting or cleanUp function 
+  }, [query])   // each time the user types , query updates, triggering useEffect again . before the new effect runs, the cleanUp called clearing the previous timeout
 
   // Fetch data from API when debounced query changes
   useEffect(() => { 
-    const controller = new AbortController()  //AbortController is a built-in JavaScript API that allows you to abort ongoing operations, such as fetch requests. It provides a way to signal that a particular operation should be canceled.
-
-
-
-    console.log("value..."+ value);
-
-    console.log("query..."+ query);  // what you writing in search box
+    const controller = new AbortController()  // AbortController is a built-in JavaScript API that allows you to abort ongoing operations, such as fetch requests. It provides a way to signal that a particular operation should be canceled.
 
     const fetchDirectoryNames = async () => {
       if (!debouncedQuery) {
@@ -72,9 +65,9 @@ export default function DirectoryNameCombobox({
         )
         const data: string[] = await res.json()
 
-        console.log("debouncedQuery " + debouncedQuery)
 
-       // console.log("DirectoryNames data " + data)
+
+        // console.log("DirectoryNames data " + data)
         setDirectoryNames(Array.isArray(data) ? data : [])
       } catch (err) {
         if (err instanceof Error && err.name !== 'AbortError') {
@@ -88,21 +81,14 @@ export default function DirectoryNameCombobox({
 
     fetchDirectoryNames()
 
-    return () => controller.abort()  //You can call the abort() method on the controller to cancel the fetch request
-  }, [debouncedQuery, fetchUrl])
+    return () => controller.abort()  // You can call the abort() method on the controller to cancel the fetch request
+  }, [debouncedQuery, fetchUrl]) // Only dependencies that are actually used in the effect
 
-  const handleSelect = (selected: string) => {
+  const handleSelect = useCallback((selected: string) => {
     onChange(selected === value ? '' : selected)
     setOpen(false)
 
-    console.log(" value in handleSelect  " + value)   // as if previous value selected
-
-    console.log(" selected in handleSelect  " + selected) // now value selected
-    
-  }
-
-
-  
+  }, [value, onChange]) // Added useCallback with proper dependencies
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

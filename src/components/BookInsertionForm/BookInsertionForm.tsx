@@ -3,21 +3,20 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+//import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { DatePicker } from '../ui/date-picker';
-import DirectoryNameInput from '../directoryName/directoryNameInput';
-import SubjectInput from '../subject/subjectInput';
-import DestinationInput from '../destination/destinationInput';
-import { BookInsertionType } from '../../../bookInsertionType';
+//import { DatePicker } from '../ui/date-picker';
+//import DirectoryNameInput from '../directoryName/directoryNameInput';
+//import SubjectInput from '../subject/subjectInput';
+//import DestinationInput from '../destination/destinationInput';
+import { BookInsertionType } from '../../utiles/bookInsertionType';
 import { toast } from 'react-toastify';
 import DropzoneComponent, { DropzoneComponentRef } from '../ReactDropZoneComponont';
 import axios from 'axios';
-import debounce from 'debounce';
 import DirectoryNameCombobox from './DirectoryNameComboboxAutoComplete';
 import SubjectAutoCompleteComboBox from './SubjectAutoComplete';
 import ArabicDatePicker from '../ArabicDatePicker';
-import DestinationAutoComplete from './DestinationAutoComplete';
+//import DestinationAutoComplete from './DestinationAutoComplete';
 import BookActionInput from './bookActionDialogInput/bookActionInput';
 import { JWTPayload } from '@/utiles/verifyToken';
 import CommitteeSelect from '../CommitteeSelect';
@@ -45,18 +44,18 @@ const inputVariants = {
 
 interface BookInsertionFormProps {
   payload: JWTPayload;
+  id: string | number; // or whatever type the id should be
 }
 
+// Move all hooks to the top, before any conditional logic
+// Define the component with correct props type
+
 export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
-  // Validate user data
+  // All hooks must be called at the top level, before any conditions
+  const queryClient = useQueryClient();
+  const dropzoneRef = useRef<DropzoneComponentRef>(null);
+  
   const userID = payload.id?.toString() || '';
-  const username = payload.username || '';
-  const permission = payload.permission || '';
-
-  if (!userID) {
-    return <div>Error: Invalid user data...{userID}</div>;
-  }
-
   const API_BASE_URL = useMemo(() => process.env.NEXT_PUBLIC_API_BASE_URL || '', []);
 
   const [selectedCommittee, setSelectedCommittee] = useState<number | undefined>(undefined);
@@ -73,7 +72,6 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
     incomingNo: '',
     incomingDate: format(new Date(), 'yyyy-MM-dd'),
     subject: '',
-    // destination: '',
     bookAction: '',
     bookStatus: '',
     notes: '',
@@ -83,12 +81,9 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
   // State for selected file
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [bookExists, setBookExists] = useState<boolean | null>(null);
+  
 
-  const queryClient = useQueryClient();
-
-   // Reset department when committee changes
-   // Handle committee change
+  // Handle committee change
   const handleCommitteeChange = useCallback(
     (coID: number | undefined) => {
       console.log('Committee changed:', coID);
@@ -105,7 +100,8 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
     },
     [queryClient]
   );
- // Handle department change
+
+  // Handle department change
   const handleDepartmentChange = useCallback(
     (deID: number | undefined) => {
       console.log('Department changed:', deID);
@@ -117,13 +113,8 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
     },
     []
   );
-  
 
-
-
-  const dropzoneRef = useRef<DropzoneComponentRef>(null);
-
-  // Check if book exists
+  // Check if book exists - FIXED: Added useCallback with proper dependencies
   const checkBookExists = useCallback(
     async (bookType: string, bookNo: string, bookDate: string) => {
       if (!bookType || !bookNo || !bookDate) return;
@@ -132,33 +123,41 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
           `${API_BASE_URL}/api/bookFollowUp/checkBookNoExistsForDebounce`,
           { params: { bookType, bookNo, bookDate } }
         );
-        setBookExists(response.data.exists);
+        
         if (response.data.exists) {
           toast.warning('رقم الكتاب موجود بالفعل لهذا العام');
         }
       } catch (error) {
         console.error('Error checking book existence:', error);
-        setBookExists(false);
       }
     },
-    [API_BASE_URL]
+    [API_BASE_URL] // FIXED: Added dependency
   );
 
-  const debouncedCheckBookExists = useCallback(
-    debounce(checkBookExists, 500),
-    [checkBookExists]
-  );
+  // FIXED: Create debounced function with useRef to prevent recreation
+  const debouncedCheckBookExistsRef = useRef<NodeJS.Timeout | null>(null);
 
+  // FIXED: Simplified useEffect with manual debouncing
   useEffect(() => {
-    if (formData.bookNo && formData.bookType && formData.bookDate) {
-      debouncedCheckBookExists(formData.bookType, formData.bookNo, formData.bookDate);
-    } else {
-      setBookExists(null);
+    // Clear previous timeout
+    if (debouncedCheckBookExistsRef.current) {
+      clearTimeout(debouncedCheckBookExistsRef.current);
     }
+
+    if (formData.bookNo && formData.bookType && formData.bookDate) {
+      // Set new timeout
+      debouncedCheckBookExistsRef.current = setTimeout(() => {
+        checkBookExists(formData.bookType, formData.bookNo, formData.bookDate);
+      }, 500);
+    }
+    
+    // Cleanup function
     return () => {
-      debouncedCheckBookExists.clear();
+      if (debouncedCheckBookExistsRef.current) {
+        clearTimeout(debouncedCheckBookExistsRef.current);
+      }
     };
-  }, [formData.bookNo, formData.bookType, formData.bookDate, debouncedCheckBookExists]);
+  }, [formData.bookNo, formData.bookType, formData.bookDate, checkBookExists]);
 
   // Handle text input and select changes
   const handleChange = useCallback(
@@ -213,7 +212,6 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
     console.log(`📄 Book PDF loaded: ${success ? 'SUCCESS' : 'FAILED'}`);
     if (success && file) {
       setSelectedFile(file);
-     // toast.info('تم تحميل ملف book.pdf بنجاح');
     } else {
       setSelectedFile(null);
     }
@@ -232,7 +230,6 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
         'bookDate',
         'directoryName',
         'subject',
-        // 'destination',
         'bookAction',
         'bookStatus',
         'userID',
@@ -245,7 +242,6 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
         bookDate: 'تاريخ الكتاب',
         directoryName: 'اسم الدائرة',
         subject: 'الموضوع',
-        // destination: 'جهة تحويل البريد',
         bookAction: 'الإجراء',
         bookStatus: 'حالة الكتاب',
         userID: 'المستخدم',
@@ -279,9 +275,8 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
       });
       formDataToSend.append('file', selectedFile);
 
-      console.log( "formDataToSend",formDataToSend);
-
-      console.log( "formData,,,,,,,,", formData);
+      console.log("formDataToSend", formDataToSend);
+      console.log("formData,,,,,,,,", formData);
 
       try {
         const response = await axios.post(
@@ -306,7 +301,6 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
             incomingNo: '',
             incomingDate: format(new Date(), 'yyyy-MM-dd'),
             subject: '',
-            // destination: '',
             bookAction: '',
             bookStatus: '',
             notes: '',
@@ -314,7 +308,7 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
           });
           setSelectedFile(null);
           dropzoneRef.current?.reset(true); // Silent reset
-          setBookExists(null);
+          
         } else {
           throw new Error('Failed to add book');
         }
@@ -325,10 +319,20 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
         setIsSubmitting(false);
       }
     },
-    [formData, selectedFile, bookExists, userID, API_BASE_URL]
+    [formData, selectedFile, userID, API_BASE_URL]
   );
 
-  return (
+  // NOW we can do conditional rendering AFTER all hooks are called
+  if (!userID) {
+    return <div>Error: Invalid user data...{userID}</div>;
+  }
+
+
+
+
+
+
+return (
     <motion.div
       className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-sky-50/50 py-4 sm:py-6 md:py-8 lg:py-12"
       initial="hidden"

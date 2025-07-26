@@ -1,7 +1,6 @@
-import { LogOut, User } from "lucide-react";
+import {  User } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
 import { Logout } from "./logout";
 import { TbLockPassword } from "react-icons/tb";
 
@@ -69,14 +68,6 @@ export default function UserDropdown({ userData }: Props) {
 
             <DropdownMenuSeparator />
 
-        {/* <DropdownMenuItem disabled>
-          <span className="text-sm text-muted-foreground">صلاحية: {userData.permission}</span>
-        </DropdownMenuItem> */}
-
-        {/* <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer">
-          <LogOut className="w-4 h-4 mr-2" />
-          تسجيل الخروج
-        </DropdownMenuItem> */}
         <Logout/>
       </DropdownMenuContent>
     </DropdownMenu>

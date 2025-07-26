@@ -11,9 +11,9 @@ interface ReusableButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const ReusableButton: React.FC<ReusableButtonProps> = ({
   label = "اضافة",
-  icon = <UserRoundPlus className="size-5" />,
+  // icon = <UserRoundPlus className="size-5" />,
   type = "button",
-  className = "",
+  // className = "",
   ...props
 }) => {
   return (
