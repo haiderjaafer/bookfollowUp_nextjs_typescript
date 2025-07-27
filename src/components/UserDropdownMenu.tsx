@@ -1,7 +1,7 @@
 import {  User } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Logout } from "./logout";
+import { Logout } from "./auth/Logout";
 import { TbLockPassword } from "react-icons/tb";
 
 interface Props {

@@ -47,7 +47,7 @@ const LoginForm: React.FC = () => {
       
       // Proper error handling with type guards
       if (error instanceof AxiosError) {
-        const errorMessage = error.response?.data?.detail || "فشل تسجيل الدخول";
+        const errorMessage = error.response?.data?.detail || "فشل تسجيل الدخول";   // show detail from backend login route
         toast.error(errorMessage);
       } else if (error instanceof Error) {
         toast.error(error.message || "فشل تسجيل الدخول");

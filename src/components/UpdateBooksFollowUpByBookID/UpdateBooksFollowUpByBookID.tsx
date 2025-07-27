@@ -19,13 +19,13 @@ import {
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { FileText, BookOpen, Eye } from 'lucide-react';
 import DirectoryNameCombobox from '../BookInsertionForm/DirectoryNameComboboxAutoComplete';
-import ArabicDatePicker from '../ArabicDatePicker';
+import ArabicDatePicker from '../DatePicker/ArabicDatePicker';
 import BookActionInput from '../BookInsertionForm/bookActionDialogInput/bookActionInput';
 import SubjectAutoCompleteComboBox from '../BookInsertionForm/SubjectAutoComplete';
 import { JWTPayload } from '@/utiles/verifyToken';
-import CommitteeSelect from '../CommitteeSelect';
+import CommitteeSelect from '../Company_Structure/CommitteeSelect';
 import { QueryKey, useQueryClient } from '@tanstack/react-query';
-import DepartmentSelect from '../DepartmentSelect';
+import DepartmentSelect from '../Company_Structure/DepartmentSelect';
 
 // Define the response type based on the FastAPI model
 interface PDFResponse {
@@ -782,7 +782,7 @@ export default function UpdateBooksFollowUpByBookID({ bookId, payload }: UpdateB
           </motion.div>
 
           <p>
-            {departmentName ?? 'None'} : department name   ------  {comName ?? 'None'}  : Selected Committee 
+            {/* {departmentName ?? 'None'} : department name   ------  {comName ?? 'None'}  : Selected Committee  */}
       </p>
         </form>
       </div>

@@ -3,24 +3,18 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-//import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-//import { DatePicker } from '../ui/date-picker';
-//import DirectoryNameInput from '../directoryName/directoryNameInput';
-//import SubjectInput from '../subject/subjectInput';
-//import DestinationInput from '../destination/destinationInput';
 import { BookInsertionType } from '../../utiles/bookInsertionType';
 import { toast } from 'react-toastify';
 import DropzoneComponent, { DropzoneComponentRef } from '../ReactDropZoneComponont';
 import axios from 'axios';
 import DirectoryNameCombobox from './DirectoryNameComboboxAutoComplete';
 import SubjectAutoCompleteComboBox from './SubjectAutoComplete';
-import ArabicDatePicker from '../ArabicDatePicker';
-//import DestinationAutoComplete from './DestinationAutoComplete';
+import ArabicDatePicker from '../DatePicker/ArabicDatePicker';
 import BookActionInput from './bookActionDialogInput/bookActionInput';
 import { JWTPayload } from '@/utiles/verifyToken';
-import CommitteeSelect from '../CommitteeSelect';
-import DepartmentSelect from '../DepartmentSelect';
+import CommitteeSelect from '../Company_Structure/CommitteeSelect';
+import DepartmentSelect from '../Company_Structure/DepartmentSelect';
 import { QueryKey, useQueryClient } from '@tanstack/react-query';
 
 // Animation variants
@@ -580,7 +574,7 @@ return (
           <div className="max-w-md mx-auto p-4">
   
       <p>
-        Selected Committee ID: {selectedCommittee ?? 'None'} --- Selected Department ID: {deID ?? 'None'}
+        {/* Selected Committee ID: {selectedCommittee ?? 'None'} --- Selected Department ID: {deID ?? 'None'} */}
       </p>
     </div>
 
