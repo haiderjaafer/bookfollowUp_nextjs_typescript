@@ -7,6 +7,8 @@ import { BookStatusOption, ReportFormData } from "./types";
 import { BOOK_STATUS_OPTIONS, FIRST_SELECT_OPTION } from "./constants";
 import { buildQueryString, formatArabicDate } from "./utils";
 
+
+
 export default function ReportForm() {
   const [loading, setLoading] = useState(false);
   const [showStatusOptions, setShowStatusOptions] = useState(false);
@@ -19,6 +21,7 @@ export default function ReportForm() {
 
   const handleFirstSelect = useCallback((value: string) => {
     if (value === "has_status") {
+      console.log("report value" ,value);   // value is has_status 
       setShowStatusOptions(true);
     } else {
       setShowStatusOptions(false);
@@ -27,19 +30,23 @@ export default function ReportForm() {
   }, []);
 
   const handleStatusSelect = useCallback((value: string) => {
+
+     console.log("handleStatusSelect report" ,value); // the value is in select حالة الكتاب -- (منجز-قيد الانجاز-مداولة)
     setFormData((prev) => ({ ...prev, bookStatus: value }));
   }, []);
 
   const handleCheckChange = useCallback((checked: boolean) => {
+
+    console.log("handleCheckChange report" ,checked); // checked is check value true or false
     setFormData((prev) => ({
       ...prev,
       check: checked.toString(),
-      ...(checked ? {} : { startDate: "", endDate: "" }),
+      //...(checked ? {} : { startDate: "", endDate: "" }),
     }));
   }, []);
 
-  const handleStartDateChange = useCallback((value: string) => {
-    if (value && !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+  const handleStartDateChange = useCallback((value: string) => {      // if pass wronged date format so truthy && negate false is truthy will result true so taosting
+    if (value && !/^\d{4}-\d{2}-\d{2}$/.test(value)) {               // check if vlue is truthy mean startDate is existed and test string date format is invalid will taost error 
       toast.error("يرجى إدخال التاريخ بصيغة YYYY-MM-DD");
       return;
     }
@@ -116,18 +123,18 @@ export default function ReportForm() {
 
   return (
     <>
-      <h2 className="text-xl font-semibold mb-4 text-gray-700 ">اختيار بيانات الكتاب</h2>
+      
 
       {/* First Select */}
-      <div className="mb-6">
-        <label className="block text-sm font-extrabold text-gray-700 mb-2">اختر الحقل</label>
+      <div className="mb-6 ">
+        <label className="block text-lg font-extrabold text-gray-700 mb-2">اختر الحقل</label>
         <select
           onChange={(e) => handleFirstSelect(e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 font-extrabold"
           disabled={loading}
         >
-          <option value="">اختر</option>
-          <option className="text-sm font-extrabold text-gray-700" value={FIRST_SELECT_OPTION.value}>
+          <option value="" className="font-bold text-gray-500">اختر</option>
+          <option className="text-lg font-extrabold text-gray-700" value={FIRST_SELECT_OPTION.value}>
             {FIRST_SELECT_OPTION.label}
           </option>
         </select>
@@ -137,19 +144,19 @@ export default function ReportForm() {
       {showStatusOptions && (
         <>
           <div className="mb-6">
-            <label className="block text-sm font-extrabold text-gray-700 mb-2">حالة الكتاب</label>
+            <label className="block text-lg font-extrabold text-gray-700 mb-2">حالة الكتاب</label>
             <select
               value={formData.bookStatus}
               onChange={(e) => handleStatusSelect(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 font-extrabold"
               disabled={loading}
             >
-              <option value="">اختر حالة الكتاب</option>
+              <option value="" className="font-bold text-gray-500" >اختر حالة الكتاب</option>
               {BOOK_STATUS_OPTIONS.map((option: BookStatusOption) => (
                 <option
                   key={option.value}
                   value={option.value}
-                  className="text-sm font-extrabold text-gray-700"
+                  className="text-lg font-extrabold text-gray-700"
                 >
                   {option.label}
                 </option>
@@ -167,7 +174,7 @@ export default function ReportForm() {
                 className="h-5 w-5"
                 disabled={loading}
               />
-              <span className="text-sm font-extrabold text-gray-700">تصفية حسب نطاق التاريخ</span>
+              <span className="text-sm font-extrabold text-gray-700">تحديد بين تأريخين</span>
             </label>
             {formData.check === "true" && (
               <div className="flex gap-4 mt-2">
@@ -240,7 +247,7 @@ export default function ReportForm() {
 
           {formData.check === "false" && (
             <p>
-              <strong>نطاق التاريخ:</strong>{' '}
+              <strong> التاريخ:</strong>{' '}
               <span className="font-bold">بدون تاريخ</span>
             </p>
           )}
