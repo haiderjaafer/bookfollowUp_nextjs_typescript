@@ -9,6 +9,9 @@ import Image from 'next/image';
 import { BookFollowUpData, orderHeaderMap } from '@/components/DynamicTableTanStack/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card } from '@/components/ui/card';
+import { FileMoverComponent } from '@/components/Move';
+
+
 
 
 const DynamicTable = dynamic(() => import('@/components/DynamicTableTanStack/DynamicTableWithPagination'), {
@@ -53,6 +56,8 @@ const Home = () => {
   const [limit, setLimit] = useState(10);
   const [loading, setLoading] = useState(false);
   const maxRetries = 2;
+
+
 
   const [bookTypeCounts, setBookTypeCounts] = useState<BookTypeCounts>({ 
     External: 0, 
@@ -269,7 +274,7 @@ const Home = () => {
  
 </section> 
 
-
+<FileMoverComponent/>
 
       <header className="p-4">
         <h1 className="text-3xl font-bold text-right text-gray-800">

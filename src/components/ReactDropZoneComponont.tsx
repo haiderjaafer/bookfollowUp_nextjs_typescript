@@ -6,7 +6,8 @@ import { FileText, Trash2, Paperclip, Book, Loader2 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import axios, { AxiosError } from 'axios';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface PreviewFile {
   file?: File;
@@ -26,6 +27,44 @@ interface DropzoneComponentProps {
   onFileRemoved: (fileName: string) => void;
   onBookPdfLoaded?: (success: boolean, file?: File) => void;
 }
+
+// Interface for file moving
+interface MoveFileParams {
+  fileName: string;
+  sourceDir: string;
+  destinationDir: string;
+}
+
+interface MoveResult {
+  success: boolean;
+  message: string;
+  method?: string;
+}
+
+// Move file to server directory
+const moveBookPdfCmd = async (params: MoveFileParams): Promise<MoveResult> => {
+  try {
+    const response = await fetch('/api/move-book-cmd', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(params),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`${response.status}: ${errorData.message || 'Unknown error'}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    return {
+      success: false,
+      message: `Network error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    };
+  }
+};
 
 const DropzoneComponent = forwardRef<DropzoneComponentRef, DropzoneComponentProps>(
   ({ onFilesAccepted, onFileRemoved, onBookPdfLoaded }, ref) => {
@@ -48,26 +87,15 @@ const DropzoneComponent = forwardRef<DropzoneComponentRef, DropzoneComponentProp
         try {
           let detail = 'No additional details provided';
 
-          // Handle Blob response (when responseType is 'blob')
           if (axiosError.response?.data instanceof Blob) {
             const text = await axiosError.response.data.text();
             const json = JSON.parse(text);
             detail = json.detail || detail;
           } else if (axiosError.response?.data) {
-            // Handle JSON response directly - fix for the 'any' error
             const responseData = axiosError.response.data as { detail?: string };
             detail = responseData.detail || detail;
           }
 
-         // console.error('............ error detail:', detail);   will got detail from backend 
-
-          // Log minimal error info for debugging (optional)
-          console.log('Axios error:', {
-            status: axiosError.response?.status,
-            statusText: axiosError.response?.statusText,
-          });
-
-          // Customize user-facing message based on status code
           if (axiosError.response?.status === 404) {
             return `${detail}`;
           } else if (axiosError.response?.status === 400) {
@@ -89,12 +117,37 @@ const DropzoneComponent = forwardRef<DropzoneComponentRef, DropzoneComponentProp
       return 'حدث خطأ غير متوقع';
     }, []);
 
-    // Fetch book.pdf from backend
+    // Fetch book.pdf from backend and move file to server
     const fetchBookPdf = useCallback(async (): Promise<void> => {
       setIsLoadingBookPdf(true);
       revokePreviousUrls(files);
       setFiles([]);
 
+      // Step 1: Move book.pdf to server
+      const moveParams: MoveFileParams = {
+        fileName: 'book.pdf',
+        sourceDir: 'D:\\booksFollowUp\\pdfScanner',
+        destinationDir: '\\\\10.20.11.33\\booksFollowUp\\pdfScanner',
+      };
+
+      let moveSuccess = false;
+      try {
+        const moveResult = await moveBookPdfCmd(moveParams);
+        if (moveResult.success) {
+          toast.success('File moved successfully to server', { position: 'top-right', autoClose: 3000 });
+          moveSuccess = true;
+        } else {
+          toast.error(moveResult.message, { position: 'top-right', autoClose: 5000 });
+          if (moveResult.message.includes('Source file') && moveResult.message.includes('not found')) {
+            toast.error(`Source file not found: ${moveParams.fileName}`, { position: 'top-right', autoClose: 5000 });
+          }
+        }
+      } catch (error) {
+       // const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+       // toast.error(`Failed to move file: ${errorMessage}`, { position: 'top-right', autoClose: 5000 });
+      }
+
+      // Step 2: Fetch book.pdf from backend, regardless of move outcome
       try {
         console.log('🔍 Fetching book.pdf from:', `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/files/book`);
         const response = await axios.get(
@@ -135,18 +188,18 @@ const DropzoneComponent = forwardRef<DropzoneComponentRef, DropzoneComponentProp
         setFiles([previewFile]);
         onFilesAccepted([file]);
         onBookPdfLoaded?.(true, file);
-        //toast.success('تم تحميل ملف book.pdf بنجاح');
+        toast.success('تم تحميل ملف book.pdf بنجاح', { position: 'top-right', autoClose: 3000 });
         console.log('📄 PDF file loaded:', previewFile);
       } catch (error: unknown) {
-        console.log('❌ Failed to load book.pdf:', error); // Reduced verbosity
+        console.log('❌ Failed to load book.pdf:', error);
         setFiles([]);
         const errorMessage = await getErrorMessage(error);
-        toast.error(errorMessage); // Show error detail in toast only
+        toast.error(errorMessage, { position: 'top-right', autoClose: 5000 });
         onBookPdfLoaded?.(false);
       } finally {
         setIsLoadingBookPdf(false);
       }
-    }, [files, onFilesAccepted, onBookPdfLoaded, revokePreviousUrls, getErrorMessage]); // Added 'files' dependency
+    }, [files, onFilesAccepted, onBookPdfLoaded, revokePreviousUrls, getErrorMessage]);
 
     // Expose methods to parent
     useImperativeHandle(ref, () => ({
@@ -205,6 +258,7 @@ const DropzoneComponent = forwardRef<DropzoneComponentRef, DropzoneComponentProp
       },
       [files, onFileRemoved, revokePreviousUrls]
     );
+
     return (
       <div className="flex items-center justify-between bg-gray-300 rounded-lg w-full flex-col sm:flex-row gap-2">
         <section className="flex flex-col items-center">
@@ -264,11 +318,6 @@ const DropzoneComponent = forwardRef<DropzoneComponentRef, DropzoneComponentProp
               className="absolute inset-0 w-full h-full border-0"
               title={`معاينة ${file.name}`}
             />
-            {/* {file.isFromBackend && (
-              <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold">
-                من الخادم
-              </div>
-            )} */}
             <div className="absolute inset-0 z-10 flex items-center justify-end pointer-events-none">
               <div className="flex flex-col gap-4 bg-transparent p-3 rounded-xl shadow-lg pointer-events-auto">
                 <Popover>
@@ -277,8 +326,7 @@ const DropzoneComponent = forwardRef<DropzoneComponentRef, DropzoneComponentProp
                       type="button"
                       className="bg-sky-500 text-white w-6 h-6 flex items-center justify-center rounded-full hover:bg-sky-600 transition-colors cursor-pointer"
                       aria-label="عرض ملف PDF"
-                      title="عرض الملف "
-                  
+                      title="عرض الملف"
                     >
                       <FileText className="w-4 h-4 hover:scale-110 transition duration-300" />
                     </button>
@@ -315,15 +363,12 @@ const DropzoneComponent = forwardRef<DropzoneComponentRef, DropzoneComponentProp
                 <Trash2
                   className="w-6 h-6 text-red-600 cursor-pointer hover:scale-110 transition duration-300"
                   onClick={() => removeFile(file.name)}
-                  
                 />
               </div>
             </div>
-            {/* <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-xs">
-              {file.name} {file.size && `(${(file.size / 1024 / 1024).toFixed(1)} MB)`}
-            </div> */}
           </div>
         ))}
+        <ToastContainer />
       </div>
     );
   }

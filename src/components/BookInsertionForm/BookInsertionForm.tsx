@@ -16,6 +16,7 @@ import { JWTPayload } from '@/utiles/verifyToken';
 import CommitteeSelect from '../Company_Structure/CommitteeSelect';
 import DepartmentSelect from '../Company_Structure/DepartmentSelect';
 import { QueryKey, useQueryClient } from '@tanstack/react-query';
+import { FileMoverComponent } from '../Move';
 
 // Animation variants
 const formVariants = {
@@ -595,6 +596,7 @@ return (
             </Button>
           </motion.div>
         </form>
+        <FileMoverComponent/>
       </div>
     </motion.div>
   );
