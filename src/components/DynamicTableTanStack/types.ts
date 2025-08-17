@@ -65,7 +65,7 @@ export const orderHeaderMap: HeaderMap = {
   userID: "userID",
   username: "المستخدم",
   currentDate: "تأريخ الادخال",
-  countOfLateBooks: "عدد الكتب المتأخرة",
+  countOfLateBooks: "عدد الايام المتأخرة",
   Com: "الهيأة",
   departmentName: "القسم"
 };

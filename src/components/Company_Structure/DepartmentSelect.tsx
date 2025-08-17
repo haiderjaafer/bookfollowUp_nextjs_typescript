@@ -11,7 +11,7 @@ interface Department {
 
 interface DepartmentSelectProps {
   coID: number | undefined;
-  value: number | undefined | null; // FIXED: Allow null from database
+  value: number | undefined | null;
   onChange: (deID: number | undefined) => void;
   className?: string;
   departmentName: string | null;
@@ -58,47 +58,83 @@ const DepartmentSelect: React.FC<DepartmentSelectProps> = ({
     console.log('DepartmentSelect - isLoading:', isLoading, 'isFetching:', isFetching, 'departments:', departments, 'value:', value);
   }, [error, isLoading, isFetching, departments, value]);
 
-  // FIXED: Safe function to get select value
+  // Safe function to get select value
   const getSelectValue = () => {
-    // Handle null, undefined, or any falsy values
-    if (value === null || value === undefined || typeof value !== 'number') {
+    // Handle undefined or any falsy values
+    if (value === undefined || value === null || typeof value !== 'number') {
       return '';
     }
-    // Additional check to ensure it's a valid number
     if (isNaN(value)) {
       return '';
     }
     return value.toString();
   };
 
+  // Get current department display name
+  const getCurrentDisplayName = () => {
+    if (value !== undefined && departments) {
+      const currentDept = departments.find(d => d.deID === value);
+      return currentDept?.departmentName || departmentName || 'غير معروف';
+    }
+    return departmentName;
+  };
+
+  // Get placeholder text based on current state
+  const getPlaceholderText = () => {
+    if (isLoading || isFetching) {
+      return 'جارٍ التحميل...';
+    }
+    if (!coID) {
+      return 'اختر الهيأة أولاً';
+    }
+    if (error) {
+      return 'خطأ في التحميل';
+    }
+    if (!departments?.length) {
+      return 'لا توجد أقسام';
+    }
+    if (value !== undefined) {
+      return `المحدد حالياً: ${getCurrentDisplayName()}`;
+    }
+    return 'اختر قسم';
+  };
+
   return (
     <div className="w-full">
       <select
-        value={getSelectValue()} // FIXED: Use safe function instead of inline logic
+        value={getSelectValue()}
         onChange={(e) => onChange(e.target.value ? Number(e.target.value) : undefined)}
-        disabled={isLoading || isFetching || !coID || !departments?.length || !!error}
+        disabled={isLoading || isFetching || !coID || !!error}
         className={`
           w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-arabic text-right
-          ${isLoading || isFetching || !coID || !departments?.length || error ? 'bg-gray-200 cursor-not-allowed' : 'bg-white'}
+          ${isLoading || isFetching || !coID || error ? 'bg-gray-200 cursor-not-allowed' : 'bg-white'}
           ${error ? 'border-red-500' : 'border-gray-300'}
           ${className}
         `}
       >
-        <option value="">
-          {departmentName ?? "اختر قسم"}
+        <option value="" disabled={!coID || value !== undefined}>
+          {getPlaceholderText()}
         </option>
-        {/* <option value="" disabled>
-          {isLoading || isFetching ? 'جارٍ التحميل...' : !coID ? 'اختر الهيأة أولاً' : !departments?.length || error ? 'لا توجد أقسام' : 'اختر قسم'}
-        </option> */}
+        
+        {/* Show departments if available */}
         {departments?.map((department) => (
           <option
             key={department.deID}
-            value={department.deID.toString()} // This is safe since department.deID comes from API
+            value={department.deID.toString()}
+            className={value === department.deID ? 'bg-blue-100 font-bold' : ''}
           >
             {department.departmentName || 'بدون اسم'}
           </option>
         ))}
       </select>
+      
+      {/* Show current selection info */}
+      {value !== undefined && departments && (
+        <p className="mt-1 text-sm text-blue-600 font-arabic">
+          المحدد حالياً: {getCurrentDisplayName()}
+        </p>
+      )}
+      
       {error && (
         <p className="mt-1 text-sm text-red-600 font-arabic">
           خطأ: {error.message}
@@ -109,121 +145,3 @@ const DepartmentSelect: React.FC<DepartmentSelectProps> = ({
 };
 
 export default DepartmentSelect;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// 'use client';
-
-// import { useQuery } from '@tanstack/react-query';
-// import axios from 'axios';
-// import { toast } from 'react-toastify';
-// import { useEffect } from 'react';
-// import { Department } from './BookInsertionForm/types_com_dep';
-
-
-// interface DepartmentSelectProps {
-//   coID: number | undefined;
-//   value: number | undefined;
-//   onChange: (deID: number | undefined) => void;
-//   className?: string;
-// }
-
-// const DepartmentSelect: React.FC<DepartmentSelectProps> = ({ coID, value, onChange, className }) => {
-//   console.log('DepartmentSelect ------------ coID:', coID, 'value:', value);
-
-//   const { data: departments, isLoading, error, isError, isFetching } = useQuery<Department[], Error>({
-//     queryKey: ['departments', coID],
-//     queryFn: async () => {
-//       if (!coID) {
-//         console.log('No coID provided, returning empty array');
-//         return [];
-//       }
-//       try {
-//         const response = await axios.get(
-//           `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/${coID}/departments`,
-//           {
-//             withCredentials: true,
-//           }
-//         );
-//         console.log('Departments fetched:', response.data);
-//         return response.data; // No filter to inspect all data
-//       } catch (err) {
-//         const error = err as any;
-//         const errorMessage = error.response?.data?.detail || 'فشل في جلب الأقسام';
-//         console.log('Fetch error:', errorMessage, 'Status:', error.response?.status);
-//         toast.info(errorMessage);
-//         throw new Error(errorMessage);
-//       }
-//     },
-//     enabled: !!coID,
-//   });
-
-//   useEffect(() => {
-//     if (isError) {
-//       console.log('Error fetching departments:', error?.message);
-//     }
-//     console.log('Departments state - isLoading:', isLoading, 'isFetching:', isFetching, 'departments:', departments);
-//   }, [error, isError, isLoading, isFetching, departments]);
-
-//   return (
-//     <div className="w-full">
-//       <select
-//        value={value !== undefined ? value : ''} // Convert number | undefined to string | ''
-//        onChange={(e) => onChange(e.target.value ? Number(e.target.value) : undefined)}
-
-//         disabled={isLoading || isFetching || !coID || !departments?.length}
-//         className={`
-//           w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-extrabold
-//           ${isLoading || isFetching || !coID || !departments?.length ? 'bg-gray-200 cursor-not-allowed' : 'bg-white'}
-//           ${isError ? 'border-red-500' : 'border-gray-300'}
-//           ${className}
-//         `}
-//       >
-//         <option value="" disabled className='text-lg font-extrabold'>
-//           {isLoading || isFetching ? 'جارٍ التحميل...' : !coID ? 'اختر الهيأة أولاً' : !departments?.length ? 'لا توجد أقسام' : 'اختر قسم'}
-//         </option>
-//         {departments?.map((department, index) => (
-//           <option
-//              className='text-lg font-extrabold'
-//             key={department.deID ?? `index-${index}`}
-//             value={department.deID != null && !isNaN(department.deID) ? department.deID.toString() : ''}
-//           >
-//             {department.departmentName || 'بدون اسم'}
-//           </option>
-//         ))}
-//       </select>
-//       {isError && (
-//         <p className="mt-1 text-sm text-red-600">
-//           خطأ: {error?.message}
-//         </p>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default DepartmentSelect;

@@ -4,6 +4,9 @@ import { NextRequest, NextResponse } from 'next/server'
 export function middleware(request: NextRequest) {
   const token = request.cookies.get('jwt_cookies_auth_token')?.value
 
+  console.log("All cookies:", request.cookies);
+
+
   console.log("middleware token"+ token);
 
   const { pathname } = request.nextUrl

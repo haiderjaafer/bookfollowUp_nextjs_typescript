@@ -270,6 +270,8 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
       });
       formDataToSend.append('file', selectedFile);
 
+      formDataToSend.append('username', payload.username);
+
       console.log("formDataToSend", formDataToSend);
       console.log("formData,,,,,,,,", formData);
 
@@ -565,11 +567,11 @@ return (
               تحميل ملف PDF
             </label>
             <DropzoneComponent
-              ref={dropzoneRef}
-              onFilesAccepted={handleFilesAccepted}
-              onFileRemoved={handleFileRemoved}
-              onBookPdfLoaded={handleBookPdfLoaded}
-            />
+            ref={dropzoneRef}
+            onFilesAccepted={handleFilesAccepted}
+            onFileRemoved={handleFileRemoved}
+            onBookPdfLoaded={handleBookPdfLoaded} 
+            username={payload.username}            />
           </motion.div>
 
           <div className="max-w-md mx-auto p-4">
@@ -596,7 +598,7 @@ return (
             </Button>
           </motion.div>
         </form>
-        <FileMoverComponent/>
+       
       </div>
     </motion.div>
   );

@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import axios, { AxiosError } from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import path from 'path';
 
 interface PreviewFile {
   file?: File;
@@ -23,6 +24,7 @@ export interface DropzoneComponentRef {
 }
 
 interface DropzoneComponentProps {
+  username: string; // Add username prop
   onFilesAccepted: (files: File[]) => void;
   onFileRemoved: (fileName: string) => void;
   onBookPdfLoaded?: (success: boolean, file?: File) => void;
@@ -67,7 +69,7 @@ const moveBookPdfCmd = async (params: MoveFileParams): Promise<MoveResult> => {
 };
 
 const DropzoneComponent = forwardRef<DropzoneComponentRef, DropzoneComponentProps>(
-  ({ onFilesAccepted, onFileRemoved, onBookPdfLoaded }, ref) => {
+  ({ username, onFilesAccepted, onFileRemoved, onBookPdfLoaded }, ref) => {
     const [files, setFiles] = useState<PreviewFile[]>([]);
     const [isLoadingBookPdf, setIsLoadingBookPdf] = useState(false);
 
@@ -117,53 +119,121 @@ const DropzoneComponent = forwardRef<DropzoneComponentRef, DropzoneComponentProp
       return 'حدث خطأ غير متوقع';
     }, []);
 
+    console.log(username);
+
+    // Helper function to wait/delay
+    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+    // Helper function to retry fetching with exponential backoff
+    const fetchWithRetry = async (maxRetries: number = 3, initialDelay: number = 1000): Promise<any> => {
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          console.log(`🔍 Fetching book.pdf from server (attempt ${attempt}/${maxRetries})`);
+          const response = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/files/book`,
+            {
+              responseType: 'blob',
+              withCredentials: true,
+              timeout: 15000, // Increased timeout
+              headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                Pragma: 'no-cache',
+                Expires: '0',
+              },
+              params: { 
+                t: Date.now(),
+                username: username
+              },
+            }
+          );
+          return response; // Success, return the response
+        } catch (error: any) {
+          console.log(`❌ Attempt ${attempt} failed:`, error.response?.status, error.message);
+          
+          // If it's a 404 and we haven't reached max retries, wait and try again
+          if (error.response?.status === 404 && attempt < maxRetries) {
+            const delayTime = initialDelay * Math.pow(2, attempt - 1); // Exponential backoff
+            console.log(`⏳ Waiting ${delayTime}ms before retry...`);
+            await delay(delayTime);
+            continue;
+          }
+          
+          // If it's the last attempt or a non-404 error, throw it
+          throw error;
+        }
+      }
+    };
+
     // Fetch book.pdf from backend and move file to server
     const fetchBookPdf = useCallback(async (): Promise<void> => {
       setIsLoadingBookPdf(true);
       revokePreviousUrls(files);
       setFiles([]);
 
-      // Step 1: Move book.pdf to server
-      const moveParams: MoveFileParams = {
-        fileName: 'book.pdf',
-        sourceDir: 'D:\\booksFollowUp\\pdfScanner',
-        destinationDir: '\\\\10.20.11.33\\booksFollowUp\\pdfScanner',
-      };
+      // Step 1: Move book.pdf to server with dynamic username
+      // const moveParams: MoveFileParams = {
+      //   fileName: 'book.pdf',
+      //   sourceDir: 'D:\\booksFollowUp\\pdfScanner',
+      //   destinationDir: `\\\\10.20.11.33\\booksFollowUp\\pdfScanner\\${username}`, // Use dynamic username
+      // };  
+
+      const sourceDirClientPdfFiles = process.env.NEXT_PUBLIC_BASE_CLIENT_UPLOAD_PDF_FILES_SOURCE ;
+      if (!sourceDirClientPdfFiles) {
+       throw new Error("Environment variable NEXT_PUBLIC_BASE_CLIENT_UPLOAD_PDF_FILES is not set.");
+        }
+
+     
+
+      //  const moveParams: MoveFileParams = {
+      //   fileName: 'book.pdf',
+      //   sourceDir: sourceDirClientPdfFiles,
+      //   //destinationDir: '\\\\10.20.11.33\\booksFollowUp\\pdfScanner',
+      //   //destinationDir: `D:\\booksFollowUp\\pdfScanner\\${username}`,
+      //   destinationDir: path.join(destinationDirClientPdfFiles, username);
+      // };
+
+      const destinationDirClientPdfFiles = process.env.NEXT_PUBLIC_BASE_SERVER_UPLOAD_PDF_FILES_DESTINATION;
+if (!destinationDirClientPdfFiles) {
+  throw new Error("Environment variable NEXT_PUBLIC_BASE_SERVER_UPLOAD_PDF_FILES_DESTINATION is not set.");
+}
+
+const moveParams: MoveFileParams = {
+  fileName: "book.pdf",
+  sourceDir: sourceDirClientPdfFiles,
+  destinationDir: path.join(destinationDirClientPdfFiles, username)
+};
+
 
       let moveSuccess = false;
       try {
+        console.log('📁 Starting file move operation...');
         const moveResult = await moveBookPdfCmd(moveParams);
         if (moveResult.success) {
           toast.success('File moved successfully to server', { position: 'top-right', autoClose: 3000 });
           moveSuccess = true;
+          console.log('✅ File move completed successfully');
         } else {
           toast.error(moveResult.message, { position: 'top-right', autoClose: 5000 });
           if (moveResult.message.includes('Source file') && moveResult.message.includes('not found')) {
             toast.error(`Source file not found: ${moveParams.fileName}`, { position: 'top-right', autoClose: 5000 });
           }
+          console.log('❌ File move failed:', moveResult.message);
         }
       } catch (error) {
+        console.log('❌ File move error:', error);
        // const errorMessage = error instanceof Error ? error.message : 'Unknown error';
        // toast.error(`Failed to move file: ${errorMessage}`, { position: 'top-right', autoClose: 5000 });
       }
 
-      // Step 2: Fetch book.pdf from backend, regardless of move outcome
+      // Step 2: Wait a bit for file system operations to complete, then fetch with retry
+      if (moveSuccess) {
+        console.log('⏳ Waiting for file system operations to complete...');
+        await delay(2000); // Wait 2 seconds after successful move
+      }
+
+      // Step 3: Fetch book.pdf from backend with retry logic
       try {
-        console.log('🔍 Fetching book.pdf from:', `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/files/book`);
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/files/book`,
-          {
-            responseType: 'blob',
-            withCredentials: true,
-            timeout: 10000,
-            headers: {
-              'Cache-Control': 'no-cache, no-store, must-revalidate',
-              Pragma: 'no-cache',
-              Expires: '0',
-            },
-            params: { t: Date.now() },
-          }
-        );
+        const response = await fetchWithRetry(3, 1500); // 3 retries with 1.5s initial delay
 
         if (!response.data || response.data.size === 0) {
           throw new Error('الملف المُحمل فارغ');
@@ -188,18 +258,24 @@ const DropzoneComponent = forwardRef<DropzoneComponentRef, DropzoneComponentProp
         setFiles([previewFile]);
         onFilesAccepted([file]);
         onBookPdfLoaded?.(true, file);
-        toast.success('تم تحميل ملف book.pdf بنجاح', { position: 'top-right', autoClose: 3000 });
-        console.log('📄 PDF file loaded:', previewFile);
+        toast.success('تم تحميل ملف book.pdf بنجاح من الخادم', { position: 'top-right', autoClose: 3000 });
+        console.log('📄 PDF file loaded successfully from server:', previewFile);
       } catch (error: unknown) {
-        console.log('❌ Failed to load book.pdf:', error);
+        console.log('❌ Failed to load book.pdf from server:', error);
         setFiles([]);
         const errorMessage = await getErrorMessage(error);
-        toast.error(errorMessage, { position: 'top-right', autoClose: 5000 });
+        
+        // Provide more specific error messages
+        if (errorMessage.includes('404') || errorMessage.includes('not found')) {
+          toast.error(`الملف غير موجود على الخادم للمستخدم: ${username}`, { position: 'top-right', autoClose: 5000 });
+        } else {
+          toast.error(errorMessage, { position: 'top-right', autoClose: 5000 });
+        }
         onBookPdfLoaded?.(false);
       } finally {
         setIsLoadingBookPdf(false);
       }
-    }, [files, onFilesAccepted, onBookPdfLoaded, revokePreviousUrls, getErrorMessage]);
+    }, [files, username, onFilesAccepted, onBookPdfLoaded, revokePreviousUrls, getErrorMessage]);
 
     // Expose methods to parent
     useImperativeHandle(ref, () => ({

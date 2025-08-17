@@ -25,16 +25,30 @@ const LoginForm: React.FC = () => {
     try {
       setLoading(true);
 
+//       const response = await axios.post(
+//   `http://10.20.11.33:3000/auth/login`,
+//   { username, password },
+//   {
+//     withCredentials: true,
+//     headers: {
+//       'Content-Type': 'application/json'
+//     }
+//   }
+// );
+
+
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/login`,
+       `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/login`,
+    // "http://10.20.11.33:9000/auth/login",
+      // `http://localhost:8000/auth/login`,
         { username, password },
         {
           withCredentials: true,
           headers: {
             'Content-Type': 'application/json'
           }
-        }
-      );
+       }
+     );
 
       console.log('Login response:', response.data);
       toast.success("تم تسجيل الدخول بنجاح");

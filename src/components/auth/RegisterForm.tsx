@@ -38,6 +38,11 @@ const RegisterForm: React.FC = () => {
       return false;
     }
 
+    if (!username.match(/^[a-zA-Z0-9]+$/)) {
+      toast.error("اسم المستخدم يجب أن يحتوي على أحرف وأرقام فقط");
+      return false;
+    }
+
     if (!password) {
       toast.error("كلمة المرور مطلوبة");
       return false;
@@ -56,55 +61,96 @@ const RegisterForm: React.FC = () => {
     return true;
   };
 
-  const formSubmitHandler = async (e: React.FormEvent) => {
-    e.preventDefault();
+ const formSubmitHandler = async (e: React.FormEvent) => { 
+  e.preventDefault();
 
-    if (!validateForm()) return;
+  if (!validateForm()) return;
 
+  setLoading(true);
+
+  try {
+    // Step 1: Register user (FastAPI)
+    const registerResponse = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/register`,
+      {
+        username: username.trim(),
+        password,
+        permission
+      },
+      {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    console.log('Register response:', {
+      status: registerResponse.status,
+      data: registerResponse.data
+    });
+
+    toast.success("تم إنشاء الحساب بنجاح!", { position: 'top-right', autoClose: 3000 });
+
+    // Step 2: Create user directory (Next.js API)
     try {
-      setLoading(true);
-
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/register`,
-        {
-          username: username.trim(),
-          password,
-          permission
-        },
+      const directoryResponse = await axios.post(
+        `${process.env.NEXT_PUBLIC_FOLDER_CREATION_API_BASE_URL}/api/createUserDirectory`,
+        { username: username.trim() },
         {
           withCredentials: true,
-          headers: {
-            'Content-Type': 'application/json'
-          }
+          headers: { 'Content-Type': 'application/json' }
         }
       );
 
-      console.log('Register response:', response.data);
-      toast.success("تم إنشاء الحساب بنجاح! مرحباً بك");
+      console.log('Directory creation response:', {
+        status: directoryResponse.status,
+        data: directoryResponse.data
+      });
 
+      toast.success(directoryResponse.data.message || "تم إنشاء مجلد المستخدم بنجاح", {
+        position: 'top-right',
+        autoClose: 3000
+      });
+
+      // Redirect to home page
       router.push("/");
       router.refresh();
 
-    } catch (error: unknown) {
-      console.error("Registration error:", error);
-
-      if (error instanceof AxiosError) {
-        const errorMessage = error.response?.data?.detail || "فشل في إنشاء الحساب";
-        toast.error(errorMessage);
-
-        if (error.response?.status === 409) {
-          toast.error("اسم المستخدم موجود بالفعل، يرجى اختيار اسم آخر");
-        }
-      } else if (error instanceof Error) {
-        toast.error(error.message || "فشل في إنشاء الحساب");
+    } catch (dirError: unknown) {
+      console.error("Directory creation error:", dirError);
+      if (dirError instanceof AxiosError) {
+        const errorMessage = dirError.response?.data?.message || "فشل في إنشاء مجلد المستخدم";
+        toast.error(errorMessage, { position: 'top-right', autoClose: 5000 });
       } else {
-        toast.error("فشل في إنشاء الحساب");
+        toast.error("فشل في إنشاء مجلد المستخدم", { position: 'top-right', autoClose: 5000 });
+      }
+    }
+
+  } catch (error: unknown) {
+    console.error("Registration error:", error);
+
+    if (error instanceof AxiosError) {
+      let errorMessage = error.response?.data?.detail || "فشل في إنشاء الحساب";
+
+      // Translate specific backend message
+      if (errorMessage === "User already exists") {
+        errorMessage = "اسم المستخدم موجود بالفعل، يرجى اختيار اسم آخر";
       }
 
-    } finally {
-      setLoading(false);
+      toast.error(errorMessage, { position: 'top-right', autoClose: 5000 });
+
+    } else if (error instanceof Error) {
+      toast.error(error.message || "فشل في إنشاء الحساب", { position: 'top-right', autoClose: 5000 });
+    } else {
+      toast.error("فشل في إنشاء الحساب", { position: 'top-right', autoClose: 5000 });
     }
-  };
+
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-300 via-gray-500 to-gray-300 p-4">
@@ -141,7 +187,7 @@ const RegisterForm: React.FC = () => {
                   type="text"
                   autoComplete="username"
                   required
-                  placeholder="اسم المستخدم (3 أحرف على الأقل)"
+                  placeholder="اسم المستخدم (أحرف وأرقام فقط، 3 أحرف على الأقل)"
                   className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}

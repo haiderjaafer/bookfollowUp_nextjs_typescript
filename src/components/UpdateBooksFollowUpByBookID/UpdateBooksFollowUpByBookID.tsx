@@ -50,13 +50,14 @@ interface BookFollowUpResponse {
   bookStatus: string | null;
   notes: string | null;
   currentDate: string | null;
-  userID: string | null;
+  userID: number | null; // Changed from string to number to match API
   username: string | null;
   countOfPDFs: number | null;
   selectedCommittee: number | undefined;
   deID: number | undefined;
-  Com: string | null;
-  departmentName: string | null;
+  coID: number | undefined;
+  Com: string | null; // Committee name
+  departmentName: string | null; // Department name
   pdfFiles: PDFResponse[];
 }
 
@@ -151,35 +152,34 @@ export default function UpdateBooksFollowUpByBookID({ bookId, payload }: UpdateB
 
   // Handle committee change
   const handleCommitteeChange = useCallback(
-    (coID: number | undefined) => {
-      console.log('Committee changed:', coID);
-      setSelectedCommittee(coID);
-      setSelectedDepartment(undefined);
-      setFormData((prev) => ({
-        ...prev,
-        selectedCommittee: coID,
-        selectedDepartment: undefined,
-      }));
-      if (coID) {
-        queryClient.invalidateQueries({ queryKey: ['departments', coID] as QueryKey });
-      }
-    },
-    [queryClient]
-  );
+  (coID: number | undefined) => {
+    console.log('Committee changed:', coID);
+    setSelectedCommittee(coID); // Just use coID directly
+    setSelectedDepartment(undefined); // Reset department when committee changes
+    setFormData((prev) => ({
+      ...prev,
+      selectedCommittee: coID,
+      deID: undefined, // Reset department in form data
+    }));
+    if (coID) {
+      queryClient.invalidateQueries({ queryKey: ['departments', coID] as QueryKey });
+    }
+  },
+  [queryClient]
+);
 
-  // Handle department change
-  const handleDepartmentChange = useCallback(
-    (deID: number | undefined) => {
-      console.log('Department changed:', deID);
-      setSelectedDepartment(deID);
-      setFormData((prev) => ({
-        ...prev,
-        deID: deID,
-      }));
-    },
-    []
-  );
-
+// Update the handleDepartmentChange function:
+const handleDepartmentChange = useCallback(
+  (deID: number | undefined) => {
+    console.log('Department changed:', deID);
+    setSelectedDepartment(deID); // Just use deID directly
+    setFormData((prev) => ({
+      ...prev,
+      deID: deID,
+    }));
+  },
+  []
+);
   // Fetch book data
   const fetchBookData = useCallback(async () => {
     try {
@@ -188,32 +188,32 @@ export default function UpdateBooksFollowUpByBookID({ bookId, payload }: UpdateB
         `${API_BASE_URL}/api/bookFollowUp/getBookFollowUpByBookID/${bookId}`
       );
       const book = response.data;
-
+      console.log("book coID ...", book.coID);
       console.log("book departmentName ...", book.departmentName);
-      console.log("book Com ...", book.Com);
+      console.log("book deID ...", book.deID);
 
       setFormData({
-        bookType: book.bookType || '',
-        bookNo: book.bookNo || '',
-        bookDate: getDateValue(book.bookDate, true), // Use current date as default for bookDate
-        directoryName: book.directoryName || '',
-        incomingNo: book.incomingNo || '',
-        incomingDate: getDateValue(book.incomingDate, false), // Keep empty if null/empty
+  bookType: book.bookType || '',
+  bookNo: book.bookNo || '',
+  bookDate: getDateValue(book.bookDate, true),
+  directoryName: book.directoryName || '',
+  incomingNo: book.incomingNo || '',
+  incomingDate: getDateValue(book.incomingDate, false),
+  subject: book.subject || '',
+  selectedCommittee: book.coID, // Use coID from API
+  deID: book.deID, // Use deID from API
+  bookAction: book.bookAction || '',
+  bookStatus: book.bookStatus || '',
+  notes: book.notes || '',
+  userID: book.userID?.toString() || '1',
+});
 
-        subject: book.subject || '',
-        selectedCommittee: book.selectedCommittee,
-        deID: book.deID,
-        bookAction: book.bookAction || '',
-        bookStatus: book.bookStatus || '',
-        notes: book.notes || '',
-        userID: book.userID?.toString() || '1',
-      });
-
-      setSelectedCommittee(book.selectedCommittee);
-      setSelectedDepartment(book.deID);
-      setComName(book.Com);
-      setDepartmentName(book.departmentName);
-      setPdfFiles(book.pdfFiles || []);
+// Set the state variables for the select components
+setSelectedCommittee(book.coID);
+setSelectedDepartment(book.deID);
+setComName(book.Com); // This should now work with your API
+setDepartmentName(book.departmentName); // This should now work with your API
+setPdfFiles(book.pdfFiles || []);
       setIsLoading(false);
     } catch (error) {
       console.error('Error fetching book data:', error);
@@ -286,142 +286,221 @@ export default function UpdateBooksFollowUpByBookID({ bookId, payload }: UpdateB
 
 
 
- // Updated validation in handleSubmit - make incomingDate optional
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      setIsSubmitting(true);
+// Updated handleSubmit function - fix the file handling issue
+const handleSubmit = useCallback(
+  async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
 
-      console.log("form data client", formData);
+    console.log("form data client", formData);
 
-      // Updated required fields - removed incomingDate from required fields
-      const requiredFields: (keyof BookInsertionType)[] = [
-        'bookNo',
-        'bookType',
-        'bookDate',
-        'directoryName',
-        'subject',
-        'bookAction',
-        'bookStatus',
-        'userID',
-        'deID'
-      ];
+    // Updated required fields - removed incomingDate from required fields
+    const requiredFields: (keyof BookInsertionType)[] = [
+      'bookNo',
+      'bookType',
+      'bookDate',
+      'directoryName',
+      'subject',
+      'bookAction',
+      'bookStatus',
+      'userID',
+      'deID'
+    ];
 
-      // Optional fields that can be empty
-      const optionalFields: (keyof BookInsertionType)[] = [
-        'incomingNo',
-        'incomingDate',
-        'notes',
-        'selectedCommittee'
-      ];
+    // Optional fields that can be empty
+    const optionalFields: (keyof BookInsertionType)[] = [
+      'incomingNo',
+      'incomingDate',
+      'notes',
+      'selectedCommittee'
+    ];
 
-      const fieldLabels: Record<keyof BookInsertionType, string> = {
-        bookNo: 'رقم الكتاب',
-        bookType: 'نوع الكتاب',
-        bookDate: 'تاريخ الكتاب',
-        directoryName: 'اسم الدائرة',
-        subject: 'الموضوع',
-        bookAction: 'الإجراء',
-        bookStatus: 'حالة الكتاب',
-        userID: 'المستخدم',
-        incomingNo: 'رقم الوارد',
-        notes: 'الملاحظات',
-        incomingDate: 'تاريخ الوارد',
-        selectedCommittee: 'اللجنة',
-        deID: 'القسم',
-      };
+    const fieldLabels: Record<keyof BookInsertionType, string> = {
+      bookNo: 'رقم الكتاب',
+      bookType: 'نوع الكتاب',
+      bookDate: 'تاريخ الكتاب',
+      directoryName: 'اسم الدائرة',
+      subject: 'الموضوع',
+      bookAction: 'الإجراء',
+      bookStatus: 'حالة الكتاب',
+      userID: 'المستخدم',
+      incomingNo: 'رقم الوارد',
+      notes: 'الملاحظات',
+      incomingDate: 'تاريخ الوارد',
+      selectedCommittee: 'اللجنة',
+      deID: 'القسم',
+    };
 
-      for (const field of requiredFields) {
-        if (!formData[field]) {
-          const label = fieldLabels[field] || field;
-          toast.error(`يرجى ملء حقل ${label}`);
-          setIsSubmitting(false);
-          return;
-        }
+    for (const field of requiredFields) {
+      if (!formData[field]) {
+        const label = fieldLabels[field] || field;
+        toast.error(`يرجى ملء حقل ${label}`);
+        setIsSubmitting(false);
+        return;
       }
+    }
 
-      // Create FormData for multipart/form-data submission
-      const formDataToSend = new FormData();
-      Object.entries(formData).forEach(([key, value]) => {
-        // Handle date fields specially - don't send empty strings for dates
-        if (key === 'incomingDate' || key === 'bookDate') {
-          if (value && value.trim() !== '') {
-            formDataToSend.append(key, value);
+    // Check if we have a valid file selected
+    const hasValidFile = selectedFile && 
+                        selectedFile instanceof File && 
+                        selectedFile.size > 0 && 
+                        selectedFile.type === 'application/pdf';
+
+    console.log('File validation:', {
+      selectedFile: !!selectedFile,
+      isFile: selectedFile instanceof File,
+      size: selectedFile?.size,
+      type: selectedFile?.type,
+      hasValidFile
+    });
+
+    try {
+      let response;
+
+      console.log('Starting update request...');
+
+      if (hasValidFile) {
+        // If we have a file, use FormData (multipart/form-data)
+        const formDataToSend = new FormData();
+        
+        // Append form fields
+        Object.entries(formData).forEach(([key, value]) => {
+          if (key === 'incomingDate' || key === 'bookDate') {
+            if (value && value.trim() !== '') {
+              formDataToSend.append(key, value);
+            }
+          } else {
+            if (value || optionalFields.includes(key as keyof BookInsertionType)) {
+              formDataToSend.append(key, value?.toString() || '');
+            }
           }
-          // Don't append empty date values at all
-        } else {
-          // For non-date fields, append if there's a value or if it's an optional field
-          if (value || optionalFields.includes(key as keyof BookInsertionType)) {
-            formDataToSend.append(key, value?.toString() || '');
-          }
-        }
-      });
-      
-      // FIXED: Only append file if it's actually selected and valid
-      if (selectedFile && selectedFile.size > 0) {
+        });
+        
+        // Append the file and username
         formDataToSend.append('file', selectedFile);
-        console.log('File attached:', selectedFile.name, 'Size:', selectedFile.size);
-      } else {
-        console.log('No file selected or file is empty - proceeding without file upload');
-      }
+        formDataToSend.append('username', payload.username);
+        
+        if (formData.userID) {
+          formDataToSend.append('userID', userID);
+        }
 
-      if (formData.userID) {
-        formDataToSend.append('userID', userID);
-      }
+        console.log('Sending with file - FormData entries:');
+        for (let [key, value] of formDataToSend.entries()) {
+          console.log(key, value);
+        }
 
-      console.log("formDataToSend", formDataToSend);
-
-      try {
-        const response = await axios.patch(
+        response = await axios.patch(
           `${API_BASE_URL}/api/bookFollowUp/${bookId}`,
-          formDataToSend,
+          formDataToSend
+          // Don't set Content-Type manually for FormData, let axios handle it
         );
 
-        if (response.status === 200) {
-          toast.success('تم حفظ الكتاب وملف PDF بنجاح!');
-          // Reset form but keep userID
-          setFormData({
-            bookType: '',
-            bookNo: '',
-            bookDate: format(new Date(), 'yyyy-MM-dd'),
-            directoryName: '',
-            incomingNo: '',
-            incomingDate: '', // Reset to empty
-            subject: '',
-            selectedCommittee: undefined,
-            deID: undefined,
-            bookAction: '',
-            bookStatus: '',
-            notes: '',
-            userID: userID,
-          });
-          setSelectedFile(null);
-          dropzoneRef.current?.reset(true);
-        } else {
-          throw new Error('Failed to update book');
-        }
-      } catch (error) {
-        console.error('Error updating book:', error);
-        
-        let message = 'فشل في تحديث الكتاب. يرجى المحاولة مرة أخرى';
+        console.log('FormData response:', response.status, response.data);
+      } else {
+        // If no file, try JSON endpoint first, fallback to FormData
+        const jsonData = {
+          bookNo: formData.bookNo,
+          bookType: formData.bookType,
+          bookDate: formData.bookDate?.trim() || null,
+          directoryName: formData.directoryName,
+          incomingNo: formData.incomingNo || null,
+          incomingDate: formData.incomingDate?.trim() || null,
+          subject: formData.subject,
+          bookAction: formData.bookAction,
+          bookStatus: formData.bookStatus,
+          notes: formData.notes || null,
+          userID: parseInt(userID),
+          selectedCommittee: formData.selectedCommittee || null,
+          deID: formData.deID || null,
+        };
 
-        if (axios.isAxiosError(error)) {
-          if (error.response?.data?.detail) {
+        console.log('Sending without file - JSON data:', jsonData);
+
+        try {
+          // Try JSON endpoint first
+          response = await axios.patch(
+            `${API_BASE_URL}/api/bookFollowUp/${bookId}/json`,
+            jsonData,
+            {
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            }
+          );
+          console.log('JSON response:', response.status, response.data);
+        } catch (jsonError) {
+          console.log('JSON endpoint failed, trying FormData approach:', jsonError);
+          
+          // Fallback to FormData approach
+          const formDataToSend = new FormData();
+          Object.entries(jsonData).forEach(([key, value]) => {
+            if (value !== null && value !== undefined) {
+              formDataToSend.append(key, value.toString());
+            }
+          });
+
+          response = await axios.patch(
+            `${API_BASE_URL}/api/bookFollowUp/${bookId}`,
+            formDataToSend
+          );
+          console.log('FormData fallback response:', response.status, response.data);
+        }
+      }
+
+      console.log('Update request completed with status:', response.status);
+
+      if (response.status === 200 || response.status === 201) {
+        toast.success('تم تعديل الكتاب بنجاح!');
+        
+        // Refresh the book data after successful update
+        // try {
+        //   await fetchBookData();
+        // } catch (refreshError) {
+        //   console.warn('Failed to refresh book data:', refreshError);
+        //   // Don't fail the whole operation if refresh fails
+        // }
+        
+        // Only reset file-related state, keep form data as is
+        setSelectedFile(null);
+        if (dropzoneRef.current) {
+          dropzoneRef.current.reset(true);
+        }
+      } else {
+        throw new Error(`Unexpected response status: ${response.status}`);
+      }
+    } catch (error) {
+      console.error('Error updating book:', error);
+      
+      let message = 'فشل في تحديث الكتاب. يرجى المحاولة مرة أخرى';
+
+      if (axios.isAxiosError(error)) {
+        // Better error handling
+        if (error.response?.data) {
+          console.error('Server error response:', error.response.data);
+          
+          if (typeof error.response.data === 'string') {
+            message += `: ${error.response.data}`;
+          } else if (error.response.data.detail) {
             message += `: ${error.response.data.detail}`;
-          } else if (error.message) {
-            message += `: ${error.message}`;
+          } else if (error.response.data.message) {
+            message += `: ${error.response.data.message}`;
+          } else {
+            message += `: ${JSON.stringify(error.response.data)}`;
           }
-        } else if (error instanceof Error) {
+        } else if (error.message) {
           message += `: ${error.message}`;
         }
-
-        toast.error(message);
-      } finally {
-        setIsSubmitting(false);
+      } else if (error instanceof Error) {
+        message += `: ${error.message}`;
       }
-    },
-    [formData, selectedFile, bookId, userID, API_BASE_URL]
-  );
+
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  },
+  [formData, selectedFile, bookId, userID, API_BASE_URL, payload.username, fetchBookData]
+);
 
 
 
@@ -759,8 +838,9 @@ export default function UpdateBooksFollowUpByBookID({ bookId, payload }: UpdateB
               ref={dropzoneRef}
               onFilesAccepted={handleFilesAccepted}
               onFileRemoved={handleFileRemoved}
-              onBookPdfLoaded={handleBookPdfLoaded}
-            />
+              onBookPdfLoaded={handleBookPdfLoaded} 
+              username={payload.username}           
+               />
           </motion.div>
 
           {/* Display PDFs */}
@@ -783,6 +863,8 @@ export default function UpdateBooksFollowUpByBookID({ bookId, payload }: UpdateB
 
           <p>
             {/* {departmentName ?? 'None'} : department name   ------  {comName ?? 'None'}  : Selected Committee  */}
+            {deID ?? 'None'} : department name   ------  
+            { selectedCommittee?? 'None'}  : COID 
       </p>
         </form>
       </div>
