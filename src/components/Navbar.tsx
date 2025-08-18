@@ -46,7 +46,7 @@ const NAV_ITEMS: NavItem[] = [
       {
         title: 'بحث',
         href: '/searchPanel',
-        description: 'خيارات البحث المتقدم مع فلاتر متعددة',
+        description: 'خيارات البحث مع فلاتر متعددة وتعديل معلومات الكتب',
       },
     ],
   },
@@ -56,7 +56,7 @@ const NAV_ITEMS: NavItem[] = [
       {
         title: 'تقرير الكتب',
         href: '/report_all',
-        description: 'تقرير الكتب المنجزة وقيد الانجاز',
+        description: 'تقرير الكتب المنجزة وقيد الانجاز حسب تأريخ الادخال',
       },
     ],
   },
@@ -227,7 +227,7 @@ export function Navbar({ userData }: NavbarProps) {
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.2 }}
           >
-            شركة مصافي الوسط
+            شركة مصافي الوسط - مصفى الدورة
           </motion.span>
         </Link>
 

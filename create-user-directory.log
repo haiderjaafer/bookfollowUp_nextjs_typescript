@@ -153,3 +153,25 @@
 [2025-08-17 09:52:36] INFO: Base directory accessible {"dirOutput":"Volume in drive D is New Volume\r\n Volume Serial Number is 1228-28D7\r\n\r\n Directory of D:\\booksFollowUp\\pdfScanner\r\n\r\n08/11/2025  11:57 AM    <DIR>          .\r\n08/11/2025  11:57 AM    <DIR>          ..\r\n               0 File(s)              0 bytes\r\n               2 Dir(s)  365,616,504,832 bytes free"}
 [2025-08-17 09:52:36] INFO: Creating user directory...
 [2025-08-17 09:52:36] INFO: User directory created successfully {"userDir":"D:\\booksFollowUp\\pdfScanner\\ttt"}
+[2025-08-18 11:38:31] INFO: Create User Directory API called
+[2025-08-18 11:38:31] INFO: Creating user directory {"userDir":"D:\\booksFollowUp\\pdfScanner\\haider"}
+[2025-08-18 11:38:31] INFO: Testing network connectivity...
+[2025-08-18 11:38:32] INFO: Network test successful {"pingOutput":"Pinging DESKTOP-EUQRAD3 [::1] with 32 bytes of data:\r\nReply from ::1: time<1ms \r\n\r\nPing statistics for ::1:\r\n    Packets: Sent = 1, Received = 1, Lost = 0 (0% loss),\r\nApproximate round trip times in milli-seconds:\r\n    Minimum = 0ms, Maximum = 0ms, Average = 0ms"}
+[2025-08-18 11:38:32] INFO: Checking base directory access...
+[2025-08-18 11:38:32] INFO: Base directory accessible {"dirOutput":"Volume in drive D is New Volume\r\n Volume Serial Number is 1228-28D7\r\n\r\n Directory of D:\\booksFollowUp\\pdfScanner\r\n\r\n08/17/2025  09:53 AM    <DIR>          .\r\n08/17/2025  09:53 AM    <DIR>          ..\r\n08/17/2025  09:54 AM    <DIR>          ttt\r\n               0 File(s)              0 bytes\r\n               3 Dir(s)  365,603,450,880 bytes free"}
+[2025-08-18 11:38:32] INFO: Creating user directory...
+[2025-08-18 11:38:32] INFO: User directory created successfully {"userDir":"D:\\booksFollowUp\\pdfScanner\\haider"}
+[2025-08-18 12:14:52] INFO: Create User Directory API called
+[2025-08-18 12:14:52] INFO: Creating user directory {"userDir":"D:\\booksFollowUp\\pdfScanner\\haider"}
+[2025-08-18 12:14:52] INFO: User directory already exists {"userDir":"D:\\booksFollowUp\\pdfScanner\\haider"}
+[2025-08-18 12:17:33] INFO: Create User Directory API called
+[2025-08-18 12:17:33] INFO: Creating user directory {"userDir":"D:\\booksFollowUp\\pdfScanner\\haider"}
+[2025-08-18 12:17:33] INFO: User directory already exists {"userDir":"D:\\booksFollowUp\\pdfScanner\\haider"}
+[2025-08-18 12:55:31] INFO: Create User Directory API called
+[2025-08-18 12:55:31] INFO: Creating user directory {"userDir":"D:\\booksFollowUp\\pdfScanner\\ali"}
+[2025-08-18 12:55:31] INFO: Testing network connectivity...
+[2025-08-18 12:55:31] INFO: Network test successful {"pingOutput":"Pinging DESKTOP-EUQRAD3 [::1] with 32 bytes of data:\r\nReply from ::1: time<1ms \r\n\r\nPing statistics for ::1:\r\n    Packets: Sent = 1, Received = 1, Lost = 0 (0% loss),\r\nApproximate round trip times in milli-seconds:\r\n    Minimum = 0ms, Maximum = 0ms, Average = 0ms"}
+[2025-08-18 12:55:31] INFO: Checking base directory access...
+[2025-08-18 12:55:31] INFO: Base directory accessible {"dirOutput":"Volume in drive D is New Volume\r\n Volume Serial Number is 1228-28D7\r\n\r\n Directory of D:\\booksFollowUp\\pdfScanner\r\n\r\n08/18/2025  11:38 AM    <DIR>          .\r\n08/18/2025  11:38 AM    <DIR>          ..\r\n08/18/2025  11:38 AM    <DIR>          haider\r\n08/17/2025  09:54 AM    <DIR>          ttt\r\n               0 File(s)              0 bytes\r\n               4 Dir(s)  365,603,115,008 bytes free"}
+[2025-08-18 12:55:31] INFO: Creating user directory...
+[2025-08-18 12:55:31] INFO: User directory created successfully {"userDir":"D:\\booksFollowUp\\pdfScanner\\ali"}

@@ -15,8 +15,8 @@ export function verifyTokenForPage(token: string): JWTPayload | null {
     }
 
     const privateKey = process.env.JWT_SECRET as string;
-    console.log("JWT_SECRET:", privateKey);
-    console.log("Token:", token);
+    
+    
 
     if (!privateKey) {
       console.error("Missing JWT_SECRET");
@@ -24,6 +24,8 @@ export function verifyTokenForPage(token: string): JWTPayload | null {
     }
 
     const userPayload = jwt.verify(token, privateKey) as JWTPayload;
+
+   
 
     if (!userPayload.id || !userPayload.username) {
       console.error("Invalid token structure - missing required fields");

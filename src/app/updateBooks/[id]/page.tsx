@@ -15,6 +15,8 @@ const UpdateBooksFollowUpByBookIDPage = async ({ params }: PageProps) => {
   const token = cookieStore.get("jwt_cookies_auth_token")?.value || '';
   const payload = verifyTokenForPage(token);
 
+  
+
   if (!payload) {
     // Optional: redirect or render error
     return <div>Unauthorized</div>; // Consider redirecting to an error page
