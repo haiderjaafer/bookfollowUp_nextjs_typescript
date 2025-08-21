@@ -1,6 +1,7 @@
 import ReportForm from '@/components/Reports/BookStatusReports/ReportFormSelections';
 import { Metadata } from 'next';
 import { TbReportSearch } from "react-icons/tb";
+import { LuPrinterCheck } from "react-icons/lu";
 
 export const metadata: Metadata = {
   title: 'تقرير الكتب | نظام إدارة الكتب',
@@ -16,7 +17,10 @@ export default function ReportAllPage() {
        
         <div className="bg-white rounded-lg shadow-md p-6 ">
 
+          <section className='flex justify-between'>
+     <LuPrinterCheck size={40} color='orange' />
           <TbReportSearch size={40} color='gray'/>
+   </section>
        
     <h1 className="text-2xl font-extrabold mb-6 text-gray-800 text-center ">
             تقارير النظام

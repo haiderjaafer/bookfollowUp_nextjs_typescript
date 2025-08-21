@@ -48,7 +48,7 @@ const LateBooksTable = () => {
         setData(response.data);
         
         if (response.data.data.length > 0) {
-          toast.warn(`يوجد ${response.data.total} كتاب متأخر!`, {
+          toast.warn(`يوجد ${response.data.total} كتب متأخرة !`, {
             position: 'top-right',
             className: 'font-arabic text-lg',
             autoClose: 3000,

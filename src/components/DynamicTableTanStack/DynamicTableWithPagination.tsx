@@ -362,7 +362,7 @@ export default function DynamicTable<T extends BookFollowUpData>({
           key={1}
           variant={1 === page ? 'default' : 'outline'}
           onClick={() => onPageChange(1)}
-          className="mx-1 font-bold"
+          className="mx-1 font-bold cursor-pointer"
         >
           1
         </Button>
