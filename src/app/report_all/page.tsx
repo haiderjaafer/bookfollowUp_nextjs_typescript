@@ -12,14 +12,14 @@ export const metadata: Metadata = {
 export default function ReportAllPage() {
   return (
     <div className="min-h-screen bg-gray-50">
-      
+     
       <div className="container mx-auto p-6 max-w-2xl ">
        
         <div className="bg-white rounded-lg shadow-md p-6 ">
 
-          <section className='flex justify-between'>
-     <LuPrinterCheck size={40} color='orange' />
-          <TbReportSearch size={40} color='gray'/>
+   <section className='flex justify-between'>
+     <TbReportSearch size={40} color='gray'/>
+     <LuPrinterCheck size={40} className='text-orange-300' />
    </section>
        
     <h1 className="text-2xl font-extrabold mb-6 text-gray-800 text-center ">

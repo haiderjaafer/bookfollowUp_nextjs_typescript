@@ -144,7 +144,7 @@ const LateBooksTable = () => {
               <DynamicTable
                 data={data.data}
                 headerMap={orderHeaderMap}
-                excludeFields={['userID', 'pdfFiles','deID']}
+                excludeFields={['userID', 'pdfFiles','deID','id']}
                 pagination={{
                   page: data.page,
                   limit: data.limit,

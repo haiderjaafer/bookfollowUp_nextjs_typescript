@@ -49,6 +49,7 @@ export interface BookFollowUpData extends TableData {
 }
 
 export const orderHeaderMap: HeaderMap = {
+  serialNo: "ت",
   id: "الايدي",
   bookType: "نوع الكتاب",
   bookNo: "رقم الكتاب",

@@ -214,22 +214,26 @@ export function Navbar({ userData }: NavbarProps) {
         </div>
 
         {/* Logo and Company Name */}
-        <Link
-          href="/"
-          className="hidden md:flex gap-1.5 items-center mx-4 font-sans focus:outline-none focus:ring-0"
-        >
-          <RotatingLogo />
-          <motion.span
-            className={cn(
-              'inline-block text-lg bg-clip-text text-black animate-pulse',
-              isScrolled ? 'font-extrabold text-white' : 'font-extrabold '
-            )}
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 0.2 }}
-          >
-            شركة مصافي الوسط - مصفى الدورة
-          </motion.span>
-        </Link>
+       <Link
+  href="/"
+  className="md:flex gap-1.5 items-center mx-4 font-sans focus:outline-none focus:ring-0"
+>
+  <div className="hidden sm:block">  {/*  only show logo ≥ 640px */}
+    <RotatingLogo />
+  </div>
+
+  <motion.span
+    className={cn(
+      "inline-block sm:text-lg text-sm bg-clip-text text-black animate-pulse",
+      isScrolled ? "font-extrabold text-white" : "font-extrabold "
+    )}
+    whileHover={{ scale: 1.05 }}
+    transition={{ duration: 0.2 }}
+  >
+    شركة مصافي الوسط - مصفى الدورة
+  </motion.span>
+</Link>
+
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex flex-1 justify-center items-center gap-2">

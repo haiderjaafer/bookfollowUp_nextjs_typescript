@@ -94,24 +94,24 @@ const RegisterForm: React.FC = () => {
 
     // Step 2: Create user directory (Next.js API)
     try {
-      const directoryResponse = await axios.post(
-        `${process.env.NEXT_PUBLIC_FOLDER_CREATION_API_BASE_URL}/api/createUserDirectory`,
-        { username: username.trim() },
-        {
-          withCredentials: true,
-          headers: { 'Content-Type': 'application/json' }
-        }
-      );
+      // const directoryResponse = await axios.post(
+      //   `${process.env.NEXT_PUBLIC_FOLDER_CREATION_API_BASE_URL}/api/createUserDirectory`,
+      //   { username: username.trim() },
+      //   {
+      //     withCredentials: true,
+      //     headers: { 'Content-Type': 'application/json' }
+      //   }
+      // );
 
-      console.log('Directory creation response:', {
-        status: directoryResponse.status,
-        data: directoryResponse.data
-      });
+      // console.log('Directory creation response:', {
+      //   status: directoryResponse.status,
+      //   data: directoryResponse.data
+      // });
 
-      toast.success(directoryResponse.data.message || "تم إنشاء مجلد المستخدم بنجاح", {
-        position: 'top-right',
-        autoClose: 3000
-      });
+      // toast.success(directoryResponse.data.message || "تم إنشاء مجلد المستخدم بنجاح", {
+      //   position: 'top-right',
+      //   autoClose: 3000
+      // });
 
       // Redirect to home page
       router.push("/");

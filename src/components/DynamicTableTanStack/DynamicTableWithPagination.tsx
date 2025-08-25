@@ -95,6 +95,7 @@ export default function DynamicTable<T extends BookFollowUpData>({
   // Determine if a field should be truncated
   const shouldTruncate = useCallback((key: string) => {
     return [
+     
       'notes',
       'directoryName',
       'subject',
@@ -224,8 +225,12 @@ export default function DynamicTable<T extends BookFollowUpData>({
           columnDef.size = 150;
         }
         
-         else if (key === 'bookType' ) {
+         else if (key === 'bookType' ) {   
           columnDef.size = 70;
+        }
+
+        else if (key === 'serialNo' ) {   
+          columnDef.size = 5;
         }
 
         else {
@@ -378,7 +383,7 @@ export default function DynamicTable<T extends BookFollowUpData>({
           key={i}
           variant={i === page ? 'default' : 'outline'}
           onClick={() => onPageChange(i)}
-          className="mx-1 font-bold"
+          className="mx-1 font-bold cursor-pointer"
         >
           {i}
         </Button>
@@ -574,7 +579,7 @@ export default function DynamicTable<T extends BookFollowUpData>({
 
                        <Button
                         variant="default"
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold transition-colors duration-200"
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold transition-colors duration-200 cursor-pointer"
                         onClick={() => {
                           window.open(
                             `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/pdf/file/${pdf.id}`
@@ -586,7 +591,7 @@ export default function DynamicTable<T extends BookFollowUpData>({
 
                            <Button
                         variant="default"
-                        className="bg-red-600 hover:bg-red-700 text-white font-bold transition-colors duration-200"
+                        className="bg-red-600 hover:bg-red-700 text-white font-bold transition-colors duration-200 cursor-pointer"
      
 onClick={() => {
     setSelectedPdf({

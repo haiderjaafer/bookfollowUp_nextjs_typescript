@@ -385,7 +385,7 @@ const handleSubmit = useCallback(
         }
 
         console.log('Sending with file - FormData entries:');
-        for (let [key, value] of formDataToSend.entries()) {
+        for (const [key, value] of formDataToSend.entries()) {
           console.log(key, value);
         }
 
@@ -618,8 +618,8 @@ const handleSubmit = useCallback(
       variants={formVariants}
     >
       <div className="w-full max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-4xl mx-auto p-4 sm:p-6 md:p-8 bg-white rounded-2xl shadow-lg border border-sky-100/50">
-        <h1 className="text-2xl sm:text-3xl md:text-3xl lg:text-3xl font-bold font-arabic text-center text-sky-600 mb-6 sm:mb-8">
-          تحديث الكتاب رقم {formData.bookNo}
+        <h1 className="text-2xl sm:text-3xl md:text-3xl lg:text-3xl font-bold font-arabic text-center text-sky-600 mb-6 sm:mb-8 item-center">
+          تحديث الكتاب رقم <strong className='text-green-500'>{formData.bookNo}</strong>
         </h1>
         <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8" noValidate>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -863,8 +863,8 @@ const handleSubmit = useCallback(
 
           <p>
             {/* {departmentName ?? 'None'} : department name   ------  {comName ?? 'None'}  : Selected Committee  */}
-            {deID ?? 'None'} : department name   ------  
-            { selectedCommittee?? 'None'}  : COID 
+            {/* {deID ?? 'None'} : department name   ------  
+            { selectedCommittee?? 'None'}  : COID  */}
       </p>
         </form>
       </div>
