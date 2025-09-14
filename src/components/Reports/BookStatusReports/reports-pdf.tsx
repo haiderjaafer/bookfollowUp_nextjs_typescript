@@ -114,7 +114,7 @@ export default function PrintReportPage() {
       ) : data.length === 0 ? (
         <p className="text-center text-gray-500 text-lg">لا توجد بيانات مطابقة</p>
       ) : (
-
+          <div className='overflow-x-auto w-full'>
         <div className="max-w-[1200px] mx-auto bg-white p-6 font-sans direction-rtl">
         <table className="w-full border-collapse text-sm table-auto">
   <thead>
@@ -128,8 +128,8 @@ export default function PrintReportPage() {
       {/* <th className="border border-gray-400 p-2 text-lg font-extrabold">الجهة</th> */}
       <th className="border border-gray-400 p-2 text-lg font-extrabold min-w-[50px]">الإجراء</th>
       <th className="border border-gray-400 p-2 text-lg font-extrabold min-w-[150px]">الملاحظات</th>
-      <th className="border border-gray-400 p-2 text-lg font-extrabold min-w-[150px]">الهيأة</th>
-      <th className="border border-gray-400 p-2 text-lg font-extrabold min-w-[150px]">القسم</th>
+      <th className="border border-gray-400 p-2 text-lg font-extrabold min-w-[100px]">الهيأة</th>
+      <th className="border border-gray-400 p-2 text-lg font-extrabold min-w-[100px]">القسم</th>
     </tr>
   </thead>
   <tbody>
@@ -153,6 +153,7 @@ export default function PrintReportPage() {
   </tbody>
 </table>
 
+</div>
 </div>
       )}
     </div>

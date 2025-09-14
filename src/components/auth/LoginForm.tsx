@@ -152,7 +152,7 @@ const LoginForm: React.FC = () => {
                 className="font-bold text-indigo-600 hover:text-indigo-500 transition duration-200"
                 onClick={(e) => {
                   e.preventDefault();
-                  toast.info("تواصل مع الإدارة لاستعادة كلمة المرور");
+                  toast.info("تواصل مع تقنية المعلومات لاستعادة كلمة المرور");
                 }}
               >
                 هل نسيت كلمة المرور؟

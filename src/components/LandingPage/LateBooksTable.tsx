@@ -29,12 +29,18 @@ interface LateBooksResponse {
   totalPages: number;
 }
 
-const LateBooksTable = () => {
+interface userIDProp {
+  userID: string;
+}
+
+const LateBooksTable = ({userID}:userIDProp) => {
   const [data, setData] = useState<LateBooksResponse | null>(null);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [loading, setLoading] = useState(false);
   const maxRetries = 2;
+
+  console.log("userID"+ userID)
 
   // Fetch late books with retry logic
   const fetchLateBooks = useCallback(
@@ -43,7 +49,7 @@ const LateBooksTable = () => {
       try {
         const response = await axios.get<LateBooksResponse>(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/lateBooks`,
-          { params: { page, limit } }
+          { params: { page, limit,userID } }
         );
         setData(response.data);
         

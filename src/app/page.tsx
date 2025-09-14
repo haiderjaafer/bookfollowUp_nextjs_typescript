@@ -23,7 +23,7 @@ const Home = async () => {
       <StatisticsComponentParent permission={payload?.permission} />
       
       {/* Late Books Table Section - Client Component */}
-      <LateBooksTable />
+      <LateBooksTable userID ={payload.id.toString()} />
     </div>
   );
 };
