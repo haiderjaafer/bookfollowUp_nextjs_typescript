@@ -17,17 +17,20 @@ import {
 // import { cn } from '@/lib/utils';
 import { ChevronsUpDown, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 interface SubjectAutoCompleteComboBoxProps {
   value: string;
   onChange: (value: string) => void;
   fetchUrl: string;
+  
 }
 
 export default function SubjectAutoCompleteComboBox({
   value,
   onChange,
   fetchUrl,
+ 
 }: SubjectAutoCompleteComboBoxProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -103,7 +106,8 @@ export default function SubjectAutoCompleteComboBox({
                   onSelect={() => handleSelect(item)}
                   className="text-right font-arabic"
                 >
-                  {item}
+                 {/* <Link href={item} target={i.toString() || undefined}> {item} {i.toString()}</Link> */}
+                  <Link href={`/bookBySubject/${item}`}  target={'_blank'}> {item} </Link>
                 </CommandItem>
               ))
             ) : (

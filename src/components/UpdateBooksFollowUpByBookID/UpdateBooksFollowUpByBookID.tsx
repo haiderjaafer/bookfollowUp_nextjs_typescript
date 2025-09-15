@@ -130,6 +130,8 @@ export default function UpdateBooksFollowUpByBookID({ bookId, payload }: UpdateB
   const [pdfFiles, setPdfFiles] = useState<PDFResponse[]>([]);
   const [pdfDialogOpen, setPdfDialogOpen] = useState(false);
 
+  const [bookID,SetboookID] = useState<string>("")
+
   // Safe conversion with fallback
   const userID = payload.id?.toString() || '';
 
@@ -191,6 +193,9 @@ const handleDepartmentChange = useCallback(
       console.log("book coID ...", book.coID);
       console.log("book departmentName ...", book.departmentName);
       console.log("book deID ...", book.deID);
+       console.log("book ID mmmmmm", book.id);
+
+         SetboookID(book.id.toString())
 
       setFormData({
   bookType: book.bookType || '',
@@ -737,6 +742,7 @@ const handleSubmit = useCallback(
                 الموضوع
               </label>
               <SubjectAutoCompleteComboBox
+                 
                 value={formData.subject}
                 onChange={(val) => setFormData((prev) => ({ ...prev, subject: val }))}
                 fetchUrl={`${API_BASE_URL}/api/bookFollowUp/getSubjects`}
