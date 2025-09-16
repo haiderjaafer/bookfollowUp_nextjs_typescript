@@ -1,2 +1,7 @@
 {
+<<<<<<< HEAD
+=======
+    "postman.settings.dotenv-detection-notification-visibility": false,
+    "git.ignoreLimitWarning": true
+>>>>>>> 94b62087fcc5d6a9ba0b5a9f464e939e2620b689
 }

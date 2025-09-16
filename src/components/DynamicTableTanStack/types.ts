@@ -59,7 +59,11 @@ export const orderHeaderMap: HeaderMap = {
   incomingNo: "رقم الوارد",
   incomingDate: "تأريخ الوارد",
   subject: "الموضوع",
+<<<<<<< HEAD
   // destination: "جهة البريد",
+=======
+  countOfPDFs: "عدد الكتب",
+>>>>>>> 94b62087fcc5d6a9ba0b5a9f464e939e2620b689
   bookAction: "الهامش",
   bookStatus: "الاجراء",
   notes: "الملاحظات",
