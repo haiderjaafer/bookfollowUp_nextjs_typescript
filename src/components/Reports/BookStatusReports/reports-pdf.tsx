@@ -130,6 +130,7 @@ export default function PrintReportPage() {
       <th className="border border-gray-400 p-2 text-lg font-extrabold min-w-[150px]">الملاحظات</th>
       <th className="border border-gray-400 p-2 text-lg font-extrabold min-w-[100px]">الهيأة</th>
       <th className="border border-gray-400 p-2 text-lg font-extrabold min-w-[100px]">القسم</th>
+       <th className="border border-gray-400 p-2 text-lg font-extrabold min-w-[112px]">تاريخ الادخال</th>
     </tr>
   </thead>
   <tbody>
@@ -148,6 +149,8 @@ export default function PrintReportPage() {
         </td>
          <td className="border border-gray-400 textlg font-serif font-bold   p-2 min-w-[50px] max-w-[90px] break-words">{item.Com}</td>
          <td className="border border-gray-400 textlg font-serif font-bold   p-2 min-w-[50px] max-w-[90px] break-words">{item.departmentName}</td>
+
+         <td className="border border-gray-400 textlg font-serif font-bold   p-2 min-w-[112px]">{item.currentDate}</td>
       </tr>
     ))}
   </tbody>
