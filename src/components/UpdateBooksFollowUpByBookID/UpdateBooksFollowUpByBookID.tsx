@@ -135,7 +135,7 @@ export default function UpdateBooksFollowUpByBookID({ bookId, payload }: UpdateB
   // Safe conversion with fallback
   const userID = payload.id?.toString() || '';
 
-
+console.log("bookID" + bookID);
   const [formData, setFormData] = useState<BookInsertionType>({
     bookType: '',
     bookNo: '',

@@ -207,8 +207,6 @@ const LateBooksTable = ({ userID }: userIDProp) => {
 
   // Debounced fetch with shorter delay for pagination
   const debouncedFetch = useMemo(() => {
-    let timeoutId: NodeJS.Timeout;
-    
     return (targetPage: number, targetLimit: number, showToast: boolean = false) => {
       // Clear previous timeout
       if (requestTimeoutRef.current) {
@@ -231,7 +229,7 @@ const LateBooksTable = ({ userID }: userIDProp) => {
       debouncedFetch(1, limit, true); // Show toast on initial load
       setPage(1); // Reset page on userID change
     }
-  }, [userID, limit]); // Don't include debouncedFetch to avoid re-triggering
+  }, [userID, limit, debouncedFetch]);
 
   // Effect for page changes (without toast)
   useEffect(() => {
@@ -239,7 +237,7 @@ const LateBooksTable = ({ userID }: userIDProp) => {
       console.log(`Page change - page: ${page}, limit: ${limit}`);
       debouncedFetch(page, limit, false); // No toast for pagination
     }
-  }, [page]); // Only trigger on page change
+  }, [page, debouncedFetch, isInitialLoad, userID, limit]);
 
   // Optimized page change handler
   const handlePageChange = useCallback((newPage: number) => {
@@ -315,7 +313,7 @@ const LateBooksTable = ({ userID }: userIDProp) => {
               <p className="text-lg text-gray-600">لا توجد كتب متأخرة حالياً</p>
               {data?.total === 0 && (
                 <p className="text-sm text-gray-500 mt-2">
-                  لا توجد كتب بحالة "قيد الإنجاز" لهذا المستخدم
+                  لا توجد كتب بحالة &ldquo;قيد الإنجاز&rdquo; لهذا المستخدم
                 </p>
               )}
             </Card>
@@ -339,7 +337,7 @@ const LateBooksTable = ({ userID }: userIDProp) => {
               <DynamicTable
                 data={data.data}
                 headerMap={orderHeaderMap}
-                excludeFields={['userID', 'pdfFiles', 'deID', 'id','destination']}
+                excludeFields={['userID', 'pdfFiles', 'deID', 'id', 'destination']}
                 pagination={{
                   page: data.page,
                   limit: data.limit,

@@ -2,20 +2,20 @@ import BookBySubjectClient from "@/components/BookBySubjectClient";
 import React from "react";
 
 interface BookBySubjectAndBookID {
-  params: {
+  params: Promise<{
     subject: string;
-  };
+  }>;
 }
 
 const BookBySubjectPage = async ({ params }: BookBySubjectAndBookID) => {
-  const { subject } = params;
+  const { subject } = await params; // Add await here
   const decodedSubject = decodeURIComponent(subject);
 
   try {
     console.log("Fetching data for subject:", decodedSubject);
     
     const res = await fetch(
-      `http://localhost:9000/api/bookFollowUp/getRecordBySubject`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/getRecordBySubject`,
       { 
         method: 'POST',
         headers: {
