@@ -12,7 +12,7 @@ const BookBySubjectPage = async ({ params }: BookBySubjectAndBookID) => {
   const decodedSubject = decodeURIComponent(subject);
 
   try {
-    console.log("Fetching data for subject:", decodedSubject);
+   // console.log("Fetching data for subject:", decodedSubject);
     
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/bookFollowUp/getRecordBySubject`,
@@ -29,8 +29,18 @@ const BookBySubjectPage = async ({ params }: BookBySubjectAndBookID) => {
       }
     );
 
-    console.log("Response status:", res.status);
-    console.log("Response headers:", Object.fromEntries(res.headers.entries()));
+    //console.log("Response status:", res.status);
+
+
+   // console.log("Response headers:", Object.fromEntries(res.headers.entries())); this will print like blow
+
+//    Response headers: {
+//   'content-length': '812',
+//   'content-type': 'application/json',
+//   date: 'Thu, 18 Sep 2025 05:37:53 GMT',
+//   server: 'uvicorn'
+// }
+
 
     if (!res.ok) {
       const errorText = await res.text();

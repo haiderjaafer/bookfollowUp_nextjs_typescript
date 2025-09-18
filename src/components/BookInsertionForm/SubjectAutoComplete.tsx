@@ -14,23 +14,19 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-// import { cn } from '@/lib/utils';
-import { ChevronsUpDown, XCircle } from 'lucide-react';
+import { ChevronsUpDown, XCircle, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import Link from 'next/link';
 
 interface SubjectAutoCompleteComboBoxProps {
   value: string;
   onChange: (value: string) => void;
   fetchUrl: string;
-  
 }
 
 export default function SubjectAutoCompleteComboBox({
   value,
   onChange,
   fetchUrl,
- 
 }: SubjectAutoCompleteComboBoxProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -68,6 +64,12 @@ export default function SubjectAutoCompleteComboBox({
     onChange('');
   };
 
+  // Handle opening link in new tab
+  const handleOpenInNewTab = useCallback((item: string) => {
+    const url = `/bookBySubject/${encodeURIComponent(item)}`;
+    window.open(url, '_blank');
+  }, []);
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -77,7 +79,7 @@ export default function SubjectAutoCompleteComboBox({
             onClick={() => setOpen(true)}
             value={value}
             readOnly
-            placeholder="اختر أو أدخل  الموضوع"
+            placeholder="اختر أو أدخل الموضوع"
             className="w-full pr-10 h-12 text-right font-sans font-extrabold shadow-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500"
           />
           {value && (
@@ -89,7 +91,7 @@ export default function SubjectAutoCompleteComboBox({
           <ChevronsUpDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         </div>
       </PopoverTrigger>
-      <PopoverContent className=" w-[550px] font-extrabold mt-1 z-50 p-0 max-h-64 overflow-y-auto shadow-xl rounded-lg" align="start" sideOffset={4}>
+      <PopoverContent className="w-[550px] font-extrabold mt-1 z-50 p-0 max-h-64 overflow-y-auto shadow-xl rounded-lg" align="start" sideOffset={4}>
         <Command>
           <CommandInput
             value={query}
@@ -104,10 +106,28 @@ export default function SubjectAutoCompleteComboBox({
                   key={i}
                   value={item}
                   onSelect={() => handleSelect(item)}
-                  className="text-right font-arabic"
+                  className="text-right font-arabic group flex items-center justify-between cursor-pointer hover:bg-gray-100"
                 >
-                 {/* <Link href={item} target={i.toString() || undefined}> {item} {i.toString()}</Link> */}
-                  <Link href={`/bookBySubject/${item}`}  target={'_blank'}> {item} </Link>
+                  <div className="flex-1" onClick={() => handleSelect(item)}>
+                    {item}
+                  </div>
+                  
+                  {/* External link icon - only opens in new tab */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenInNewTab(item);
+                    }}
+                    onContextMenu={(e) => {
+                      e.stopPropagation();
+                      // Allow right-click context menu for the link
+                    }}
+                    className="opacity-0 group-hover:opacity-100 p-1 ml-2 text-gray-400 hover:text-blue-600 transition-opacity"
+                    title="فتح الموضوع في تبويب جديد"
+                  >
+                    <ExternalLink className="h-4 w-4 text-green-400" />
+                  </button>
                 </CommandItem>
               ))
             ) : (
