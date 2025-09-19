@@ -1,4 +1,5 @@
 export interface ReportFormData {
+  reportType: string;          // New field for report type selection
   bookStatus: string;
   check: string;
   startDate: string;
@@ -12,6 +13,11 @@ export interface BookStatusOption {
 }
 
 export interface SelectOption {
+  label: string;
+  value: string;
+}
+
+export interface ReportTypeOption {
   label: string;
   value: string;
 }

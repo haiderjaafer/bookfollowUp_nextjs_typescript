@@ -22,9 +22,10 @@ interface ClientLayoutProps {   // combine UserData interface and children in si
 export default function ClientLayout({ children, userData }: ClientLayoutProps) {  // will receive userData as props and pass it into Navbar
   const pathname = usePathname();
   const isPrintRoute = pathname?.startsWith('/print');
+  const statisticsReport = pathname?.startsWith('/statistics-report');
   const isLoginRoute = pathname === '/login';
   const isRegisterRoute = pathname === '/register';
-  const hideLayout = isPrintRoute || isLoginRoute || isRegisterRoute;
+  const hideLayout = isPrintRoute || isLoginRoute || isRegisterRoute || statisticsReport;
 
   console.log("ClientLayout - Pathname:", pathname);
   console.log("ClientLayout - UserData:", userData);

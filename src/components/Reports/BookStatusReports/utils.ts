@@ -4,6 +4,8 @@ import { ReportFormData } from "./types";
 export const buildQueryString = (data: ReportFormData): string => {
   const params = new URLSearchParams();
 
+  console.log("data report"+ data.reportType);
+
   if (data.bookStatus.trim()) {
     params.append('bookStatus', data.bookStatus);
   }

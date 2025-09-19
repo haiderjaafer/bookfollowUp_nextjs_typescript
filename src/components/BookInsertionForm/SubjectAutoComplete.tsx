@@ -68,6 +68,7 @@ export default function SubjectAutoCompleteComboBox({
   const handleOpenInNewTab = useCallback((item: string) => {
     const url = `/bookBySubject/${encodeURIComponent(item)}`;
     window.open(url, '_blank');
+    setOpen(false);
   }, []);
 
   return (
@@ -108,8 +109,8 @@ export default function SubjectAutoCompleteComboBox({
                   onSelect={() => handleSelect(item)}
                   className="text-right font-arabic group flex items-center justify-between cursor-pointer hover:bg-gray-100"
                 >
-                  <div className="flex-1" onClick={() => handleSelect(item)}>
-                    {item}
+                  <div className="flex-1 hover:cursor-pointer " onClick={() => handleSelect(item)}>
+                    {item} 
                   </div>
                   
                   {/* External link icon - only opens in new tab */}
@@ -123,7 +124,7 @@ export default function SubjectAutoCompleteComboBox({
                       e.stopPropagation();
                       // Allow right-click context menu for the link
                     }}
-                    className="opacity-0 group-hover:opacity-100 p-1 ml-2 text-gray-400 hover:text-blue-600 transition-opacity"
+                    className="opacity-0 group-hover:opacity-100 p-1 ml-2 text-gray-400 hover:text-blue-600 transition-opacity hover:cursor-pointer"
                     title="فتح الموضوع في تبويب جديد"
                   >
                     <ExternalLink className="h-4 w-4 text-green-400" />
