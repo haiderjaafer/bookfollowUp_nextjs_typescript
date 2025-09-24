@@ -102,6 +102,7 @@ const DepartmentSelect: React.FC<DepartmentSelectProps> = ({
   return (
     <div className="w-full">
       <select
+        
         value={getSelectValue()}
         onChange={(e) => onChange(e.target.value ? Number(e.target.value) : undefined)}
         disabled={isLoading || isFetching || !coID || !!error}
@@ -119,6 +120,7 @@ const DepartmentSelect: React.FC<DepartmentSelectProps> = ({
         {/* Show departments if available */}
         {departments?.map((department) => (
           <option
+            
             key={department.deID}
             value={department.deID.toString()}
             className={value === department.deID ? 'bg-blue-100 font-bold' : ''}

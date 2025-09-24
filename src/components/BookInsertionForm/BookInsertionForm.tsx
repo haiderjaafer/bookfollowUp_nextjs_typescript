@@ -598,7 +598,7 @@ return (
             </Button>
           </motion.div>
         </form>
-       
+       <div>{selectedCommittee} --- {deID}</div>
       </div>
     </motion.div>
   );
