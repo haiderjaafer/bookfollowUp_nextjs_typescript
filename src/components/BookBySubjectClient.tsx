@@ -63,7 +63,7 @@ const BookBySubjectClient: React.FC<Props> = ({ subject, initialData }) => {
               <DynamicTable
                 data={transformedData.data}
                 headerMap={orderHeaderMap}
-                excludeFields={['userID', 'pdfFiles', 'departmentID', 'id', 'destination']}
+                excludeFields={['userID', 'pdfFiles', 'departmentID', 'id', 'destination','junctionID','coID','deID','departmentName','all_departments']}
                 pagination={{
                   page: transformedData.page,
                   limit: transformedData.limit,

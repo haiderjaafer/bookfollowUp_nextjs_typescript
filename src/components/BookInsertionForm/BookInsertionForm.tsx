@@ -16,6 +16,7 @@ import { JWTPayload } from '@/utiles/verifyToken';
 import CommitteeSelect from '../Company_Structure/CommitteeSelect';
 import DepartmentSelect from '../Company_Structure/DepartmentSelect';
 import { QueryKey, useQueryClient } from '@tanstack/react-query';
+import MultiSelectDepartments from '../Company_Structure/DepartmentSelect';
 
 
 // Animation variants
@@ -53,8 +54,12 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
   const userID = payload.id?.toString() || '';
   const API_BASE_URL = useMemo(() => process.env.NEXT_PUBLIC_API_BASE_URL || '', []);
 
-  const [selectedCommittee, setSelectedCommittee] = useState<number | undefined>(undefined);
-  const [deID, setSelectedDepartment] = useState<number | undefined>(undefined);
+   const [selectedCommittee, setSelectedCommittee] = useState<number | undefined>(undefined);
+  // const [deID, setSelectedDepartment] = useState<number | undefined>(undefined);
+
+  //const [selectedCommittee, setSelectedCommittee] = useState<number | undefined>(undefined);
+  const [selectedDepartments, setSelectedDepartments] = useState<number[]>([]); // Changed to array
+
 
   // State for form fields
   const [formData, setFormData] = useState<BookInsertionType>({
@@ -63,7 +68,9 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
     bookDate: format(new Date(), 'yyyy-MM-dd'),
     directoryName: '',
     selectedCommittee: undefined,
-    deID: undefined,
+    // deID: undefined,
+    deIDs: [], // Changed to array
+
     incomingNo: '',
     incomingDate: format(new Date(), 'yyyy-MM-dd'),
     subject: '',
@@ -79,15 +86,16 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
   
 
   // Handle committee change
+ // Handle committee change - Updated
   const handleCommitteeChange = useCallback(
     (coID: number | undefined) => {
       console.log('Committee changed:', coID);
       setSelectedCommittee(coID);
-      setSelectedDepartment(undefined); // Reset department
+      setSelectedDepartments([]); // Reset departments array
       setFormData((prev) => ({
         ...prev,
         selectedCommittee: coID,
-        selectedDepartment: undefined, // Reset in formData
+        deIDs: [], // Reset departments in formData
       }));
       if (coID) {
         queryClient.invalidateQueries({ queryKey: ['departments', coID] as QueryKey });
@@ -96,14 +104,14 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
     [queryClient]
   );
 
-  // Handle department change
-  const handleDepartmentChange = useCallback(
-    (deID: number | undefined) => {
-      console.log('Department changed:', deID);
-      setSelectedDepartment(deID);
+    // Handle departments change - Updated
+  const handleDepartmentsChange = useCallback(
+    (deIDs: number[]) => {
+      console.log('Departments changed:', deIDs);
+      setSelectedDepartments(deIDs);
       setFormData((prev) => ({
         ...prev,
-        deID: deID, // Update formData
+        deIDs: deIDs, // Update formData with array
       }));
     },
     []
@@ -228,7 +236,8 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
         'bookAction',
         'bookStatus',
         'userID',
-        'deID'
+        // 'deID'
+         'deIDs' // Changed from deID to deIDs
       ];
 
       const fieldLabels: Record<keyof BookInsertionType, string> = {
@@ -244,11 +253,20 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
         notes: 'الملاحظات',
         incomingDate: 'تاريخ الوارد',
         selectedCommittee: 'اللجنة',
-        deID: 'القسم',
+        // deID: 'القسم',
+        deIDs: 'الأقسام', // Updated label
+
       };
 
       for (const field of requiredFields) {
-        if (!formData[field]) {
+        if (field === 'deIDs') {
+          // Special validation for departments array
+          if (!formData[field] || formData[field].length === 0) {
+            toast.error('يرجى اختيار قسم واحد على الأقل');
+            setIsSubmitting(false);
+            return;
+          }
+        } else if (!formData[field]) {
           const label = fieldLabels[field] || field;
           toast.error(`يرجى ملء حقل ${label}`);
           setIsSubmitting(false);
@@ -265,9 +283,21 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
 
       // Create FormData for submission
       const formDataToSend = new FormData();
-      Object.entries(formData).forEach(([key, value]) => {
-        formDataToSend.append(key, value);
-      });
+     // Handle departments as comma-separated string for backend
+   Object.entries(formData).forEach(([key, value]) => {
+  if (key === 'selectedCommittee') {
+    // Map to backend field name
+    formDataToSend.append('coID', value.toString());
+  } else if (key === 'deIDs') {
+    // Convert array to comma-separated string
+    formDataToSend.append('deIDs', (value as number[]).join(','));
+  } else if (key === 'userID') {
+    // Ensure userID is sent as string (backend converts to int)
+    formDataToSend.append('userID', value.toString());
+  } else {
+    formDataToSend.append(key, value);
+  }
+});
       formDataToSend.append('file', selectedFile);
 
       formDataToSend.append('username', payload.username);
@@ -294,7 +324,9 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
             bookDate: format(new Date(), 'yyyy-MM-dd'),
             directoryName: '',
             selectedCommittee: undefined,
-            deID: undefined, 
+            // deID: undefined, 
+            deIDs: [], // Reset to empty array
+
             incomingNo: '',
             incomingDate: format(new Date(), 'yyyy-MM-dd'),
             subject: '',
@@ -304,6 +336,8 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
             userID: userID,
           });
           setSelectedFile(null);
+          setSelectedDepartments([]); // Reset departments
+
           dropzoneRef.current?.reset(true); // Silent reset
           
         } else {
@@ -477,19 +511,26 @@ return (
             </motion.div>
 
 
-                    <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-1">
+                    <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-2">
               <label
                 htmlFor="destination"
                 className="block text-sm font-extrabold text-gray-700 mb-1 lg:text-right text-center"
               >
                   القسم
               </label>
-      <DepartmentSelect
+
+              <MultiSelectDepartments
+        coID={selectedCommittee}
+        value={selectedDepartments}
+        onChange={handleDepartmentsChange}
+        className="w-full"
+      />
+      {/* <DepartmentSelect
                 coID={selectedCommittee}
                 value={deID}
                 onChange={handleDepartmentChange}
                 className="w-full" 
-                departmentName={null}      />
+                departmentName={null}      /> */}
             </motion.div>
 
             
@@ -598,7 +639,8 @@ return (
             </Button>
           </motion.div>
         </form>
-       <div>{selectedCommittee} --- {deID}</div>
+       
+        
       </div>
     </motion.div>
   );

@@ -3,9 +3,7 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { TiPrinter } from "react-icons/ti";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { format } from 'date-fns';
-
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 interface DepartmentStat {
   deID: string;
@@ -29,7 +27,7 @@ interface Statistics {
 }
 
 interface ApiResponse {
-  records: Record<string, unknown>[];
+  records: any[];
   statistics: Statistics;
 }
 
@@ -108,8 +106,11 @@ export default function StatisticsReportPage() {
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '';
     try {
-      const date = new Date(dateString);
-      return format(date, 'dd-MM-yyyy');
+      return new Date(dateString).toLocaleDateString('ar-EG', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
     } catch {
       return dateString;
     }
@@ -136,6 +137,14 @@ export default function StatisticsReportPage() {
     color: CHART_COLORS[index % CHART_COLORS.length]
   })) || [];
 
+  const barChartData = data?.statistics.departmentBreakdown.map(dept => ({
+    departmentName: dept.departmentName.length > 15 
+      ? dept.departmentName.substring(0, 15) + '...' 
+      : dept.departmentName,
+    fullName: dept.departmentName,
+    count: dept.count,
+    Com: dept.Com
+  })) || [];
 
   if (loading) {
     return (
@@ -240,13 +249,13 @@ export default function StatisticsReportPage() {
           <h3 className="text-xl font-bold text-gray-800 text-center print:text-lg">تفاصيل الإحصائيات بحسب القسم</h3>
         </div>
         
-        {/* Charts Section */}
+        {/* Charts and Legend Section */}
         <div className="p-6 print:p-2 print:break-inside-avoid">
-          {/* Single Pie Chart */}
-          <div className="flex justify-center mb-8 print:mb-4">
-            <div className="text-center print:break-inside-avoid" style={{ width: '400px' }}>
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8 print:grid-cols-2 print:gap-4 print:mb-4">
+            {/* Pie Chart */}
+            <div className="text-center print:break-inside-avoid">
               <h4 className="text-lg font-bold text-gray-700 mb-4 print:text-base print:mb-2">التوزيع النسبي</h4>
-              <ResponsiveContainer width="100%" height={280} className="print:!h-40">
+              <ResponsiveContainer width="100%" height={300} className="print:!h-48">
                 <PieChart>
                   <Pie
                     data={pieChartData}
@@ -254,36 +263,81 @@ export default function StatisticsReportPage() {
                     cy="50%"
                     labelLine={false}
                     label={({ percentage }) => `${percentage}%`}
-                    outerRadius={100}
+                    outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"
-                    className="print:!text-xs"
                   >
                     {pieChartData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
                   <Tooltip 
-                    formatter={(value: number | string) => [String(value), 'عدد الكتب']}
-                    labelFormatter={(label: string) => `القسم: ${label}`}
+                    formatter={(value: any, name: any) => [value, 'عدد الكتب']}
+                    labelFormatter={(label: any) => `القسم: ${label}`}
                   />
                 </PieChart>
               </ResponsiveContainer>
+            </div>
+
+            {/* Bar Chart */}
+            <div className="text-center print:break-inside-avoid">
+              <h4 className="text-lg font-bold text-gray-700 mb-4 print:text-base print:mb-2">التوزيع العددي</h4>
+              <ResponsiveContainer width="100%" height={300} className="print:!h-48">
+                <BarChart data={barChartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="departmentName" 
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                    fontSize={12}
+                    className="print:text-xs"
+                  />
+                  <YAxis className="print:text-xs" />
+                  <Tooltip 
+                    formatter={(value: any) => [value, 'عدد الكتب']}
+                    labelFormatter={(label: any) => {
+                      const fullData = barChartData.find(item => item.departmentName === label);
+                      return `القسم: ${fullData?.fullName || label}`;
+                    }}
+                  />
+                  <Bar dataKey="count" fill="#8884d8" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Color Legend */}
+          <div className="mb-6 print:mb-3 print:break-inside-avoid">
+            <h4 className="text-lg font-bold text-gray-700 mb-3 print:text-base print:mb-2">دليل الألوان:</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 print:grid-cols-3 print:gap-1 print:text-xs">
+              {pieChartData.map((dept, index) => (
+                <div key={index} className="flex items-center gap-2 print:gap-1">
+                  <div 
+                    className="w-4 h-4 rounded print:w-3 print:h-3 border border-gray-400"
+                    style={{ backgroundColor: dept.color }}
+                  ></div>
+                  <span className="text-sm font-medium text-gray-700 truncate print:text-xs">
+                    {dept.name}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
 
         {/* Detailed Statistics Table */}
         <div className="overflow-x-auto print:overflow-visible">
-          <table className="w-full border-collapse print:text-xs">
+          <table className="w-full border-collapse print:text-xs print:table-fixed">
             <thead>
               <tr className="bg-blue-100 print:bg-gray-200">
-                <th className="border border-gray-400 p-3 text-lg font-extrabold text-center print:p-1 print:text-sm w-12">ت</th>
+                <th className="border border-gray-400 p-3 text-lg font-extrabold text-center print:p-1 print:text-sm print:w-8">ت</th>
+                <th className="border border-gray-400 p-3 text-lg font-extrabold text-center print:p-1 print:text-sm print:w-12">اللون</th>
                 <th className="border border-gray-400 p-3 text-lg font-extrabold text-center print:p-1 print:text-sm">اسم القسم</th>
                 <th className="border border-gray-400 p-3 text-lg font-extrabold text-center print:p-1 print:text-sm">الهيئة</th>
-                <th className="border border-gray-400 p-3 text-lg font-extrabold text-center print:p-1 print:text-sm w-20">عدد الكتب</th>
-                <th className="border border-gray-400 p-3 text-lg font-extrabold text-center print:p-1 print:text-sm w-24">النسبة المئوية</th>
-                <th className="border border-gray-400 p-3 text-lg font-extrabold text-center print:p-1 print:text-sm w-32">النسبة حسب اللون</th>
+                <th className="border border-gray-400 p-3 text-lg font-extrabold text-center print:p-1 print:text-sm print:w-16">عدد الكتب</th>
+                <th className="border border-gray-400 p-3 text-lg font-extrabold text-center print:p-1 print:text-sm print:w-20">النسبة المئوية</th>
+                <th className="border border-gray-400 p-3 text-lg font-extrabold text-center print:p-1 print:text-sm">المؤشر المرئي</th>
               </tr>
             </thead>
             <tbody>
@@ -292,15 +346,19 @@ export default function StatisticsReportPage() {
                   <td className="border border-gray-400 p-3 font-serif font-bold print:p-1 print:text-xs">
                     {index + 1}
                   </td>
-                  <td className="border border-gray-400 p-3 font-serif font-bold text-right print:p-1 print:text-xs whitespace-normal break-words leading-tight print:leading-tight">
-                    <div className="max-w-xs print:max-w-none">
-                      {dept.departmentName}
+                  <td className="border border-gray-400 p-3 print:p-1">
+                    <div className="flex justify-center">
+                      <div 
+                        className="w-6 h-6 rounded border border-gray-300 print:w-4 print:h-4"
+                        style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
+                      ></div>
                     </div>
                   </td>
-                  <td className="border border-gray-400 p-3 font-serif font-bold print:p-1 print:text-xs whitespace-normal break-words leading-tight print:leading-tight">
-                    <div className="max-w-xs print:max-w-none">
-                      {dept.Com}
-                    </div>
+                  <td className="border border-gray-400 p-3 font-serif font-bold text-right print:p-1 print:text-xs">
+                    {dept.departmentName}
+                  </td>
+                  <td className="border border-gray-400 p-3 font-serif font-bold print:p-1 print:text-xs">
+                    {dept.Com}
                   </td>
                   <td className="border border-gray-400 p-3 font-serif font-bold text-lg print:p-1 print:text-xs">
                     {dept.count}
@@ -324,7 +382,7 @@ export default function StatisticsReportPage() {
             </tbody>
             <tfoot>
               <tr className="bg-gray-100 font-bold print:bg-gray-200">
-                <td colSpan={3} className="border border-gray-400 p-3 text-center text-lg print:p-1 print:text-xs">
+                <td colSpan={4} className="border border-gray-400 p-3 text-center text-lg print:p-1 print:text-xs">
                   المجموع الكلي
                 </td>
                 <td className="border border-gray-400 p-3 text-center text-lg print:p-1 print:text-xs">
@@ -354,12 +412,7 @@ export default function StatisticsReportPage() {
           }
           
           .recharts-wrapper {
-            page-break-inside: avoid !important;
-            max-height: 200px !important;
-          }
-          
-          .recharts-surface {
-            max-height: 180px !important;
+            page-break-inside: avoid;
           }
           
           table {
@@ -377,25 +430,6 @@ export default function StatisticsReportPage() {
           
           tfoot {
             display: table-footer-group;
-          }
-          
-          /* Force charts to fit on page */
-          @page {
-            size: A4;
-            margin: 1cm;
-          }
-          
-          /* Chart container fixes */
-          .print\\:grid-cols-2 {
-            display: grid !important;
-            grid-template-columns: 1fr 1fr !important;
-            gap: 1rem !important;
-          }
-          
-          /* Prevent chart overflow */
-          .print\\:col-span-1 {
-            overflow: hidden !important;
-            max-width: 100% !important;
           }
         }
       `}</style>

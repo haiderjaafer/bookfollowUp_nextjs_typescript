@@ -15,6 +15,8 @@ export interface BookInsertionType {
     notes: string,
     userID: string ,
     selectedCommittee: number | undefined; // Add for committee selection
-    deID?: number | undefined | null
+    //deID?: number | undefined | null
+    deIDs: number[]; // Changed from deID to deIDs array
+
 
 }

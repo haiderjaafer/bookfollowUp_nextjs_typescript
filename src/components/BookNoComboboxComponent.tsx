@@ -42,7 +42,7 @@ export default function BookNoCombobox({
         //const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/orders/getAll`)
         const res = await fetch(fetchUrl)
         const data: string[] = await res.json()
-       // console.log("data",data)
+        console.log("book no .....",data)
         setBookNo(Array.isArray(data) ? data : [])
       } catch (err) {
         console.error('Failed to fetch orderNos:', err)

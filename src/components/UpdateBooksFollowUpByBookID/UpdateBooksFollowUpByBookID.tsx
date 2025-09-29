@@ -4,7 +4,6 @@ import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
-import { BookInsertionType } from '../../utiles/bookInsertionType';
 import { toast } from 'react-toastify';
 import DropzoneComponent, { DropzoneComponentRef } from '../ReactDropZoneComponont';
 import axios from 'axios';
@@ -25,7 +24,25 @@ import SubjectAutoCompleteComboBox from '../BookInsertionForm/SubjectAutoComplet
 import { JWTPayload } from '@/utiles/verifyToken';
 import CommitteeSelect from '../Company_Structure/CommitteeSelect';
 import { QueryKey, useQueryClient } from '@tanstack/react-query';
-import DepartmentSelect from '../Company_Structure/DepartmentSelect';
+import MultiSelectDepartments from '../Company_Structure/DepartmentSelect';
+
+
+// Updated BookInsertionType interface for multi-department support
+export interface BookInsertionType {
+  bookType: string;
+  bookNo: string;
+  bookDate: string;
+  directoryName: string;
+  selectedCommittee: number | undefined;
+  deIDs: number[]; // Changed from deID to deIDs array
+  incomingNo: string;
+  incomingDate: string;
+  subject: string;
+  bookAction: string;
+  bookStatus: string;
+  notes: string;
+  userID: string;
+}
 
 // Define the response type based on the FastAPI model
 interface PDFResponse {
@@ -36,12 +53,20 @@ interface PDFResponse {
   username: string | null;
 }
 
+interface DepartmentInfo {
+  deID: number;
+  departmentName: string;
+  coID: number;
+  Com: string;
+}
+
 interface BookFollowUpResponse {
   id: number;
   bookType: string | null;
   bookNo: string | null;
   bookDate: string | null;
   directoryName: string | null;
+  junctionID: number | null;
   incomingNo: string | null;
   incomingDate: string | null;
   subject: string | null;
@@ -50,14 +75,21 @@ interface BookFollowUpResponse {
   bookStatus: string | null;
   notes: string | null;
   currentDate: string | null;
-  userID: number | null; // Changed from string to number to match API
+  userID: number | null;
   username: string | null;
   countOfPDFs: number | null;
-  selectedCommittee: number | undefined;
-  deID: number | undefined;
-  coID: number | undefined;
-  Com: string | null; // Committee name
-  departmentName: string | null; // Department name
+  
+  // Primary department info (from junctionID)
+  deID: number | null;
+  departmentName: string | null;
+  coID: number | null;
+  Com: string | null;
+  
+  // Multi-department info
+  all_departments: DepartmentInfo[];
+  department_names: string | null;
+  department_count: number;
+  
   pdfFiles: PDFResponse[];
 }
 
@@ -95,11 +127,9 @@ export default function UpdateBooksFollowUpByBookID({ bookId, payload }: UpdateB
 
   // Updated helper function to handle date fields safely
   const getDateValue = (dateValue: string | null | undefined, useCurrentAsDefault = false) => {
-    // If it's empty/null/undefined, decide what to return
     if (!dateValue || dateValue.trim() === '') {
       return useCurrentAsDefault ? format(new Date(), 'yyyy-MM-dd') : '';
     }
-    // Validate the date format
     try {
       const testDate = new Date(dateValue);
       if (isNaN(testDate.getTime())) {
@@ -114,28 +144,26 @@ export default function UpdateBooksFollowUpByBookID({ bookId, payload }: UpdateB
   // Memoize API base URL
   const API_BASE_URL = useMemo(() => process.env.NEXT_PUBLIC_API_BASE_URL || '', []);
 
- 
-  
-  
   const queryClient = useQueryClient();
   const dropzoneRef = useRef<DropzoneComponentRef>(null);
 
   const [selectedCommittee, setSelectedCommittee] = useState<number | undefined>(undefined);
-  const [deID, setSelectedDepartment] = useState<number | undefined>(undefined);
+  const [selectedDepartments, setSelectedDepartments] = useState<number[]>([]); // Changed to array
   const [comName, setComName] = useState<string | null>(null);
-  const [departmentName, setDepartmentName] = useState<string | null>(null);
+  const [allDepartments, setAllDepartments] = useState<DepartmentInfo[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [pdfFiles, setPdfFiles] = useState<PDFResponse[]>([]);
   const [pdfDialogOpen, setPdfDialogOpen] = useState(false);
-
-  const [bookID,SetboookID] = useState<string>("")
+  const [bookID, SetboookID] = useState<string>("");
 
   // Safe conversion with fallback
   const userID = payload.id?.toString() || '';
 
-console.log("bookID" + bookID);
+  console.log("bookID" + bookID);
+
+  // Updated formData state for multi-department support
   const [formData, setFormData] = useState<BookInsertionType>({
     bookType: '',
     bookNo: '',
@@ -145,44 +173,45 @@ console.log("bookID" + bookID);
     incomingDate: format(new Date(), 'yyyy-MM-dd'),
     subject: '',
     selectedCommittee: undefined,
-    deID:  undefined  ,
+    deIDs: [], // Changed to array
     bookAction: '',
     bookStatus: '',
     notes: '',
     userID: userID,
   });
 
-  // Handle committee change
+  // Handle committee change - Updated
   const handleCommitteeChange = useCallback(
-  (coID: number | undefined) => {
-    console.log('Committee changed:', coID);
-    setSelectedCommittee(coID); // Just use coID directly
-    setSelectedDepartment(undefined); // Reset department when committee changes
-    setFormData((prev) => ({
-      ...prev,
-      selectedCommittee: coID,
-      deID: undefined, // Reset department in form data
-    }));
-    if (coID) {
-      queryClient.invalidateQueries({ queryKey: ['departments', coID] as QueryKey });
-    }
-  },
-  [queryClient]
-);
+    (coID: number | undefined) => {
+      console.log('Committee changed:', coID);
+      setSelectedCommittee(coID);
+      setSelectedDepartments([]); // Reset departments array
+      setFormData((prev) => ({
+        ...prev,
+        selectedCommittee: coID,
+        deIDs: [], // Reset departments in form data
+      }));
+      if (coID) {
+        queryClient.invalidateQueries({ queryKey: ['departments', coID] as QueryKey });
+      }
+    },
+    [queryClient]
+  );
 
-// Update the handleDepartmentChange function:
-const handleDepartmentChange = useCallback(
-  (deID: number | undefined) => {
-    console.log('Department changed:', deID);
-    setSelectedDepartment(deID); // Just use deID directly
-    setFormData((prev) => ({
-      ...prev,
-      deID: deID,
-    }));
-  },
-  []
-);
-  // Fetch book data
+  // Handle departments change - Updated for multi-select
+  const handleDepartmentsChange = useCallback(
+    (deIDs: number[]) => {
+      console.log('Departments changed:', deIDs);
+      setSelectedDepartments(deIDs);
+      setFormData((prev) => ({
+        ...prev,
+        deIDs: deIDs, // Update formData with array
+      }));
+    },
+    []
+  );
+
+  // Fetch book data - Updated for multi-department response
   const fetchBookData = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -190,35 +219,41 @@ const handleDepartmentChange = useCallback(
         `${API_BASE_URL}/api/bookFollowUp/getBookFollowUpByBookID/${bookId}`
       );
       const book = response.data;
+      
       console.log("book coID ...", book.coID);
-      console.log("book departmentName ...", book.departmentName);
-      console.log("book deID ...", book.deID);
-       console.log("book ID mmmmmm", book.id);
+      console.log("book all_departments ...", book.all_departments);
+      console.log("book primary deID ...", book.deID);
+      console.log("book ID", book.id);
 
-         SetboookID(book.id.toString())
+      SetboookID(book.id.toString());
 
+      // Extract department IDs from all_departments
+      const departmentIds = book.all_departments?.map(dept => dept.deID) || [];
+      
+      // Set form data
       setFormData({
-  bookType: book.bookType || '',
-  bookNo: book.bookNo || '',
-  bookDate: getDateValue(book.bookDate, true),
-  directoryName: book.directoryName || '',
-  incomingNo: book.incomingNo || '',
-  incomingDate: getDateValue(book.incomingDate, false),
-  subject: book.subject || '',
-  selectedCommittee: book.coID, // Use coID from API
-  deID: book.deID, // Use deID from API
-  bookAction: book.bookAction || '',
-  bookStatus: book.bookStatus || '',
-  notes: book.notes || '',
-  userID: book.userID?.toString() || '1',
-});
+        bookType: book.bookType || '',
+        bookNo: book.bookNo || '',
+        bookDate: getDateValue(book.bookDate, true),
+        directoryName: book.directoryName || '',
+        incomingNo: book.incomingNo || '',
+        incomingDate: getDateValue(book.incomingDate, false),
+        subject: book.subject || '',
+        selectedCommittee: book.coID || undefined,
+        deIDs: departmentIds, // Set all department IDs
+        bookAction: book.bookAction || '',
+        bookStatus: book.bookStatus || '',
+        notes: book.notes || '',
+        userID: book.userID?.toString() || '1',
+      });
 
-// Set the state variables for the select components
-setSelectedCommittee(book.coID);
-setSelectedDepartment(book.deID);
-setComName(book.Com); // This should now work with your API
-setDepartmentName(book.departmentName); // This should now work with your API
-setPdfFiles(book.pdfFiles || []);
+      // Set the state variables for the select components
+      setSelectedCommittee(book.coID || undefined);
+      setSelectedDepartments(departmentIds);
+      setComName(book.Com);
+      setAllDepartments(book.all_departments || []);
+      setPdfFiles(book.pdfFiles || []);
+      
       setIsLoading(false);
     } catch (error) {
       console.error('Error fetching book data:', error);
@@ -290,8 +325,7 @@ setPdfFiles(book.pdfFiles || []);
   }, []);
 
 
-
-// Updated handleSubmit function - fix the file handling issue
+  // Updated handleSubmit function - Complete working version
 const handleSubmit = useCallback(
   async (e: React.FormEvent) => {
     e.preventDefault();
@@ -299,7 +333,7 @@ const handleSubmit = useCallback(
 
     console.log("form data client", formData);
 
-    // Updated required fields - removed incomingDate from required fields
+    // Required fields validation
     const requiredFields: (keyof BookInsertionType)[] = [
       'bookNo',
       'bookType',
@@ -309,15 +343,7 @@ const handleSubmit = useCallback(
       'bookAction',
       'bookStatus',
       'userID',
-      'deID'
-    ];
-
-    // Optional fields that can be empty
-    const optionalFields: (keyof BookInsertionType)[] = [
-      'incomingNo',
-      'incomingDate',
-      'notes',
-      'selectedCommittee'
+      'deIDs'
     ];
 
     const fieldLabels: Record<keyof BookInsertionType, string> = {
@@ -333,11 +359,18 @@ const handleSubmit = useCallback(
       notes: 'الملاحظات',
       incomingDate: 'تاريخ الوارد',
       selectedCommittee: 'اللجنة',
-      deID: 'القسم',
+      deIDs: 'الأقسام',
     };
 
+    // Validate required fields
     for (const field of requiredFields) {
-      if (!formData[field]) {
+      if (field === 'deIDs') {
+        if (!formData[field] || formData[field].length === 0) {
+          toast.error('يرجى اختيار قسم واحد على الأقل');
+          setIsSubmitting(false);
+          return;
+        }
+      } else if (!formData[field]) {
         const label = fieldLabels[field] || field;
         toast.error(`يرجى ملء حقل ${label}`);
         setIsSubmitting(false);
@@ -345,7 +378,7 @@ const handleSubmit = useCallback(
       }
     }
 
-    // Check if we have a valid file selected
+    // Check if we have a valid file
     const hasValidFile = selectedFile && 
                         selectedFile instanceof File && 
                         selectedFile.size > 0 && 
@@ -362,47 +395,56 @@ const handleSubmit = useCallback(
     try {
       let response;
 
-      console.log('Starting update request...');
-
       if (hasValidFile) {
-        // If we have a file, use FormData (multipart/form-data)
+        // Scenario 1: WITH FILE - Use FormData
+        console.log('📁 Updating WITH file...');
+        
         const formDataToSend = new FormData();
         
-        // Append form fields
+        // Map form fields to backend expectations
         Object.entries(formData).forEach(([key, value]) => {
-          if (key === 'incomingDate' || key === 'bookDate') {
+          if (key === 'selectedCommittee') {
+            // Map to coID for backend
+            if (value) {
+              formDataToSend.append('coID', value.toString());
+            }
+          } else if (key === 'deIDs') {
+            // Convert array to comma-separated string
+            formDataToSend.append('deIDs', (value as number[]).join(','));
+          } else if (key === 'userID') {
+            formDataToSend.append('userID', value.toString());
+          } else if (key === 'incomingDate' || key === 'bookDate') {
+            // Handle dates properly
             if (value && value.trim() !== '') {
               formDataToSend.append(key, value);
             }
           } else {
-            if (value || optionalFields.includes(key as keyof BookInsertionType)) {
-              formDataToSend.append(key, value?.toString() || '');
+            if (value !== undefined && value !== null && value !== '') {
+              formDataToSend.append(key, value.toString());
             }
           }
         });
         
-        // Append the file and username
+        // Add file and username
         formDataToSend.append('file', selectedFile);
         formDataToSend.append('username', payload.username);
-        
-        if (formData.userID) {
-          formDataToSend.append('userID', userID);
-        }
 
-        console.log('Sending with file - FormData entries:');
+        console.log('FormData entries:');
         for (const [key, value] of formDataToSend.entries()) {
-          console.log(key, value);
+          console.log(key, ':', value);
         }
 
         response = await axios.patch(
           `${API_BASE_URL}/api/bookFollowUp/${bookId}`,
           formDataToSend
-          // Don't set Content-Type manually for FormData, let axios handle it
         );
 
         console.log('FormData response:', response.status, response.data);
+        
       } else {
-        // If no file, try JSON endpoint first, fallback to FormData
+        // Scenario 2: WITHOUT FILE - Use JSON
+        console.log('📄 Updating WITHOUT file...');
+        
         const jsonData = {
           bookNo: formData.bookNo,
           bookType: formData.bookType,
@@ -415,71 +457,61 @@ const handleSubmit = useCallback(
           bookStatus: formData.bookStatus,
           notes: formData.notes || null,
           userID: parseInt(userID),
-          selectedCommittee: formData.selectedCommittee || null,
-          deID: formData.deID || null,
+          coID: formData.selectedCommittee || null,  // Map selectedCommittee to coID
+          deIDs: formData.deIDs.join(','), // Convert array to comma-separated string
         };
 
-        console.log('Sending without file - JSON data:', jsonData);
+        console.log('JSON data:', jsonData);
 
-        try {
-          // Try JSON endpoint first
-          response = await axios.patch(
-            `${API_BASE_URL}/api/bookFollowUp/${bookId}/json`,
-            jsonData,
-            {
-              headers: {
-                'Content-Type': 'application/json',
-              },
-            }
-          );
-          console.log('JSON response:', response.status, response.data);
-        } catch (jsonError) {
-          console.log('JSON endpoint failed, trying FormData approach:', jsonError);
-          
-          // Fallback to FormData approach
-          const formDataToSend = new FormData();
-          Object.entries(jsonData).forEach(([key, value]) => {
-            if (value !== null && value !== undefined) {
-              formDataToSend.append(key, value.toString());
-            }
-          });
+        response = await axios.patch(
+          `${API_BASE_URL}/api/bookFollowUp/${bookId}/json`,
+          jsonData,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
 
-          response = await axios.patch(
-            `${API_BASE_URL}/api/bookFollowUp/${bookId}`,
-            formDataToSend
-          );
-          console.log('FormData fallback response:', response.status, response.data);
-        }
+        console.log('JSON response:', response.status, response.data);
       }
 
-      console.log('Update request completed with status:', response.status);
-
+      // Handle success for BOTH scenarios - SIMPLIFIED VERSION
+      console.log('Final response status:', response.status);
+      
       if (response.status === 200 || response.status === 201) {
+        console.log('✅ About to show success toast...');
+        
+        // Show success message IMMEDIATELY - no other operations first
         toast.success('تم تعديل الكتاب بنجاح!');
         
-        // Refresh the book data after successful update
-        // try {
-        //   await fetchBookData();
-        // } catch (refreshError) {
-        //   console.warn('Failed to refresh book data:', refreshError);
-        //   // Don't fail the whole operation if refresh fails
-        // }
+        console.log('✅ Success toast called');
+        console.log('Response data:', response.data);
         
-        // Only reset file-related state, keep form data as is
-        setSelectedFile(null);
-        if (dropzoneRef.current) {
-          dropzoneRef.current.reset(true);
+        // Reset file-related state only if file was uploaded
+        if (hasValidFile) {
+          setSelectedFile(null);
+          if (dropzoneRef.current) {
+            dropzoneRef.current.reset(true);
+          }
+          console.log('🗑️ File state reset');
         }
+        
+        // DO NOT refresh data automatically - remove the problematic fetchBookData call
+        // User can manually refresh the page if they want to see updates
+        console.log('✅ Update completed successfully');
+        
       } else {
+        console.log('❌ Unexpected status:', response.status);
         throw new Error(`Unexpected response status: ${response.status}`);
       }
+
     } catch (error) {
-      console.error('Error updating book:', error);
+      console.error('❌ Error updating book:', error);
       
       let message = 'فشل في تحديث الكتاب. يرجى المحاولة مرة أخرى';
 
       if (axios.isAxiosError(error)) {
-        // Better error handling
         if (error.response?.data) {
           console.error('Server error response:', error.response.data);
           
@@ -489,8 +521,6 @@ const handleSubmit = useCallback(
             message += `: ${error.response.data.detail}`;
           } else if (error.response.data.message) {
             message += `: ${error.response.data.message}`;
-          } else {
-            message += `: ${JSON.stringify(error.response.data)}`;
           }
         } else if (error.message) {
           message += `: ${error.message}`;
@@ -508,10 +538,7 @@ const handleSubmit = useCallback(
 );
 
 
-
-
-
-
+  // Render PDFs function
   const renderPDFs = useMemo(() => {
     if (pdfFiles.length === 0) {
       return (
@@ -600,7 +627,23 @@ const handleSubmit = useCallback(
     );
   }, [pdfFiles, pdfDialogOpen, API_BASE_URL]);
 
-  // NOW we can do conditional rendering AFTER all hooks are called
+  // Show department summary
+  const departmentSummary = useMemo(() => {
+    if (allDepartments.length === 0) return null;
+    
+    return (
+      <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+        <p className="text-sm font-arabic text-blue-800 mb-1">
+          الأقسام المرتبطة بالكتاب ({allDepartments.length}):
+        </p>
+        <p className="text-sm font-arabic text-blue-600">
+          {allDepartments.map(dept => dept.departmentName).join(', ')}
+        </p>
+      </div>
+    );
+  }, [allDepartments]);
+
+  // Loading and error states
   if (!userID) {
     return <div>Error: Invalid user data...{userID}</div>;
   }
@@ -613,8 +656,6 @@ const handleSubmit = useCallback(
     );
   }
 
-  console.log("bookID" + bookId);
-
   return (
     <motion.div
       className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-sky-50/50 py-4 sm:py-6 md:py-8 lg:py-12"
@@ -626,6 +667,10 @@ const handleSubmit = useCallback(
         <h1 className="text-2xl sm:text-3xl md:text-3xl lg:text-3xl font-bold font-arabic text-center text-sky-600 mb-6 sm:mb-8 item-center">
           تحديث الكتاب رقم <strong className='text-green-500'>{formData.bookNo}</strong>
         </h1>
+        
+        {/* Show current department summary */}
+        {departmentSummary}
+        
         <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8" noValidate>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Book Type */}
@@ -659,11 +704,11 @@ const handleSubmit = useCallback(
               >
                 تاريخ الكتاب
               </label>
-            <ArabicDatePicker
-  selected={formData.bookDate}
-  onChange={(date) => handleDateChange('bookDate', date)}
-  allowEmpty={false} // Don't allow empty dates
-/>
+              <ArabicDatePicker
+                selected={formData.bookDate}
+                onChange={(date) => handleDateChange('bookDate', date)}
+                allowEmpty={false}
+              />
             </motion.div>
 
             {/* Book Number */}
@@ -726,11 +771,11 @@ const handleSubmit = useCallback(
               >
                 تاريخ الوارد
               </label>
-             <ArabicDatePicker
-  selected={formData.incomingDate}
-  onChange={(date) => handleDateChange('incomingDate', date)}
-  allowEmpty={true} // Explicitly allow empty dates
-/>
+              <ArabicDatePicker
+                selected={formData.incomingDate}
+                onChange={(date) => handleDateChange('incomingDate', date)}
+                allowEmpty={true}
+              />
             </motion.div>
 
             {/* Subject */}
@@ -742,7 +787,6 @@ const handleSubmit = useCallback(
                 الموضوع
               </label>
               <SubjectAutoCompleteComboBox
-                 
                 value={formData.subject}
                 onChange={(val) => setFormData((prev) => ({ ...prev, subject: val }))}
                 fetchUrl={`${API_BASE_URL}/api/bookFollowUp/getSubjects`}
@@ -765,20 +809,19 @@ const handleSubmit = useCallback(
               />
             </motion.div>
 
-            {/* Department */}
-            <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-1">
+            {/* Multi-Select Departments */}
+            <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-2">
               <label
-                htmlFor="department"
+                htmlFor="departments"
                 className="block text-sm font-extrabold text-gray-700 mb-1 lg:text-right text-center"
               >
-                القسم
+                الأقسام
               </label>
-              <DepartmentSelect
+              <MultiSelectDepartments
                 coID={selectedCommittee}
-                value={deID}
-                onChange={handleDepartmentChange}
+                value={selectedDepartments}
+                onChange={handleDepartmentsChange}
                 className="w-full"
-                departmentName={departmentName}
               />
             </motion.div>
 
@@ -829,7 +872,7 @@ const handleSubmit = useCallback(
                 name="notes"
                 value={formData.notes}
                 onChange={handleChange}
-                className="w-full px-4  border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-300 focus:border-gray-300 transition-all duration-200 font-arabic text-right resize-y text-sm leading-6 placeholder:text-center placeholder:font-extrabold placeholder:text-gray-300 placeholder:italic"
+                className="w-full px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-300 focus:border-gray-300 transition-all duration-200 font-arabic text-right resize-y text-sm leading-6 placeholder:text-center placeholder:font-extrabold placeholder:text-gray-300 placeholder:italic"
                 rows={4}
               />
             </motion.div>
@@ -846,7 +889,7 @@ const handleSubmit = useCallback(
               onFileRemoved={handleFileRemoved}
               onBookPdfLoaded={handleBookPdfLoaded} 
               username={payload.username}           
-               />
+            />
           </motion.div>
 
           {/* Display PDFs */}
@@ -867,11 +910,14 @@ const handleSubmit = useCallback(
             </Button>
           </motion.div>
 
-          <p>
-            {/* {departmentName ?? 'None'} : department name   ------  {comName ?? 'None'}  : Selected Committee  */}
-            {/* {deID ?? 'None'} : department name   ------  
-            { selectedCommittee?? 'None'}  : COID  */}
-      </p>
+          {/* Debug Info - Remove in production */}
+          <div className="mt-4 p-3 bg-gray-50 rounded-lg text-sm">
+            <p className="font-arabic text-gray-600">
+              اللجنة المحددة: {selectedCommittee || 'غير محدد'} | 
+              الأقسام المحددة: {selectedDepartments.length} | 
+              أسماء الأقسام: {allDepartments.filter(d => selectedDepartments.includes(d.deID)).map(d => d.departmentName).join(', ') || 'لا توجد'}
+            </p>
+          </div>
         </form>
       </div>
     </motion.div>

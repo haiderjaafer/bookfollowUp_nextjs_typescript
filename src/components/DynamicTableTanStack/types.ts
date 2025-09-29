@@ -68,7 +68,10 @@ export const orderHeaderMap: HeaderMap = {
   currentDate: "تأريخ الادخال",
   countOfLateBooks: "عدد الايام المتأخرة",
   Com: "الهيأة",
-  departmentName: "القسم"
+  departmentName: "القسم",
+  all_departments:"كل الاقسام",
+  department_names:"متابعة الاقسام",
+  department_count:"عدد الاقسام"
 };
 
 export interface PDFRecord {
