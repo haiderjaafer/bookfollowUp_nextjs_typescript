@@ -2,7 +2,7 @@ import { BookStatusOption, ReportTypeOption } from "./types";
 
 // Report type options for first select
 export const REPORT_TYPE_OPTIONS: ReportTypeOption[] = [
-  { label: "تقرير حالة الكتاب", value: "book_status_report" },
+  { label: "تقرير الكتب", value: "book_status_report" },
   { label: "تقرير الإحصائيات", value: "statistics_report" }
 ];
 

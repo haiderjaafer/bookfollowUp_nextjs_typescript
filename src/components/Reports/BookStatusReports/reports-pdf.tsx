@@ -89,8 +89,8 @@ export default function PrintReportPage() {
         .col-incoming { width: 5% !important; }
         .col-incomingdate { width: 8% !important; }
         .col-subject { width: 15% !important; }
-        .col-action { width: 15% !important; }
-        .col-notes { width: 15% !important; }
+        .col-action { width: 10% !important; }
+        .col-notes { width: 10% !important; }
         .col-committee { width: 13% !important; }
         .col-departments { width: 17% !important; }
       }
@@ -137,17 +137,33 @@ export default function PrintReportPage() {
   const cancelPrint = () => window.close();
 
   return (
-    <div dir="rtl" className={`${styles.container} w-full pt-6 px-4 pb-4 font-sans bg-white print:p-2`}>
+    <div dir="rtl" className={`${styles.container} w-full pt-10 px-4 pb-4 font-sans bg-white print:p-2`}>
+      
+      {/* Buttons on top */}
+          <div className="flex justify-end gap-2 mb-6 print:hidden ">
+            <button onClick={handlePrint} className="bg-red-700 flex items-center gap-x-1 text-white font-extrabold px-3 py-2 rounded-lg hover:bg-red-500 shadow-md text-sm">
+              <TiPrinter size={22}/> طباعة  
+            </button>
+            <button onClick={cancelPrint} className="bg-red-700 text-white font-extrabold px-3 py-2 rounded-lg hover:bg-red-500 shadow-md text-sm">
+              الغاء
+            </button>
+          </div>
+      
       {/* Header Section */}
-      <div className="flex items-start justify-between mb-4 w-full print:mb-2">
+      <div className="flex items-start justify-between mb-3 w-full print:mb-2">
+
+        
         {/* Right: Department Title */}
         <div className="w-1/3 text-right pt-3">
-          <h1 className="text-lg font-serif font-bold text-gray-800 print:text-sm">شعبة المتابعة</h1>
+          <h1 className="text-2xl font-extrabold font-serif  text-gray-800 print:text-sm">شعبة المتابعة</h1>
         </div>
+
+        
         
         {/* Center: Report Title */}
         <div className="w-1/3 text-center pt-3">
-          <h1 className="text-lg font-serif font-bold text-gray-800 print:text-sm">
+        
+          <h1 className="text-2xl font-extrabold font-serif font-bold text-gray-800 print:text-sm">
             تقرير الكتب
             {bookType && ` - ${bookType}`}
             {bookStatus && bookStatus !== "منجز" && ` - ${bookStatus}`}
@@ -161,19 +177,14 @@ export default function PrintReportPage() {
         </div>
 
         {/* Left: Logo and Buttons */}
-        <div className="w-1/3 flex flex-col items-start gap-2">
-          {/* Buttons on top */}
-          <div className="flex gap-2 print:hidden">
-            <button onClick={handlePrint} className="bg-red-700 flex items-center gap-x-1 text-white font-extrabold px-3 py-2 rounded-lg hover:bg-red-500 shadow-md text-sm">
-              <TiPrinter size={22}/> طباعة  
-            </button>
-            <button onClick={cancelPrint} className="bg-red-700 text-white font-extrabold px-3 py-2 rounded-lg hover:bg-red-500 shadow-md text-sm">
-              الغاء
-            </button>
-          </div>
-          
+        <div className="w-1/3 flex flex-col items-end gap-2">
+         
           {/* Logo below buttons */}
           <Image src="/slogan.gif" alt="Logo" width={60} height={60} className="print:w-12 print:h-12" />
+         
+          
+          
+         
         </div>
       </div>
 
@@ -186,33 +197,33 @@ export default function PrintReportPage() {
           <table className="print-table w-full border-collapse border border-gray-400">
             <thead>
               <tr className="bg-blue-100">
-                <th className="col-serial border border-gray-400 p-2 text-center font-extrabold">ت</th>
-                <th className="col-bookno border border-gray-400 p-2 text-center font-extrabold">رقم الكتاب</th>
-                <th className="col-bookdate border border-gray-400 p-2 text-center font-extrabold">تاريخ الكتاب</th>
-                <th className="col-incoming border border-gray-400 p-2 text-center font-extrabold">الوارد</th>
-                <th className="col-incomingdate border border-gray-400 p-2 text-center font-extrabold">تاريخ الوارد</th>
-                <th className="col-subject border border-gray-400 p-2 text-center font-extrabold">الموضوع</th>
-                <th className="col-action border border-gray-400 p-2 text-center font-extrabold">الإجراء</th>
-                <th className="col-notes border border-gray-400 p-2 text-center font-extrabold">الملاحظات</th>
-                <th className="col-committee border border-gray-400 p-2 text-center font-extrabold">الهيأة</th>
-                <th className="col-departments border border-gray-400 p-2 text-center font-extrabold">الأقسام</th>
+                <th className="col-serial border border-gray-400 p-2 text-[18px] text-center font-extrabold">ت</th>
+                <th className="col-bookno border border-gray-400 p-2 text-[18px]  text-center font-extrabold">رقم الكتاب</th>
+                <th className="col-bookdate border border-gray-400 p-2 text-[18px] text-center font-extrabold">تاريخ الكتاب</th>
+                <th className="col-incoming border border-gray-400 p-2 text-[18px] text-center font-extrabold">الوارد</th>
+                <th className="col-incomingdate border border-gray-400 p-2 text-[18px] text-center font-extrabold">تاريخ الوارد</th>
+                <th className="col-subject border border-gray-400 p-2 text-[18px] text-center font-extrabold">الموضوع</th>
+                <th className="col-action border border-gray-400 p-2 text-[18px] text-center font-extrabold">الإجراء</th>
+                <th className="col-notes border border-gray-400 p-2 text-[18px] text-center font-extrabold">الملاحظات</th>
+                <th className="col-committee border border-gray-400 p-2 text-[18px] text-center font-extrabold">الهيأة</th>
+                <th className="col-departments border border-gray-400 p-2 text-[18px] text-center font-extrabold">الأقسام</th>
               </tr>
             </thead>
             <tbody>
               {data.map((item, index) => (
                 <tr key={item.id} className="even:bg-gray-50">
-                  <td className="border border-gray-400 p-2 text-center font-serif font-bold">{index + 1}</td>
-                  <td className="border border-gray-400 p-2 text-center font-serif font-bold break-words">{item.bookNo}</td>
-                  <td className="border border-gray-400 p-2 text-center font-serif font-bold whitespace-nowrap">{item.bookDate}</td>
-                  <td className="border border-gray-400 p-2 text-center font-serif font-bold">{item.incomingNo || '-'}</td>
-                  <td className="border border-gray-400 p-2 text-center font-serif font-bold whitespace-nowrap">{item.incomingDate}</td>
-                  <td className="border border-gray-400 p-2 text-right font-serif font-bold break-words">{item.subject}</td>
-                  <td className="border border-gray-400 p-2 text-right font-serif font-bold break-words">{item.bookAction}</td>
-                  <td className="border border-gray-400 p-2 text-right font-serif font-bold break-words align-top whitespace-pre-wrap">
+                  <td className="border border-gray-400 p-2 text-[14px] text-center font-serif font-bold">{index + 1}</td>
+                  <td className="border border-gray-400 p-2 text-[14px] text-center font-serif font-bold break-words">{item.bookNo}</td>
+                  <td className="border border-gray-400 p-2 text-[14px] text-center font-serif font-bold whitespace-nowrap">{item.bookDate}</td>
+                  <td className="border border-gray-400 p-2 text-[14px] text-center font-serif font-bold">{item.incomingNo || '-'}</td>
+                  <td className="border border-gray-400 p-2 text-[14px] text-center font-serif font-bold whitespace-nowrap">{item.incomingDate}</td>
+                  <td className="border border-gray-400 p-2 text-[14px] text-right font-serif font-bold break-words">{item.subject}</td>
+                  <td className="border border-gray-400 p-2 text-[14px] text-right font-serif font-bold break-words">{item.bookAction}</td>
+                  <td className="border border-gray-400 p-2 text-[14px] text-right font-serif font-bold break-words align-top whitespace-pre-wrap">
                     {item.notes}
                   </td>
-                  <td className="border border-gray-400 p-2 text-right font-serif font-bold break-words">{item.Com}</td>
-                  <td className="border border-gray-400 p-2 text-right font-serif font-bold break-words align-top">
+                  <td className="border border-gray-400 p-2 text-[14px] text-right font-serif font-bold break-words">{item.Com}</td>
+                  <td className="border border-gray-400 p-2 text-[14px] text-right font-serif font-bold break-words align-top">
                     {item.department_count && item.department_count > 1 ? (
                       <div className="leading-tight space-y-0.5">
                         {item.all_departments?.map((dept, idx) => (

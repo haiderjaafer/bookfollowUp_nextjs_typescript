@@ -56,7 +56,7 @@ const NAV_ITEMS: NavItem[] = [
       {
         title: 'تقرير الكتب',
         href: '/report_all',
-        description: 'تقرير الكتب المنجزة وقيد الانجاز حسب تأريخ الادخال',
+        description: 'تقرير الكتب وتقرير الاحصائية حسب تأريخ الادخال',
       },
 
       
