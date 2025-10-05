@@ -59,6 +59,12 @@ const NAV_ITEMS: NavItem[] = [
         description: 'تقرير الكتب وتقرير الاحصائية حسب تأريخ الادخال',
       },
 
+       {
+        title: 'تقرير الاقسام',
+        href: '/reportByCommitteeAndDepartment',
+        description: 'تقرير الكتب حسب الهيأة والقسم ',
+      },
+
       
     ],
   },

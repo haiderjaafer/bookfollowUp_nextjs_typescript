@@ -1,19 +1,19 @@
-import ReportForm from '@/components/Reports/BookStatusReports/ReportFormSelections';
+import ReportFormByCommitteeAndDepartment from '@/components/Reports/ReportByCommitteeAndDepartmentComponent/ReportByCommitteeAndDepartmentComponent';
 import { Metadata } from 'next';
 import { TbReportSearch } from "react-icons/tb";
 import { LuPrinterCheck } from "react-icons/lu";
 
 export const metadata: Metadata = {
-  title: 'تقرير الكتب | نظام إدارة الكتب',
-  description: 'إنشاء تقارير مفصلة حول حالة الكتب والمراسلات',
+  title: 'تقرير الكتب   حسب الهيأة والقسم',
+  description: 'إنشاء تقارير مفصلة حول حالة الكتب ',
 };
 
 // Server component that handles the page layout and metadata
-export default function ReportAllPage() {
+export default function ReportFormByCommitteeAndDepartmentPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-     
-      <div className="container mx-auto p-6 max-w-2xl ">
+    <div className="mt-4">
+
+              <div className="container mx-auto p-6 max-w-2xl ">
        
         <div className="bg-white rounded-lg shadow-md p-6 ">
 
@@ -25,13 +25,15 @@ export default function ReportAllPage() {
     <h1 className="text-2xl font-extrabold mb-6 text-gray-800 text-center ">
             تقارير النظام
           </h1>
-          
-          
-          {/* Client component for interactive form */}
-          <ReportForm />
+
+  <ReportFormByCommitteeAndDepartment />    
+ </div>
+ 
+  </div>
+         
         </div>
-      </div>
-    </div>
+     
+    
   );
 }
 
