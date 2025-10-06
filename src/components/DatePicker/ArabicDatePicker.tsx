@@ -18,45 +18,41 @@ interface ArabicDatePickerProps {
   selected: string;
   onChange: (date: string) => void;
   label?: string;
-  allowEmpty?: boolean; // New prop to control empty date behavior
+  allowEmpty?: boolean;
+  disabled?: boolean; // Add disabled prop
 }
 
 export default function ArabicDatePicker({
   selected,
   onChange,
-  allowEmpty = true, // Default to allowing empty dates
+  allowEmpty = true,
+  disabled = false, // Default to false
 }: ArabicDatePickerProps) {
   const [date, setDate] = useState<Date | null>(null);
   
-  // Use ref to store the onChange function to avoid dependency issues
   const onChangeRef = useRef(onChange);
   const previousValueRef = useRef<string>('');
   const selectedRef = useRef<string>('');
 
-  // Update the ref when onChange changes
   useEffect(() => {
     onChangeRef.current = onChange;
   }, [onChange]);
 
-  // FIXED: Initialize and sync with selected prop, handling empty values properly
   useEffect(() => {
     if (selected !== selectedRef.current) {
       selectedRef.current = selected;
       
-      // Handle empty/null values based on allowEmpty prop
       if (!selected || selected.trim() === '') {
         setDate(null);
       } else {
         try {
           const newDate = new Date(selected);
-          // Check if the date is valid
           if (!isNaN(newDate.getTime())) {
             setDate(newDate);
           } else {
             setDate(null);
           }
         } catch (error) {
-          console.warn('Invalid date format:', error);
           console.warn('Invalid date format:', selected);
           setDate(null);
         }
@@ -64,11 +60,9 @@ export default function ArabicDatePicker({
     }
   }, [selected, allowEmpty]);
 
-  // Handle date changes and call onChange
   useEffect(() => {
     const newValue = date ? format(date, 'yyyy-MM-dd') : '';
     
-    // Only call onChange if the value actually changed AND it's different from the selected prop
     if (newValue !== previousValueRef.current && newValue !== selectedRef.current) {
       previousValueRef.current = newValue;
       selectedRef.current = newValue;
@@ -76,10 +70,11 @@ export default function ArabicDatePicker({
     }
   }, [date]);
 
-  // Memoized change handler to prevent unnecessary re-renders
   const handleDateChange = useCallback((newDate: Date | null) => {
-    setDate(newDate);
-  }, []);
+    if (!disabled) {
+      setDate(newDate);
+    }
+  }, [disabled]);
 
   return (
     <div className="mb-4" dir="rtl">
@@ -89,21 +84,34 @@ export default function ArabicDatePicker({
           onChange={handleDateChange}
           locale="ar"
           dateFormat="yyyy-MM-dd"
-          placeholderText="اختر التاريخ"
-          className="w-full h-12 p-2 pr-10 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+          placeholderText={disabled ? "" : "اختر التاريخ"}
+          className={`w-full h-12 p-2 pr-10 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 ${
+            disabled ? 'bg-gray-100 cursor-not-allowed opacity-60' : ''
+          }`}
           calendarStartDay={6}
-          isClearable
+          isClearable={!disabled}
           showPopperArrow={false}
           popperPlacement="bottom-end"
+          disabled={disabled} // Pass disabled to DatePicker
           renderCustomHeader={({ date, decreaseMonth, increaseMonth }) => (
             <div className="flex justify-between items-center px-2 py-1 bg-gray-100 text-sm font-bold text-gray-700">
-              <button type="button" onClick={decreaseMonth} className="px-2 py-1 hover:text-red-600">
+              <button 
+                type="button" 
+                onClick={decreaseMonth} 
+                className="px-2 py-1 hover:text-red-600"
+                disabled={disabled}
+              >
                 ◀
               </button>
               <span>
                 {iraqiArabicMonths[date.getMonth()]} {date.getFullYear()}
               </span>
-              <button type="button" onClick={increaseMonth} className="px-2 py-1 hover:text-green-600">
+              <button 
+                type="button" 
+                onClick={increaseMonth} 
+                className="px-2 py-1 hover:text-green-600"
+                disabled={disabled}
+              >
                 ▶
               </button>
             </div>

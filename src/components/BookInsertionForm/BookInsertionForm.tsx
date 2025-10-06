@@ -14,10 +14,8 @@ import ArabicDatePicker from '../DatePicker/ArabicDatePicker';
 import BookActionInput from './bookActionDialogInput/bookActionInput';
 import { JWTPayload } from '@/utiles/verifyToken';
 import CommitteeSelect from '../Company_Structure/CommitteeSelect';
-import DepartmentSelect from '../Company_Structure/DepartmentSelect';
-import { QueryKey, useQueryClient } from '@tanstack/react-query';
 import MultiSelectDepartments from '../Company_Structure/DepartmentSelect';
-
+import { QueryKey, useQueryClient } from '@tanstack/react-query';
 
 // Animation variants
 const formVariants = {
@@ -40,26 +38,18 @@ const inputVariants = {
 
 interface BookInsertionFormProps {
   payload: JWTPayload;
-  id: string | number; // or whatever type the id should be
+  id: string | number;
 }
 
-// Move all hooks to the top, before any conditional logic
-// Define the component with correct props type
-
 export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
-  // All hooks must be called at the top level, before any conditions
   const queryClient = useQueryClient();
   const dropzoneRef = useRef<DropzoneComponentRef>(null);
   
   const userID = payload.id?.toString() || '';
   const API_BASE_URL = useMemo(() => process.env.NEXT_PUBLIC_API_BASE_URL || '', []);
 
-   const [selectedCommittee, setSelectedCommittee] = useState<number | undefined>(undefined);
-  // const [deID, setSelectedDepartment] = useState<number | undefined>(undefined);
-
-  //const [selectedCommittee, setSelectedCommittee] = useState<number | undefined>(undefined);
-  const [selectedDepartments, setSelectedDepartments] = useState<number[]>([]); // Changed to array
-
+  const [selectedCommittee, setSelectedCommittee] = useState<number | undefined>(undefined);
+  const [selectedDepartments, setSelectedDepartments] = useState<number[]>([]);
 
   // State for form fields
   const [formData, setFormData] = useState<BookInsertionType>({
@@ -68,9 +58,7 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
     bookDate: format(new Date(), 'yyyy-MM-dd'),
     directoryName: '',
     selectedCommittee: undefined,
-    // deID: undefined,
-    deIDs: [], // Changed to array
-
+    deIDs: [],
     incomingNo: '',
     incomingDate: format(new Date(), 'yyyy-MM-dd'),
     subject: '',
@@ -80,22 +68,21 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
     userID: userID,
   });
 
-  // State for selected file
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
+  // Check if book type is SECRET
+  const isSecretBook = formData.bookType === 'سري';
 
   // Handle committee change
- // Handle committee change - Updated
   const handleCommitteeChange = useCallback(
     (coID: number | undefined) => {
-      console.log('Committee changed:', coID);
       setSelectedCommittee(coID);
-      setSelectedDepartments([]); // Reset departments array
+      setSelectedDepartments([]);
       setFormData((prev) => ({
         ...prev,
         selectedCommittee: coID,
-        deIDs: [], // Reset departments in formData
+        deIDs: [],
       }));
       if (coID) {
         queryClient.invalidateQueries({ queryKey: ['departments', coID] as QueryKey });
@@ -104,20 +91,16 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
     [queryClient]
   );
 
-    // Handle departments change - Updated
-  const handleDepartmentsChange = useCallback(
-    (deIDs: number[]) => {
-      console.log('Departments changed:', deIDs);
-      setSelectedDepartments(deIDs);
-      setFormData((prev) => ({
-        ...prev,
-        deIDs: deIDs, // Update formData with array
-      }));
-    },
-    []
-  );
+  // Handle departments change
+  const handleDepartmentsChange = useCallback((deIDs: number[]) => {
+    setSelectedDepartments(deIDs);
+    setFormData((prev) => ({
+      ...prev,
+      deIDs: deIDs,
+    }));
+  }, []);
 
-  // Check if book exists - FIXED: Added useCallback with proper dependencies
+  // Check if book exists
   const checkBookExists = useCallback(
     async (bookType: string, bookNo: string, bookDate: string) => {
       if (!bookType || !bookNo || !bookDate) return;
@@ -134,33 +117,38 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
         console.error('Error checking book existence:', error);
       }
     },
-    [API_BASE_URL] // FIXED: Added dependency
+    [API_BASE_URL]
   );
 
-  // FIXED: Create debounced function with useRef to prevent recreation
   const debouncedCheckBookExistsRef = useRef<NodeJS.Timeout | null>(null);
 
-  // FIXED: Simplified useEffect with manual debouncing
   useEffect(() => {
-    // Clear previous timeout
     if (debouncedCheckBookExistsRef.current) {
       clearTimeout(debouncedCheckBookExistsRef.current);
     }
 
     if (formData.bookNo && formData.bookType && formData.bookDate) {
-      // Set new timeout
       debouncedCheckBookExistsRef.current = setTimeout(() => {
         checkBookExists(formData.bookType, formData.bookNo, formData.bookDate);
       }, 500);
     }
     
-    // Cleanup function
     return () => {
       if (debouncedCheckBookExistsRef.current) {
         clearTimeout(debouncedCheckBookExistsRef.current);
       }
     };
   }, [formData.bookNo, formData.bookType, formData.bookDate, checkBookExists]);
+
+  // Clear incomingDate when bookType changes to SECRET
+  useEffect(() => {
+    if (isSecretBook) {
+      setFormData((prev) => ({
+        ...prev,
+        incomingDate: '',
+      }));
+    }
+  }, [isSecretBook]);
 
   // Handle text input and select changes
   const handleChange = useCallback(
@@ -190,7 +178,6 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
   const handleFilesAccepted = useCallback((files: File[]) => {
     if (files.length > 0) {
       const file = files[0];
-      // Validate file type and size
       if (file.type !== 'application/pdf') {
         toast.error('يرجى تحميل ملف PDF صالح');
         return;
@@ -204,15 +191,12 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
     }
   }, []);
 
-  // Handle file removal
   const handleFileRemoved = useCallback((fileName: string) => {
     setSelectedFile(null);
     toast.info(`تم إزالة الملف ${fileName}`);
   }, []);
 
-  // Handle book PDF loading result
   const handleBookPdfLoaded = useCallback((success: boolean, file?: File) => {
-    console.log(`📄 Book PDF loaded: ${success ? 'SUCCESS' : 'FAILED'}`);
     if (success && file) {
       setSelectedFile(file);
     } else {
@@ -236,8 +220,7 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
         'bookAction',
         'bookStatus',
         'userID',
-        // 'deID'
-         'deIDs' // Changed from deID to deIDs
+        'deIDs'
       ];
 
       const fieldLabels: Record<keyof BookInsertionType, string> = {
@@ -253,14 +236,11 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
         notes: 'الملاحظات',
         incomingDate: 'تاريخ الوارد',
         selectedCommittee: 'اللجنة',
-        // deID: 'القسم',
-        deIDs: 'الأقسام', // Updated label
-
+        deIDs: 'الأقسام',
       };
 
       for (const field of requiredFields) {
         if (field === 'deIDs') {
-          // Special validation for departments array
           if (!formData[field] || formData[field].length === 0) {
             toast.error('يرجى اختيار قسم واحد على الأقل');
             setIsSubmitting(false);
@@ -274,7 +254,13 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
         }
       }
 
-      // Validate file
+      // Validate incomingDate for non-secret books
+      if (!isSecretBook && !formData.incomingDate) {
+        toast.error('يرجى ملء حقل تاريخ الوارد');
+        setIsSubmitting(false);
+        return;
+      }
+
       if (!selectedFile) {
         toast.error('يرجى تحميل ملف PDF');
         setIsSubmitting(false);
@@ -283,27 +269,31 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
 
       // Create FormData for submission
       const formDataToSend = new FormData();
-     // Handle departments as comma-separated string for backend
-   Object.entries(formData).forEach(([key, value]) => {
+      
+      // In handleSubmit, update FormData creation:
+Object.entries(formData).forEach(([key, value]) => {
   if (key === 'selectedCommittee') {
-    // Map to backend field name
     formDataToSend.append('coID', value.toString());
   } else if (key === 'deIDs') {
-    // Convert array to comma-separated string
     formDataToSend.append('deIDs', (value as number[]).join(','));
+  } else if (key === 'incomingNo' || key === 'incomingDate') {
+    // Only append if NOT a secret book and value exists
+    if (!isSecretBook && value) {
+      formDataToSend.append(key, value.toString());
+    }
   } else if (key === 'userID') {
-    // Ensure userID is sent as string (backend converts to int)
     formDataToSend.append('userID', value.toString());
-  } else {
-    formDataToSend.append(key, value);
+  } else if (value !== undefined && value !== null) {
+    formDataToSend.append(key, value.toString());
   }
 });
-      formDataToSend.append('file', selectedFile);
 
+      formDataToSend.append('file', selectedFile);
       formDataToSend.append('username', payload.username);
 
-      console.log("formDataToSend", formDataToSend);
-      console.log("formData,,,,,,,,", formData);
+      console.log('Submitting book type:', formData.bookType);
+      console.log('Is secret book:', isSecretBook);
+      console.log('IncomingDate will be sent:', !isSecretBook && formData.incomingDate);
 
       try {
         const response = await axios.post(
@@ -324,9 +314,7 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
             bookDate: format(new Date(), 'yyyy-MM-dd'),
             directoryName: '',
             selectedCommittee: undefined,
-            // deID: undefined, 
-            deIDs: [], // Reset to empty array
-
+            deIDs: [],
             incomingNo: '',
             incomingDate: format(new Date(), 'yyyy-MM-dd'),
             subject: '',
@@ -336,10 +324,9 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
             userID: userID,
           });
           setSelectedFile(null);
-          setSelectedDepartments([]); // Reset departments
-
-          dropzoneRef.current?.reset(true); // Silent reset
-          
+          setSelectedDepartments([]);
+          setSelectedCommittee(undefined);
+          dropzoneRef.current?.reset(true);
         } else {
           throw new Error('Failed to add book');
         }
@@ -350,20 +337,14 @@ export default function BookInsertionForm({ payload }: BookInsertionFormProps) {
         setIsSubmitting(false);
       }
     },
-    [formData, selectedFile, userID, API_BASE_URL]
+    [formData, selectedFile, userID, API_BASE_URL, payload.username, isSecretBook]
   );
 
-  // NOW we can do conditional rendering AFTER all hooks are called
   if (!userID) {
     return <div>Error: Invalid user data...{userID}</div>;
   }
 
-
-
-
-
-
-return (
+  return (
     <motion.div
       className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-sky-50/50 py-4 sm:py-6 md:py-8 lg:py-12"
       initial="hidden"
@@ -389,13 +370,14 @@ return (
                 name="bookType"
                 value={formData.bookType}
                 onChange={handleChange}
-                className="w-full h-12 px-4 py-2 border text-sm font-extrabold border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right "
+                className="w-full h-12 px-4 py-2 border text-sm font-extrabold border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
                 required
               >
                 <option className='text-sm font-extrabold' value="">اختر نوع الكتاب</option>
                 <option className='text-sm font-extrabold' value="خارجي">خارجي</option>
                 <option className='text-sm font-extrabold' value="داخلي">داخلي</option>
                 <option className='text-sm font-extrabold' value="فاكس">فاكس</option>
+                <option className='text-sm font-extrabold' value="سري">سري</option>
               </select>
             </motion.div>
 
@@ -446,37 +428,41 @@ return (
               />
             </motion.div>
 
-            {/* Incoming Number */}
-            <motion.div variants={inputVariants}>
-              <label
-                htmlFor="incomingNo"
-                className="block text-sm font-extrabold text-gray-700 mb-1 lg:text-right text-center"
-              >
-                رقم الوارد
-              </label>
-              <input
-                id="incomingNo"
-                name="incomingNo"
-                type="text"
-                value={formData.incomingNo}
-                onChange={handleChange}
-                placeholder="رقم الوارد"
-                className="w-full h-12 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right"
-              />
-            </motion.div>
+      {/* Incoming Number - Disabled if SECRET */}
+<motion.div variants={inputVariants}>
+  <label
+    htmlFor="incomingNo"
+    className="block text-sm font-extrabold text-gray-700 mb-1 lg:text-right text-center"
+  >
+    رقم الوارد {isSecretBook && <span className="text-red-500 text-xs">(غير مطلوب للسري)</span>}
+  </label>
+  <input
+    id="incomingNo"
+    name="incomingNo"
+    type="text"
+    value={isSecretBook ? '' : formData.incomingNo}
+    onChange={handleChange}
+    placeholder={isSecretBook ? '' : 'رقم الوارد'}
+    disabled={isSecretBook}
+    className={`w-full h-12 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-300 font-arabic text-right ${
+      isSecretBook ? 'bg-gray-100 cursor-not-allowed opacity-60' : ''
+    }`}
+  />
+</motion.div>
 
-            {/* Incoming Date */}
+            {/* Incoming Date - Disabled and Empty if SECRET */}
             <motion.div variants={inputVariants} className="text-center">
               <label
                 htmlFor="incomingDate"
                 className="block text-sm font-extrabold text-gray-700 mb-1 lg:text-center text-center"
               >
-                تاريخ الوارد
+                تاريخ الوارد {isSecretBook && <span className="text-red-500 text-xs">(غير مطلوب للسري)</span>}
               </label>
               <ArabicDatePicker
-                selected={formData.incomingDate}
+                selected={isSecretBook ? '' : formData.incomingDate}
                 onChange={(value) => handleDateChange('incomingDate', value)}
                 label="تأريخ الوارد"
+                disabled={isSecretBook}
               />
             </motion.div>
 
@@ -495,58 +481,37 @@ return (
               />
             </motion.div>
 
-
-                <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-1">
+            {/* Committee */}
+            <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-1">
               <label
                 htmlFor="destination"
                 className="block text-sm font-extrabold text-gray-700 mb-1 lg:text-right text-center"
               >
-                  الهيأة
+                الهيأة
               </label>
-                  <CommitteeSelect
+              <CommitteeSelect
                 value={selectedCommittee}
                 onChange={handleCommitteeChange}
                 className="w-full"
-                comName={null}      />
-            </motion.div>
-
-
-                    <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-2">
-              <label
-                htmlFor="destination"
-                className="block text-sm font-extrabold text-gray-700 mb-1 lg:text-right text-center"
-              >
-                  القسم
-              </label>
-
-              <MultiSelectDepartments
-        coID={selectedCommittee}
-        value={selectedDepartments}
-        onChange={handleDepartmentsChange}
-        className="w-full"
-      />
-      {/* <DepartmentSelect
-                coID={selectedCommittee}
-                value={deID}
-                onChange={handleDepartmentChange}
-                className="w-full" 
-                departmentName={null}      /> */}
-            </motion.div>
-
-            
-            {/* <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-3">
-              <label
-                htmlFor="destination"
-                className="block text-sm font-extrabold text-gray-700 mb-1 lg:text-right text-center"
-              >
-                جهة تحويل البريد
-              </label>
-              <DestinationAutoComplete
-                value={formData.destination}
-                onChange={(val) => setFormData((prev) => ({ ...prev, destination: val }))}
-                fetchUrl={`${API_BASE_URL}/api/bookFollowUp/getDestination`}
+                comName={null}
               />
-            </motion.div> */}
+            </motion.div>
+
+            {/* Departments */}
+            <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-2">
+              <label
+                htmlFor="destination"
+                className="block text-sm font-extrabold text-gray-700 mb-1 lg:text-right text-center"
+              >
+                القسم
+              </label>
+              <MultiSelectDepartments
+                coID={selectedCommittee}
+                value={selectedDepartments}
+                onChange={handleDepartmentsChange}
+                className="w-full"
+              />
+            </motion.div>
 
             {/* Book Action */}
             <motion.div variants={inputVariants} className="sm:col-span-2 lg:col-span-2">
@@ -608,21 +573,13 @@ return (
               تحميل ملف PDF
             </label>
             <DropzoneComponent
-            ref={dropzoneRef}
-            onFilesAccepted={handleFilesAccepted}
-            onFileRemoved={handleFileRemoved}
-            onBookPdfLoaded={handleBookPdfLoaded} 
-            username={payload.username}            />
+              ref={dropzoneRef}
+              onFilesAccepted={handleFilesAccepted}
+              onFileRemoved={handleFileRemoved}
+              onBookPdfLoaded={handleBookPdfLoaded}
+              username={payload.username}
+            />
           </motion.div>
-
-          <div className="max-w-md mx-auto p-4">
-  
-      <p>
-        {/* Selected Committee ID: {selectedCommittee ?? 'None'} --- Selected Department ID: {deID ?? 'None'} */}
-      </p>
-    </div>
-
-    
 
           {/* Submit Button */}
           <motion.div
@@ -639,8 +596,6 @@ return (
             </Button>
           </motion.div>
         </form>
-       
-        
       </div>
     </motion.div>
   );
