@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from "react";
-import { UserIcon, LockClosedIcon } from "@heroicons/react/24/outline";
+import { UserIcon, LockClosedIcon, EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
@@ -13,6 +13,7 @@ const LoginForm: React.FC = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   const formSubmitHandler = async (e: React.FormEvent) => {
@@ -25,22 +26,8 @@ const LoginForm: React.FC = () => {
     try {
       setLoading(true);
 
-//       const response = await axios.post(
-//   `http://10.20.11.33:3000/auth/login`,
-//   { username, password },
-//   {
-//     withCredentials: true,
-//     headers: {
-//       'Content-Type': 'application/json'
-//     }
-//   }
-// );
-
-
       const response = await axios.post(
        `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/login`,
-    // "http://10.20.11.33:9000/auth/login",
-      // `http://localhost:8000/auth/login`,
         { username, password },
         {
           withCredentials: true,
@@ -61,7 +48,7 @@ const LoginForm: React.FC = () => {
       
       // Proper error handling with type guards
       if (error instanceof AxiosError) {
-        const errorMessage = error.response?.data?.detail || "فشل تسجيل الدخول";   // show detail from backend login route
+        const errorMessage = error.response?.data?.detail || "فشل تسجيل الدخول";
         toast.error(errorMessage);
       } else if (error instanceof Error) {
         toast.error(error.message || "فشل تسجيل الدخول");
@@ -133,15 +120,29 @@ const LoginForm: React.FC = () => {
                 <input
                   id="password"
                   name="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   required
                   placeholder="••••••••"
-                  className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200"
+                  className="w-full px-4 py-3 pl-10 pr-10 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
                 <LockClosedIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                
+                {/* Eye Icon Toggle */}
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none transition duration-200"
+                  aria-label={showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className="h-5 w-5" />
+                  ) : (
+                    <EyeIcon className="h-5 w-5" />
+                  )}
+                </button>
               </div>
             </div>
 
@@ -175,7 +176,8 @@ const LoginForm: React.FC = () => {
           <p className="mt-10 text-center text-sm text-gray-600">
             لست عضوًا؟{" "}
             <a 
-              href="/register" 
+              // href="/register" 
+               href="#" 
               className="font-medium text-indigo-600 hover:text-indigo-500 transition duration-200"
             >
               سجل الآن
