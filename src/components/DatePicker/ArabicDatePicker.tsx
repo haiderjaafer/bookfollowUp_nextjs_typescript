@@ -54,6 +54,7 @@ export default function ArabicDatePicker({
           }
         } catch (error) {
           console.warn('Invalid date format:', selected);
+          console.log(`${error}`);
           setDate(null);
         }
       }
